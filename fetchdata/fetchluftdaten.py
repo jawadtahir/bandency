@@ -9,16 +9,9 @@ import random
 
 from tqdm import tqdm
 
-# from elasticsearch import Elasticsearch
-# from elasticsearch.helpers import bulk
-
 # define the initial values
 resource_url = "https://archive.sensor.community/csv_per_month/"
 data_directory = '/run/media/chris/debs2021/luftdaten'
-
-# Initial version taken from here:
-# https://github.com/ieservices/luftdaten-big-data-analysis.info
-# Modified
 
 def fetch_links(resource):
     urls = []
@@ -42,7 +35,6 @@ def urls_every_month():
             if not os.path.exists(local_filename):
                 download_urls.append([fileurl, local_filename])
     return download_urls
-    
 
 def download_every_month():
     urls = urls_every_month()
