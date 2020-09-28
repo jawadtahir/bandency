@@ -1,0 +1,8 @@
+libvirt-python
+numpy
+pandas
+seaborn
+jupyterlab
+html5lib
+beautifulsoup4
+tqdm
