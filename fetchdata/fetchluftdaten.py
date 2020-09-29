@@ -1,16 +1,14 @@
-import glob
+import multiprocessing
 import os
-from datetime import datetime
-from time import time
-import urllib.request
-import pandas as pd
-from bs4 import BeautifulSoup
 import random
+import urllib.request
 
+from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 # define the initial values
 resource_url = "https://archive.sensor.community/csv_per_month/"
+data_directory = 'luftdaten'
 data_directory = '/run/media/chris/debs2021/luftdaten'
 
 def fetch_links(resource):
@@ -36,32 +34,46 @@ def urls_every_month():
                 download_urls.append([fileurl, local_filename])
     return download_urls
 
+def download_file(args):
+    fileurl, local_filename = args
+    if not os.path.exists(local_filename):
+        temp_filename = os.path.join(os.path.dirname(local_filename), "partial_" + os.path.basename(local_filename))
+        try:
+            with urllib.request.urlopen(fileurl) as req:
+                with open(temp_filename, 'wb') as f:
+                    while True:
+                        # Write 1MB chunks
+                        chunk = req.read(1 * 1000 * 1000)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+
+                os.rename(temp_filename, local_filename)
+                return 0
+        except:
+            try:
+                if os.path.exists(temp_filename):
+                    os.remove(temp_filename)
+            except:
+                return 1
+            return 1
+
 def download_every_month():
     urls = urls_every_month()
     random.shuffle(urls)
-    
-    for fileurl, local_filename in tqdm(urls, desc="Downloading files"):
-        if not os.path.exists(local_filename):
-            try:
-                with urllib.request.urlopen(fileurl) as req:
-                    with open(local_filename, 'wb') as lf:
-                        while True:
-                            chunk = req.read(1*1000*1000) #Write 1MB chunks
-                            if not chunk:
-                                break;
-                            lf.write(chunk)
-            except KeyboardInterrupt:
-                print("deleting unfinshed download: {}".format(local_filename))
-                if not os.path.exists(local_filename):
-                    os.remove(local_filename)
-                print("Exiting")
-                return
+
+    with multiprocessing.Pool(processes=5) as pool:
+        failures = sum(tqdm(pool.imap_unordered(download_file, urls), total=len(urls), desc="Downloading files"))
+        print("Total dowload failures: {}".format(failures))
 
 def prepare_data_directory():
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
 
+
 if __name__ == "__main__":
     prepare_data_directory()
     # fetch the url of the last directory
     download_every_month()
+
+

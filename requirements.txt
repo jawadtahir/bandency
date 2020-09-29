@@ -6,3 +6,4 @@ jupyterlab
 html5lib
 beautifulsoup4
 tqdm
+executor
