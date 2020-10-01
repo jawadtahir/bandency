@@ -7,3 +7,7 @@ html5lib
 beautifulsoup4
 tqdm
 executor
+quart
+hypercorn
+gino
+alembic
