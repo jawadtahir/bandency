@@ -1,8 +1,10 @@
 import uuid
 from gino import Gino
 from quart_auth import AuthUser
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 db = Gino()
+
 
 class Group(AuthUser):
     def __init__(self, auth_id):
@@ -24,5 +26,7 @@ class Group(AuthUser):
 class Group(db.Model):
     __tablename__ = 'groups'
 
-    id = db.Column(db.(), primary_key=True)
+    id = db.Column(UUID, primary_key=True)
+    groupname = db.Column(db.Unicode())
+    password = db.Column(db.Unicode())
     nickname = db.Column(db.Unicode(), default='noname')

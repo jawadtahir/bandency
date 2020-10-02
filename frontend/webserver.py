@@ -1,14 +1,18 @@
 import asyncio
+import hashlib
+import uuid
+
 import frontend.helper as helper
 
-from quart import Quart, websocket, render_template, redirect, url_for, flash, request
-from quart_auth import AuthManager, login_required, Unauthorized
+from quart import Quart, websocket, render_template, redirect, url_for, request
+from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user
 
-from frontend.model import model
+from frontend.models import db, Group
 
 app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
 AuthManager(app)
+salt = 'qakLgEdhryvVyFHfR4vwQw'
 
 
 @app.route('/')
@@ -18,19 +22,22 @@ async def index():
 
 @app.route('/login/', methods=['GET', 'POST'])
 async def login():
-    error = None
-
     if request.method == 'POST':
         form = await request.form
-        groupid = form['group']
-        password = form['password']
+        groupname = form['group'].strip()
+        password = form['password'].strip()
 
-        error = 'Invalid password'
-        login_success = True
-        if login_success:
-            return redirect(url_for('profile'))
+        group = await Group.query.where(Group.groupname == groupname and Group.password == password).gino.first()
+        if group:
+            login_success = True
+            login_user(AuthUser(str(group.id)))
+            if login_success:
+                return redirect(url_for('profile'))
+        else:
+            return await render_template('login.html', error='Invalid password')
+    else:
+        return await render_template('login.html')
 
-    return await render_template('login.html', error=error)
 
 @app.errorhandler(Unauthorized)
 async def redirect_to_login(*_):
@@ -39,6 +46,7 @@ async def redirect_to_login(*_):
 
 @app.route('/logout')
 async def logout():
+    logout_user()
     return "todo"
 
 
@@ -78,7 +86,33 @@ async def notifications():
         raise
 
 
-if __name__ == "__main__":
+def hash_password(password):
+    db_password = password + salt
+    h = hashlib.md5(db_password.encode())
+    return h.hexdigest()
+
+
+async def admin_create_group(groupname, password):
+    hashed_password = hash_password(password)
+    return await Group.create(id=uuid.uuid4(), groupname=groupname, password=hashed_password)
+
+
+@app.before_serving
+async def db_connection():
+    await db.set_bind('postgresql://bandency:bandeny@localhost:5432/bandency')
+    await db.gino.create_all()
+
+
+def prepare_interactive_get_event_loop():
+    asyncio.get_event_loop().run_until_complete(db_connection())
+    return asyncio.get_event_loop()
+
+
+def main():
     print("Run Debug Version of webserver")
-    await model.model.db.set_bind('postrgresql://localhost/bandeny')
+    asyncio.get_event_loop().run_until_complete(db_connection())
     app.run(port=8000, use_reloader=True, debug=True)
+
+
+if __name__ == "__main__":
+    main()

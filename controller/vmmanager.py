@@ -43,6 +43,6 @@ if __name__ == "__main__":
     loop.run_until_complete(wrapper.)
 
     logging.getLogger().setLevel(logging.DEBUG)
-    prepare_data_directory()
+    #prepare_data_directory()
     # fetch the url of the last directory
-    download_every_month()
+    #download_every_month()

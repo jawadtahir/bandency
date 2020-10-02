@@ -3,4 +3,7 @@ luftdaten/
 .ipynb_checkpoints/
 .python-version
 __pycache__
-
+.direnv/
+bandency.egg-info
+dist/
+build/
