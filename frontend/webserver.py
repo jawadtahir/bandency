@@ -5,9 +5,9 @@ import uuid
 import frontend.helper as helper
 
 from quart import Quart, websocket, render_template, redirect, url_for, request
-from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user
+from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
-from frontend.models import db, Group
+from frontend.models import db, Group, get_group_information
 
 app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
@@ -17,7 +17,7 @@ salt = 'qakLgEdhryvVyFHfR4vwQw'
 
 @app.route('/')
 async def index():
-    return await render_template('index.html', menu=helper.menu())
+    return await render_template('index.html', name="Welcome!")
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -34,9 +34,15 @@ async def login():
             if login_success:
                 return redirect(url_for('profile'))
         else:
-            return await render_template('login.html', error='Invalid password')
+            return await render_template('login.html', name="Login", error='Invalid password')
     else:
-        return await render_template('login.html')
+        return await render_template('login.html', name="Login")
+
+
+@app.route('/logout')
+async def logout():
+    logout_user()
+    return redirect(url_for("index"))
 
 
 @app.errorhandler(Unauthorized)
@@ -44,34 +50,29 @@ async def redirect_to_login(*_):
     return redirect(url_for("login"))
 
 
-@app.route('/logout')
-async def logout():
-    logout_user()
-    return "todo"
-
-
 @app.route('/profile/')
 @login_required
 async def profile():
-    return await render_template('profile.html')
+    group = await get_group_information(current_user.auth_id)
+    return await render_template('profile.html', name="Profile", group=group, menu=helper.menu())
 
 
 @app.route('/systemstatus')
 @login_required
 async def systemstatus():
-    return await render_template('systemstatus.html')
+    return await render_template('systemstatus.html', menu=helper.menu())
 
 
 @app.route('/leaderboard')
 @login_required
 async def leaderboard():
-    return await render_template('leaderboard.html')
+    return await render_template('leaderboard.html', menu=helper.menu())
 
 
 @app.route('/feedback')
 @login_required
 async def feedback():
-    return await render_template('feedback.html')
+    return await render_template('feedback.html', menu=helper.menu())
 
 
 @app.websocket('/ws')

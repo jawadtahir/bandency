@@ -47,8 +47,9 @@
 
 <div class="container-fluid">
     <div class="row">
-        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-            <div class="sidebar-sticky pt-3">
+        <nav id="sidebarMenu" class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                {% if menu %}
                 <ul class="nav flex-column">
                     {% for menu_item in menu %}
                     <li class="nav-item">
@@ -59,18 +60,25 @@
                     </li>
                     {% endfor %}
                 </ul>
+                {% endif %}
             </div>
         </nav>
-        {% for message in get_flashed_messages() %}
-            <div class="flash">{{ message }}</div>
-        {% endfor %}
-        {% block content %}
 
-        {% endblock %}
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                <h1 class="h2">{{ name }}</h1>
+            </div>
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
+                {% if error %}<p class="alert alert-warning">{{ error }}{% endif %}
+                {% for message in get_flashed_messages() %}
+                <div class="alert alert-warning" role="alert">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% block content %}
+            {% endblock %}
+        </main>
     </div>
 </div>
-
-
 
 {% block script %}
 {% endblock %}

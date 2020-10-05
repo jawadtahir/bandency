@@ -1,6 +1,5 @@
-
 def menu(profile=False, system_status=False, leaderboard=False, scheduled_benchmarks=False, feedback=False):
-    return [
+   return [
         ["Profile", "home", "/profile", profile],
         ["System status", "layers", "/systemstatus", system_status],
         ["Leaderboard", "layers", "/leaderboard", leaderboard],

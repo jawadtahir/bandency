@@ -25,8 +25,11 @@ class Group(AuthUser):
 
 class Group(db.Model):
     __tablename__ = 'groups'
-
     id = db.Column(UUID, primary_key=True)
+
     groupname = db.Column(db.Unicode())
     password = db.Column(db.Unicode())
-    nickname = db.Column(db.Unicode(), default='noname')
+
+
+async def get_group_information(group_id):
+    return await Group.get(group_id)
