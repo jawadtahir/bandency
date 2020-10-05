@@ -25,7 +25,7 @@ async def login():
     if request.method == 'POST':
         form = await request.form
         groupname = form['group'].strip()
-        password = form['password'].strip()
+        password = hash_password(form['password'].strip())
 
         group = await Group.query.where(Group.groupname == groupname and Group.password == password).gino.first()
         if group:
@@ -54,25 +54,31 @@ async def redirect_to_login(*_):
 @login_required
 async def profile():
     group = await get_group_information(current_user.auth_id)
-    return await render_template('profile.html', name="Profile", group=group, menu=helper.menu())
+    return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
 
 
 @app.route('/systemstatus')
 @login_required
 async def systemstatus():
-    return await render_template('systemstatus.html', menu=helper.menu())
+    return await render_template('systemstatus.html', menu=helper.menu(system_status=True), name="System status")
 
 
 @app.route('/leaderboard')
 @login_required
 async def leaderboard():
-    return await render_template('leaderboard.html', menu=helper.menu())
+    return await render_template('leaderboard.html', menu=helper.menu(leaderboard=True), name="Leaderboard")
 
 
 @app.route('/feedback')
 @login_required
 async def feedback():
-    return await render_template('feedback.html', menu=helper.menu())
+    return await render_template('feedback.html', menu=helper.menu(feedback=True), name="Feedback")
+
+
+@app.route('/scheduledbenchmarks')
+@login_required
+async def scheduledbenchmarks():
+    return await render_template('scheduledbenchmarks.html', menu=helper.menu(scheduled_benchmarks=True), name="Scheduled benchmarks")
 
 
 @app.websocket('/ws')
@@ -88,7 +94,7 @@ async def notifications():
 
 
 def hash_password(password):
-    db_password = password + salt
+    db_password = salt + password
     h = hashlib.md5(db_password.encode())
     return h.hexdigest()
 

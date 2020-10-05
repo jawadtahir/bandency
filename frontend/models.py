@@ -29,6 +29,8 @@ class Group(db.Model):
 
     groupname = db.Column(db.Unicode())
     password = db.Column(db.Unicode())
+    groupemail = db.Column(db.Unicode())
+    groupnick = db.Column(db.Unicode())
 
 
 async def get_group_information(group_id):

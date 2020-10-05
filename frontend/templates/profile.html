@@ -4,15 +4,21 @@
 
     <form action="{{ url_for('profile') }}" method="post" class="form">
         <div class="form-group row">
-            <label for="staticGroupNameId" class="col-sm-3 col-form-label">Group Name (Shown in Leaderboard)</label>
+            <label for="staticGroupNameId" class="col-sm-3 col-form-label">Group Nickname</label>
             <div class="col-sm-5">
-                <input type="text" name="groupname" class="form-control" id="staticGroupNameId" value="{{ group.groupname }}">
+                <input type="text" name="groupnick" class="form-control" id="staticGroupNameId" value="{{ group.groupnick }}">
             </div>
         </div>
         <div class="form-group row">
-            <label for="inputSSHKeyId" class="col-sm-3 col-form-label">SSH-Key</label>
+            <label for="staticGroupEMailId" class="col-sm-3 col-form-label">E-Mail</label>
+            <div class="col-sm-5">
+                <input type="text" name="groupemail" class="form-control" id="staticGroupEMailId" value="{{ group.groupemail }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputSSHKeyId" class="col-sm-3 col-form-label">SSH-Key Public Key</label>
             <div class="col-sm-7">
-                <input type="text" name="sshkey" class="form-control" id="inputSSHKeyId">
+                <input type="text" name="sshpubkey" class="form-control" id="inputSSHKeyId">
             </div>
         </div>
         <div class="form-group row">
@@ -22,4 +28,13 @@
             </div>
         </div>
     </form>
+
+<div>
+    <h4>Nickname</h4>
+    <p>The nickname of your group is shown in the Leaderboard. Choose something creative :)</p>
+    <h4>E-Mail</h4>
+    <p>We'll send all notifications to this address</p>
+    <h4>SSH-Key</h4>
+    <p>Use an existing public key or create a new public key locally on your machine. Prefered are ed25519 keys. Share the private with your teammates.</p>
+</div>
 {% endblock %}

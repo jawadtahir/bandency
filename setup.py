@@ -1,4 +1,13 @@
+import os
 from setuptools import setup, find_packages
+
+thelibFolder = os.path.dirname(os.path.realpath(__file__))
+requirementPath = thelibFolder + '/requirements.txt'
+install_requires = []
+if os.path.isfile(requirementPath):
+    with open(requirementPath) as f:
+        install_requires = [line for line in map(str.lstrip, f.read().splitlines()) if
+                            len(line) > 0 and not line.startswith('#')]
 
 setup(
     name="bandency",
@@ -6,23 +15,7 @@ setup(
     description="Testing Distributed Systems under Fault",
     packages=find_packages(exclude=["tests"]),
     author="Christoph Doblander",
-    install_requires=[
-        'libvirt-python',
-        'numpy',
-        'pandas',
-        'seaborn',
-        'jupyterlab',
-        'html5lib',
-        'beautifulsoup4',
-        'tqdm',
-        'executor',
-        'quart',
-        'quart-auth',
-        'hypercorn',
-        'gino',
-        'sqlalchemy',
-        'alembic'
-    ],
+    install_requires=install_requires,
     extras_require={
         'dev': [
             'python-language-server[all]'
