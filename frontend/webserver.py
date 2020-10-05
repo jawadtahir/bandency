@@ -7,7 +7,7 @@ import frontend.helper as helper
 from quart import Quart, websocket, render_template, redirect, url_for, request
 from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
-from frontend.models import db, Group, get_group_information
+from frontend.models import db, Group, get_group_information, get_recent_changes
 
 app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
@@ -55,6 +55,11 @@ async def redirect_to_login(*_):
 async def profile():
     group = await get_group_information(current_user.auth_id)
     return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+
+@app.route('/recentchanges/')
+async def recentchanges():
+    changes = await get_recent_changes()
+    return await render_template('recentchanges.html', name="Recent changes", changes=changes, menu=helper.menu(recentchanges=True))
 
 
 @app.route('/systemstatus')

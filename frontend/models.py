@@ -1,6 +1,7 @@
 import uuid
 from gino import Gino
 from quart_auth import AuthUser
+from sqlalchemy import TIMESTAMP, INTEGER
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 db = Gino()
@@ -21,6 +22,19 @@ class Group(AuthUser):
     async def email(self):
         await self._resolve()
         return self._email
+
+
+class RecentChanges(db.Model):
+    __tablename__ = 'recentchanges'
+
+    id = db.Column(UUID, primary_key=True)
+    timestamp = db.Column(TIMESTAMP)
+    level = db.Column(INTEGER)
+    description = db.Column(db.Unicode())
+
+
+async def get_recent_changes():
+    return await RecentChanges.query.gino.all()
 
 
 class Group(db.Model):

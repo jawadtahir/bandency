@@ -26,7 +26,7 @@
     </style>
 
     <!-- Custom styles for this template -->
-    <link href="static/css/dashboard.css" rel="stylesheet">
+    <link href="/static/css/dashboard.css" rel="stylesheet">
 </head>
 <body>
 <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
@@ -87,6 +87,16 @@
 <script>window.jQuery || document.write('<script src="/docs/4.5/assets/js/vendor/jquery.slim.min.js"><\/script>')</script><script src="/static/js/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+<script src="/static/js/moment.js"></script>
+<script>
+    if (typeof jQuery != "undefined") jQuery.fn.prettyDate = function() {
+        return this.each(function() {
+            var date = moment(this.title, "YYYY-MM-DD hh:mm:ss").fromNow(); //2020-10-05 15:37:03.269469
+            if (date) jQuery(this).text(date);
+        });
+    };
+    $(".humantimestamp").prettyDate();
+</script>
 </html>
 
 
