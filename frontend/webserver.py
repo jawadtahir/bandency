@@ -1,3 +1,4 @@
+import os
 import asyncio
 import hashlib
 import uuid
@@ -13,6 +14,8 @@ app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
 AuthManager(app)
 salt = 'qakLgEdhryvVyFHfR4vwQw'
+
+
 
 
 @app.route('/')
@@ -111,7 +114,11 @@ async def admin_create_group(groupname, password):
 
 @app.before_serving
 async def db_connection():
-    await db.set_bind('postgresql://bandency:bandeny@localhost:5432/bandency')
+    connection = 'postgresql://bandency:bandency@localhost:5432/bandency'
+    connection = os.environ['DB_CONNECTION']
+
+    print("db-connection: {}".format(connection))
+    await db.set_bind(connection)
     await db.gino.create_all()
 
 

@@ -1,6 +1,8 @@
 import os
 from setuptools import setup, find_packages
 
+#apt install libvirt-dev libpq-dev libjpeg-dev zlib1g-dev gfortran libblas-dev liblapack-dev
+
 thelibFolder = os.path.dirname(os.path.realpath(__file__))
 requirementPath = thelibFolder + '/requirements.txt'
 install_requires = []

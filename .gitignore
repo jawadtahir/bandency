@@ -7,3 +7,4 @@ __pycache__
 bandency.egg-info
 dist/
 build/
+experiments/
