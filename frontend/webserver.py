@@ -114,7 +114,6 @@ async def admin_create_group(groupname, password):
 
 @app.before_serving
 async def db_connection():
-    connection = 'postgresql://bandency:bandency@localhost:5432/bandency'
     connection = os.environ['DB_CONNECTION']
 
     print("db-connection: {}".format(connection))

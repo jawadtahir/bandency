@@ -4,6 +4,7 @@ luftdaten/
 .python-version
 __pycache__
 .direnv/
+.envrc
 bandency.egg-info
 dist/
 build/
