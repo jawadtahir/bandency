@@ -1,8 +1,7 @@
-import uuid
 from gino import Gino
 from quart_auth import AuthUser
 from sqlalchemy import TIMESTAMP, INTEGER
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import UUID
 
 db = Gino()
 
