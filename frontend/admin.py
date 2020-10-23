@@ -1,21 +1,18 @@
-import os
-import hashlib
-import uuid
 import argparse
-import logging
 import asyncio
+import hashlib
+import logging
+import os
 import random
 import string
-
 # Ugly Hack, should not needed when this is fixed: https://github.com/marrow/mailer/issues/87
 import sys
-
-from frontend.webserver import db_connection
+import uuid
 
 sys.modules["cgi.parse_qsl"] = None
 from marrow.mailer import Mailer, Message
 
-from frontend.models import db, Group, get_group_information, get_recent_changes
+from frontend.models import db, Group
 
 salt = 'qakLgEdhryvVyFHfR4vwQw'
 
@@ -43,7 +40,8 @@ def hash_password(password):
 
 async def admin_create_group(groupname, password, email):
     hashed_password = hash_password(password)
-    return await Group.create(id=uuid.uuid4(), groupname=groupname, password=hashed_password, groupemail=email, groupnick="default")
+    return await Group.create(id=uuid.uuid4(), groupname=groupname, password=hashed_password, groupemail=email,
+                              groupnick="default")
 
 
 def generate_random_string(length):
