@@ -41,9 +41,9 @@ def hash_password(password):
     return h.hexdigest()
 
 
-async def admin_create_group(groupname, password):
+async def admin_create_group(groupname, password, email):
     hashed_password = hash_password(password)
-    return await Group.create(id=uuid.uuid4(), groupname=groupname, password=hashed_password)
+    return await Group.create(id=uuid.uuid4(), groupname=groupname, password=hashed_password, groupemail=email, groupnick="default")
 
 
 def generate_random_string(length):
