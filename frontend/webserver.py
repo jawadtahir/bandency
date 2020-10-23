@@ -15,8 +15,7 @@ app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
 AuthManager(app)
 
-
-
+logging.basicConfig(level=logging.DEBUG)
 
 @app.route('/')
 async def index():
