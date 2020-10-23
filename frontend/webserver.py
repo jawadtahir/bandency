@@ -1,6 +1,5 @@
 import os
 import asyncio
-import hashlib
 import uuid
 
 import frontend.helper as helper
@@ -13,7 +12,6 @@ from frontend.models import db, Group, get_group_information, get_recent_changes
 app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
 AuthManager(app)
-salt = 'qakLgEdhryvVyFHfR4vwQw'
 
 
 
@@ -99,17 +97,6 @@ async def notifications():
     except asyncio.CancelledError:
         # Handle disconnect here
         raise
-
-
-def hash_password(password):
-    db_password = salt + password
-    h = hashlib.md5(db_password.encode())
-    return h.hexdigest()
-
-
-async def admin_create_group(groupname, password):
-    hashed_password = hash_password(password)
-    return await Group.create(id=uuid.uuid4(), groupname=groupname, password=hashed_password)
 
 
 @app.before_serving
