@@ -67,10 +67,11 @@ async def create_group(email):
     Your Group ID: {}
     Password: {}
     
+    If you have any questions or problems, e-mail: christoph.doblander@in.tum.de
+    
     We look all forward to your submission!
     
-    Plz. send 
-    
+    The DEBS Challenge 2021 Team
     """.format(group_name, default_pw)
 
     print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))
