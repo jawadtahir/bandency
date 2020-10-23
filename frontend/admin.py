@@ -56,7 +56,7 @@ async def create_group(email):
     print("counted groups {}".format(group_cnt))
     default_pw = generate_random_string(8)
     group_name = "group-{}".format(group_cnt)
-    await admin_create_group(group_name, hash_password(default_pw))
+    await admin_create_group(group_name, hash_password(default_pw), email)
 
     message = """
     Welcome to the DEBS 2021 - Challenge!
