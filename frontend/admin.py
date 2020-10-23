@@ -5,7 +5,6 @@ import logging
 
 # Ugly Hack, should not needed when this is fixed: https://github.com/marrow/mailer/issues/87
 import sys
-
 sys.modules["cgi.parse_qsl"] = None
 from marrow.mailer import Mailer, Message
 
@@ -19,15 +18,16 @@ mailer = Mailer({'manager.use': 'futures',
                  'message.subject': "Test subject."})
 
 
-def send_mail(subject, message_plain):
+def send_mail(send_to, subject, message_plain):
     mailer = Mailer({'manager.use': 'futures',
                      'transport.use': 'sendmail',
                      'message.author': 'Christoph Doblander <christoph.doblander@in.tum.de>'})
     mailer.start()
 
-    message = Message(author="noreply-debs-challenge@in.tum.de", to="doblande@in.tum.de")
+    message = Message(author="noreply-debs-challenge@in.tum.de", to=send_to)
     message.subject = subject
     message.plain = message_plain
+    message.sendmail_f = False  # Another hack, reason: https://github.com/marrow/mailer/blob/3995ef98a3f7feb75f1aeb652e6afe40a5c94def/marrow/mailer/transport/sendmail.py#L29
     mailer.send(message)
 
     mailer.stop()
