@@ -8,6 +8,7 @@ import frontend.helper as helper
 from quart import Quart, websocket, render_template, redirect, url_for, request
 from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
+from frontend.admin import hash_password
 from frontend.models import db, Group, get_group_information, get_recent_changes
 
 app = Quart(__name__)
