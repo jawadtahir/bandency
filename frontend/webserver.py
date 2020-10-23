@@ -1,6 +1,7 @@
 import os
 import asyncio
 import uuid
+import logging
 
 import frontend.helper as helper
 
@@ -102,8 +103,7 @@ async def notifications():
 @app.before_serving
 async def db_connection():
     connection = os.environ['DB_CONNECTION']
-
-    print("db-connection: {}".format(connection))
+    logging.debug("db-connection: {}".format(connection))
     await db.set_bind(connection)
     await db.gino.create_all()
 

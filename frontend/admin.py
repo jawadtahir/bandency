@@ -1,21 +1,23 @@
+import os
 import hashlib
 import uuid
 import argparse
 import logging
+import asyncio
+import random
+import string
 
 # Ugly Hack, should not needed when this is fixed: https://github.com/marrow/mailer/issues/87
 import sys
+
+from frontend.webserver import db_connection
+
 sys.modules["cgi.parse_qsl"] = None
 from marrow.mailer import Mailer, Message
 
 from frontend.models import db, Group, get_group_information, get_recent_changes
 
 salt = 'qakLgEdhryvVyFHfR4vwQw'
-
-mailer = Mailer({'manager.use': 'futures',
-                 'transport.use': 'sendmail',
-                 'message.author': 'Christoph Doblander <christoph.doblander@in.tum.de>',
-                 'message.subject': "Test subject."})
 
 
 def send_mail(send_to, subject, message_plain):
@@ -44,17 +46,57 @@ async def admin_create_group(groupname, password):
     return await Group.create(id=uuid.uuid4(), groupname=groupname, password=hashed_password)
 
 
-def __main__():
-    logging.basicConfig(level=logging.INFO)
+def generate_random_string(length):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
 
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('creategroup',
-                        help='sum the integers (default: find the max)',
-                        required=False)
 
-    parser.add_argument('--email',
-                        help='sets ',
-                        required=False)
+async def create_group(email):
+    group_cnt = await db.func.count(Group.id).gino.scalar()
+    print("counted groups {}".format(group_cnt))
+    default_pw = generate_random_string(8)
+    group_name = "group-{}".format(group_cnt)
+    await admin_create_group(group_name, hash_password(default_pw))
+
+    message = """
+    Welcome to the DEBS 2021 - Challenge!
+    
+    You are now registered. Plz login here:
+    https://challenge.msrg.in.tum.de/
+    
+    Your Group ID: {}
+    Password: {}
+    
+    We look all forward to your submission!
+    
+    Plz. send 
+    
+    """.format(group_name, default_pw)
+
+    print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))
+    send_mail(email, "Group registration", message)
+    return
+
+
+async def main(parse_arguments):
+    connection = os.environ['DB_CONNECTION']
+    logging.debug("db-connection: {}".format(connection))
+    await db.set_bind(connection)
+    await db.gino.create_all()
+
+    if parse_arguments.command == 'newgroup':
+        await create_group(args.email)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+
+    parser = argparse.ArgumentParser(description='Admin Util for DEBS Challenge')
+    subparsers = parser.add_subparsers(help='sub-command help', dest="command")
+
+    group_parser = subparsers.add_parser("newgroup", help='Creates a new group with e-mail')
+    group_parser.add_argument('--email', type=str, action='store', help='email help', required=True)
 
     args = parser.parse_args()
-    print(args.accumulate(args.integers))
+    logging.info(args)
+    asyncio.run(main(args))
