@@ -64,10 +64,10 @@ async def create_group(email):
     You are now registered. Plz login here:
     https://challenge.msrg.in.tum.de/
     
-    Your Group ID: {}
+    Group ID: {}
     Password: {}
     
-    If you have any questions or problems, e-mail: christoph.doblander@in.tum.de
+    If you have any questions or problems, plz. contact: christoph.doblander@in.tum.de
     
     We look all forward to your submission!
     
@@ -75,7 +75,7 @@ async def create_group(email):
     """.format(group_name, default_pw)
 
     print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))
-    send_mail(email, "Group registration", message)
+    send_mail(email, "DEBS2021 - Challenge: Group registration", message)
     return
 
 
