@@ -9,3 +9,5 @@ bandency.egg-info
 dist/
 build/
 experiments/
+challenger/target/
+challenger/Cargo.lock

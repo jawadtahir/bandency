@@ -36,7 +36,7 @@ async def get_recent_changes():
     return await RecentChanges.query.gino.all()
 
 
-class Group(db.Model):
+class ChallengeGroup(db.Model):
     __tablename__ = 'groups'
     id = db.Column(UUID, primary_key=True)
 
@@ -45,6 +45,28 @@ class Group(db.Model):
     groupemail = db.Column(db.Unicode())
     groupnick = db.Column(db.Unicode())
 
-
 async def get_group_information(group_id):
-    return await Group.get(group_id)
+    return await ChallengeGroup.get(group_id)
+
+
+class ServerMonitorMetrics(db.Model):
+    __tablename__ = 'servermonitormetrics'
+    id = db.Column(UUID, primary_key=True)
+
+    server_name=db.Column(db.Unicode())
+    timestamp=db.Column(TIMESTAMP)
+    cpu_percent=db.Column(db.Float)
+    load1m=db.Column(db.Float)
+    load5m=db.Column(db.Float)
+    load15m=db.Column(db.Float)
+    mem_total=db.Column(INTEGER)
+    mem_available=db.Column(INTEGER)
+    mem_used=db.Column(INTEGER)
+    mem_free=db.Column(INTEGER)
+    duration_millis=db.Column(INTEGER)
+    read_count=db.Column(INTEGER)
+    write_count=db.Column(INTEGER)
+    read_bytes=db.Column(INTEGER)
+    write_bytes=db.Column(INTEGER)
+
+

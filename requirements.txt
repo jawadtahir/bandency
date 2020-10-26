@@ -15,4 +15,6 @@ sqlalchemy
 alembic
 psycopg2
 hypercorn
+aio-pika
+psutil
 marrow.mailer

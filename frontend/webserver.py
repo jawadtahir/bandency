@@ -4,12 +4,13 @@ import uuid
 import logging
 
 import frontend.helper as helper
+import frontend.worker as worker
 
 from quart import Quart, websocket, render_template, redirect, url_for, request
 from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
 from frontend.admin import hash_password
-from frontend.models import db, Group, get_group_information, get_recent_changes
+from frontend.models import db, Group, ChallengeGroup, get_group_information, get_recent_changes
 
 app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
@@ -29,7 +30,7 @@ async def login():
         groupname = form['group'].strip()
         password = hash_password(form['password'].strip())
 
-        group = await Group.query.where(Group.groupname == groupname and Group.password == password).gino.first()
+        group = await ChallengeGroup.query.where(ChallengeGroup.groupname == groupname and ChallengeGroup.password == password).gino.first()
         if group:
             login_success = True
             login_user(AuthUser(str(group.id)))
@@ -57,6 +58,7 @@ async def redirect_to_login(*_):
 async def profile():
     group = await get_group_information(current_user.auth_id)
     return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+
 
 @app.route('/recentchanges/')
 async def recentchanges():
@@ -115,8 +117,11 @@ def prepare_interactive_get_event_loop():
 
 def main():
     print("Run Debug Version of webserver")
-    asyncio.get_event_loop().run_until_complete(db_connection())
-    app.run(port=8000, use_reloader=True, debug=True)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(db_connection())
+    loop.create_task(worker.process_server_monitor_metrics(loop, os.environ['RABBIT_CONNECTION']))
+    #loop.create_task(app.run_task(port=8000, use_reloader=True, debug=True))
+    loop.run_forever()
 
 
 if __name__ == "__main__":
