@@ -1,6 +1,6 @@
 from gino import Gino
 from quart_auth import AuthUser
-from sqlalchemy import TIMESTAMP, INTEGER
+from sqlalchemy import TIMESTAMP, INTEGER, BigInteger
 from sqlalchemy.dialects.postgresql import UUID
 
 db = Gino()
@@ -59,14 +59,14 @@ class ServerMonitorMetrics(db.Model):
     load1m=db.Column(db.Float)
     load5m=db.Column(db.Float)
     load15m=db.Column(db.Float)
-    mem_total=db.Column(INTEGER)
-    mem_available=db.Column(INTEGER)
-    mem_used=db.Column(INTEGER)
-    mem_free=db.Column(INTEGER)
-    duration_millis=db.Column(INTEGER)
-    read_count=db.Column(INTEGER)
-    write_count=db.Column(INTEGER)
-    read_bytes=db.Column(INTEGER)
-    write_bytes=db.Column(INTEGER)
+    mem_total=db.Column(BigInteger)
+    mem_available=db.Column(BigInteger)
+    mem_used=db.Column(BigInteger)
+    mem_free=db.Column(BigInteger)
+    duration_millis=db.Column(BigInteger)
+    read_count=db.Column(BigInteger)
+    write_count=db.Column(BigInteger)
+    read_bytes=db.Column(BigInteger)
+    write_bytes=db.Column(BigInteger)
 
 

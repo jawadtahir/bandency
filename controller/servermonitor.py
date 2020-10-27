@@ -3,12 +3,15 @@ import asyncio
 import os
 import platform
 import json
+from signal import SIGTERM, SIGINT, SIGBREAK
+from typing import Any
+
 import aio_pika
 import psutil as psutil
 from aio_pika import DeliveryMode
 
 from shared.constants import get_config
-
+from shared.util import raise_shutdown
 
 
 def millis_interval(start, end):
@@ -45,7 +48,9 @@ def get_system_metrics(disk_io_before, snapshot_time):
                 write_bytes=now_disk_io.write_bytes - disk_io_before.write_bytes)
 
 
-async def monitor_server_parameters(loop, connection_str):
+async def monitor_server_parameters(loop, shutdown_event, connection_str):
+    #loop.create_task(raise_shutdown(shutdown_event.wait, loop, "servermonitor"))
+
     connection = await aio_pika.connect_robust(connection_str, loop=loop)
     queue_name = get_config()["servermonitor_topic"]
 
@@ -55,7 +60,7 @@ async def monitor_server_parameters(loop, connection_str):
         last_disk_io = psutil.disk_io_counters()
         snapshot_time = datetime.now()
 
-        while True:
+        while not shutdown_event.is_set():
             await asyncio.sleep(10)  # every 10 seconds, a new snapshot
 
             metrics = get_system_metrics(last_disk_io, snapshot_time)
@@ -67,10 +72,24 @@ async def monitor_server_parameters(loop, connection_str):
             await channel.default_exchange.publish(msg, routing_key=queue_name, )
             print("sent message")
 
+        print("gracefully exiting")
+
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
+    shutdown_event = asyncio.Event()
+
+
+    def signal_handler(*_: Any) -> None:
+        shutdown_event.set()
+
+    loop.add_signal_handler(SIGTERM, signal_handler)
+    loop.add_signal_handler(SIGINT, signal_handler)
+    loop.add_signal_handler(SIGBREAK, signal_handler)
+
     connection_str = os.environ['RABBIT_CONNECTION']
+    #connection_str = "amqp://guest:guest@131.159.52.72//"
+
     print(connection_str)
 
     loop.run_until_complete(monitor_server_parameters(loop, connection_str))

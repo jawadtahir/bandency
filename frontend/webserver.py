@@ -1,22 +1,33 @@
-import os
 import asyncio
-import uuid
 import logging
+import os
+from signal import SIGTERM, SIGINT
+from typing import Any, Callable, Awaitable
 
-import frontend.helper as helper
-import frontend.worker as worker
-
+from hypercorn.asyncio import serve
+from hypercorn.config import Config
 from quart import Quart, websocket, render_template, redirect, url_for, request
 from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
+import frontend.helper as helper
+import frontend.worker as worker
 from frontend.admin import hash_password
-from frontend.models import db, Group, ChallengeGroup, get_group_information, get_recent_changes
+from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes
+from shared.util import raise_shutdown, Shutdown
 
 app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
 AuthManager(app)
 
+shutdown_event = asyncio.Event()
+
+
+def signal_handler(*_: Any) -> None:
+    shutdown_event.set()
+
+
 logging.basicConfig(level=logging.DEBUG)
+
 
 @app.route('/')
 async def index():
@@ -30,7 +41,8 @@ async def login():
         groupname = form['group'].strip()
         password = hash_password(form['password'].strip())
 
-        group = await ChallengeGroup.query.where(ChallengeGroup.groupname == groupname and ChallengeGroup.password == password).gino.first()
+        group = await ChallengeGroup.query.where(
+            ChallengeGroup.groupname == groupname and ChallengeGroup.password == password).gino.first()
         if group:
             login_success = True
             login_user(AuthUser(str(group.id)))
@@ -63,7 +75,8 @@ async def profile():
 @app.route('/recentchanges/')
 async def recentchanges():
     changes = await get_recent_changes()
-    return await render_template('recentchanges.html', name="Recent changes", changes=changes, menu=helper.menu(recentchanges=True))
+    return await render_template('recentchanges.html', name="Recent changes", changes=changes,
+                                 menu=helper.menu(recentchanges=True))
 
 
 @app.route('/systemstatus')
@@ -87,7 +100,8 @@ async def feedback():
 @app.route('/scheduledbenchmarks')
 @login_required
 async def scheduledbenchmarks():
-    return await render_template('scheduledbenchmarks.html', menu=helper.menu(scheduled_benchmarks=True), name="Scheduled benchmarks")
+    return await render_template('scheduledbenchmarks.html', menu=helper.menu(scheduled_benchmarks=True),
+                                 name="Scheduled benchmarks")
 
 
 @app.websocket('/ws')
@@ -104,6 +118,7 @@ async def notifications():
 
 @app.before_serving
 async def db_connection():
+    print("start db_connection")
     connection = os.environ['DB_CONNECTION']
     logging.debug("db-connection: {}".format(connection))
     await db.set_bind(connection)
@@ -115,14 +130,49 @@ def prepare_interactive_get_event_loop():
     return asyncio.get_event_loop()
 
 
-def main():
+async def wakeup(shutdown_trigger):
+    logging.info("start wakeup")
+    while not shutdown_trigger.is_set():
+        await asyncio.sleep(1)
+        print("wakeup")
+    print("shutting down")
+
+
+async def main(debug, loop):
     print("Run Debug Version of webserver")
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(db_connection())
-    loop.create_task(worker.process_server_monitor_metrics(loop, os.environ['RABBIT_CONNECTION']))
-    #loop.create_task(app.run_task(port=8000, use_reloader=True, debug=True))
-    loop.run_forever()
+    tasks = []
+    monitor_task = worker.process_server_monitor_metrics(loop, shutdown_event, os.environ['RABBIT_CONNECTION'])
+    tasks.append(monitor_task)
+
+    if debug:
+        cfg = Config()
+        cfg.debug = True
+        cfg.use_reloader = True
+        webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
+    else:
+        cfg = Config()
+        webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
+
+    tasks.append(webserver_task)
+
+    await db_connection()
+
+    # await asyncio.gather(monitor_task, webserver_task, wakeup(shutdown_event))
+    wakeup_task = wakeup(shutdown_event)
+    tasks.append(wakeup_task)
+    try:
+        gathered_tasks = asyncio.gather(*tasks)
+        await gathered_tasks
+    except (Shutdown, KeyboardInterrupt):
+        pass
 
 
 if __name__ == "__main__":
-    main()
+    loop = asyncio.get_event_loop()
+
+    loop.add_signal_handler(SIGTERM, signal_handler)
+    loop.add_signal_handler(SIGINT, signal_handler)
+
+    #loop.create_task(raise_shutdown(shutdown_event.wait, loop, "general"))
+
+    loop.run_until_complete(main(True, loop))
