@@ -130,14 +130,6 @@ def prepare_interactive_get_event_loop():
     return asyncio.get_event_loop()
 
 
-async def wakeup(shutdown_trigger):
-    logging.info("start wakeup")
-    while not shutdown_trigger.is_set():
-        await asyncio.sleep(1)
-        print("wakeup")
-    print("shutting down")
-
-
 async def main(debug, loop):
     print("Run Debug Version of webserver")
     tasks = []
@@ -155,11 +147,10 @@ async def main(debug, loop):
 
     tasks.append(webserver_task)
 
+    # create the database connect, without starting doesn't make sense
     await db_connection()
 
     # await asyncio.gather(monitor_task, webserver_task, wakeup(shutdown_event))
-    wakeup_task = wakeup(shutdown_event)
-    tasks.append(wakeup_task)
     try:
         gathered_tasks = asyncio.gather(*tasks)
         await gathered_tasks
