@@ -3,7 +3,7 @@ import asyncio
 import os
 import platform
 import json
-from signal import SIGTERM, SIGINT, SIGBREAK
+from signal import SIGTERM, SIGINT
 from typing import Any
 
 import aio_pika
@@ -85,10 +85,8 @@ if __name__ == "__main__":
 
     loop.add_signal_handler(SIGTERM, signal_handler)
     loop.add_signal_handler(SIGINT, signal_handler)
-    loop.add_signal_handler(SIGBREAK, signal_handler)
 
     connection_str = os.environ['RABBIT_CONNECTION']
-    #connection_str = "amqp://guest:guest@131.159.52.72//"
 
     print(connection_str)
 
