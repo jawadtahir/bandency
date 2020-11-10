@@ -10,7 +10,7 @@ sudo apt-get install libssl-dev openssl
 sudo apt-get install libffi-dev
 sudo apt-get install lbzip2 
 sudo apt-get install libreadline-dev
-sudo apt-get install libpq-dev
+sudo apt-get install libpq-dev libvirt-dev
 
 # only after the dependencies are installed
 pyenv install 3.8.5

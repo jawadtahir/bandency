@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "de.tum.i13.bandency";
+option java_outer_classname = "ChallengerProto";
+
+import "google/protobuf/empty.proto";
+package Challenger;
+
+message Payload {
+  int32 randomData = 1;
+  int64 timestamp = 2;
+  //Todo add the actual fields
+}
+
+message Batch {
+  int64 seq_id = 1;
+  repeated Payload msgs = 2;
+}
+
+message Benchmark {
+  int64 id = 1;
+}
+
+message ResultPayload {
+  int32 resultData = 1;
+  //TODO add here the actual fields
+}
+
+message Result {
+  int64 benchmark_id = 1;
+  int64 payload_seq_id = 2;
+  ResultPayload result = 3;
+}
+
+message Ping {
+  int64 id = 1;
+}
+
+message Pong {
+  int64 id = 1;
+}
+
+message BenchmarkConfiguration {
+  string token = 1; //Token from the webapp for authentication
+  int32 batch_size = 2; //Small batches might need different algorithms than large batches
+  string benchmark_name = 3; //chosen by the team, listed in the results
+}
+
+message Location {
+  double longitude = 1;
+  double latitude = 2;
+  int32 zipcode = 3;
+  string city = 4;
+}
+
+message Locations{
+  repeated Location locations = 1;
+}
+
+service Challenge {
+  rpc GetLocations(google.protobuf.Empty) returns (Locations);
+  
+  rpc CreateNewBenchmark(BenchmarkConfiguration) returns (Benchmark);
+
+  rpc InitializeLatencyMeasuring(Benchmark) returns (Ping);
+  rpc Measure(Ping) returns (Ping);
+  rpc EndMeasurement(Ping) returns (google.protobuf.Empty);
+
+  rpc StartBenchmark(Benchmark) returns(google.protobuf.Empty);
+  rpc nextMessage(Benchmark) returns (Payload);
+  rpc processed(Result) returns(google.protobuf.Empty);
+  rpc EndBenchmark(Benchmark) returns(google.protobuf.Empty);
+}

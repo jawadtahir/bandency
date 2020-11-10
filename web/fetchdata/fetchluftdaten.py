@@ -9,7 +9,7 @@ from tqdm import tqdm
 # define the initial values
 resource_url = "https://archive.sensor.community/csv_per_month/"
 data_directory = 'luftdaten'
-data_directory = '/run/media/chris/debs2021/luftdaten'
+data_directory = '/home/chris/data/luftdaten'
 
 def fetch_links(resource):
     urls = []
@@ -25,6 +25,7 @@ def fetch_links(resource):
 
     return urls
 
+
 def urls_every_month():
     download_urls = []
     for url, _ in tqdm(fetch_links(resource_url), desc="Fetching download URLs"):
@@ -33,6 +34,7 @@ def urls_every_month():
             if not os.path.exists(local_filename):
                 download_urls.append([fileurl, local_filename])
     return download_urls
+
 
 def download_file(args):
     fileurl, local_filename = args
@@ -58,6 +60,7 @@ def download_file(args):
                 return 1
             return 1
 
+        
 def download_every_month():
     urls = urls_every_month()
     random.shuffle(urls)
@@ -66,6 +69,7 @@ def download_every_month():
         failures = sum(tqdm(pool.imap_unordered(download_file, urls), total=len(urls), desc="Downloading files"))
         print("Total dowload failures: {}".format(failures))
 
+        
 def prepare_data_directory():
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
@@ -75,5 +79,3 @@ if __name__ == "__main__":
     prepare_data_directory()
     # fetch the url of the last directory
     download_every_month()
-
-
