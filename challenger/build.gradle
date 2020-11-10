@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id "application"
     id 'com.google.protobuf' version '0.8.13'
     id 'idea'
 }
@@ -10,6 +11,16 @@ version '1.0-SNAPSHOT'
 repositories {
     maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
     mavenCentral()
+}
+
+apply plugin : "java"
+
+ext {
+    javaMainClass = "de.tum.i13.Main"
+}
+
+application {
+    mainClassName = javaMainClass
 }
 
 protobuf {
@@ -42,6 +53,9 @@ dependencies {
     implementation 'com.google.guava:guava:28.0-jre'
     implementation 'com.mapbox.mapboxsdk:mapbox-sdk-geojson:5.5.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+
+    implementation 'org.tinylog:tinylog-api:2.2.0'
+    implementation 'org.tinylog:tinylog-impl:2.2.0'
 
     implementation 'io.grpc:grpc-netty-shaded:1.33.1'
     implementation 'io.grpc:grpc-protobuf:1.33.1'
