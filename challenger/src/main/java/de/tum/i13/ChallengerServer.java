@@ -5,12 +5,17 @@ import de.tum.i13.bandency.*;
 import io.grpc.stub.StreamObserver;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
+    final private LocationDataset ld;
 
+    public ChallengerServer(LocationDataset ld) {
+
+        this.ld = ld;
+    }
 
     @Override
     public void getLocations(Empty request, StreamObserver<Locations> responseObserver) {
-        //responseObserver.onNext();
-        super.getLocations(request, responseObserver);
+        responseObserver.onNext(ld.getAllLocations());
+        responseObserver.onCompleted();
     }
 
     @Override

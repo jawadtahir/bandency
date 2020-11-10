@@ -47,11 +47,17 @@ message BenchmarkConfiguration {
   string benchmark_name = 3; //chosen by the team, listed in the results
 }
 
-message Location {
+message Point {
   double longitude = 1;
   double latitude = 2;
-  int32 zipcode = 3;
-  string city = 4;
+}
+
+message Location {
+  string zipcode = 1;
+  string city = 2;
+  double qkm = 3;
+  int32 population = 4;
+  repeated Point polygon = 5;
 }
 
 message Locations{

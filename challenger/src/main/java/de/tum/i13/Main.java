@@ -1,19 +1,27 @@
 package de.tum.i13;
 
-import java.io.IOException;
+import org.tinylog.Logger;
+
 import java.nio.file.Path;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
-        PrepareLocationDataset pld = new PrepareLocationDataset(Path.of("/home/chris/data/challenge"));
-        LocationDataset ld = pld.loadData();
+        try {
+
+            Logger.info("Challenger Service");
+
+            PrepareLocationDataset pld = new PrepareLocationDataset(Path.of("/home/chris/data/challenge"));
+            Logger.info("Loading Locationdata");
+            LocationDataset ld = pld.loadData();
 
 
-        ChallengerServer cs = new ChallengerServer();
-
-
+            Logger.info("Initializing Challenger Service");
+            ChallengerServer cs = new ChallengerServer(ld);
+        } catch (Exception ex) {
+            Logger.error(ex);
+        }
 
         return;
     }
