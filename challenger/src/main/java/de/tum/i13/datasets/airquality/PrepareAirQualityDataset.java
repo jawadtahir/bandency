@@ -5,8 +5,10 @@ import de.tum.i13.bandency.Payload;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.SignStyle;
@@ -106,11 +108,13 @@ public class PrepareAirQualityDataset {
                 Logger.error("no dateconfig for: " + df.getFile().getName());
                 continue;
             }
+            Logger.info("begin file: " + df.getFile());
 
             DateConfig dateParser = dateConfigForDate.get();
 
             long cnt = 0;
             long errcnt = 0;
+            long skippedInFile = 0;
 
             try(ZipFile zipFile = new ZipFile(df.getFile())) {
                 ZipEntry zipEntry = zipFile.entries().nextElement();
@@ -132,59 +136,54 @@ public class PrepareAirQualityDataset {
                             String[] splitted = curr.split(";", -1);
                             if(splitted.length != 12) {
                                 curr = br.readLine();
+                                ++skippedInFile;
+
+                                curr = br.readLine();
                                 continue;
                             }
 
                             try {
                                 LocalDateTime parsed = dateParser.parse(splitted[5]);
-/*
-                                if ((cnt % 1_000_000) == 0) {
-                                    if (splitted.length == 12) {
-                                        String formated = parsed.format(simplepattern);
-                                        System.out.println("file: " + df.getFile().getName() + " datetimeformat: " + splitted[5] + " parsed: " + formated + " first: " + firstLine + " cnt: " + cnt + " errors: " + errcnt);
-                                    } else {
-                                        System.out.println("invalid: " + df.getFile().getName() + " length: " + splitted.length + " line: " + curr + " first: " + firstLine + " cnt: " + cnt + " errors: " + errcnt);
-                                    }
+                                if(parsed.isBefore(from)) { //skip what is before in the month
+                                    ++skippedInFile;
+
+                                    curr = br.readLine();
+                                    continue;
                                 }
 
+                                if(parsed.isEqual(to) || parsed.isAfter(to)) { //end once ended
+                                    Logger.info("finished file: " + df.getFile() + " cnt: " + cnt + " errors: " + errcnt);
+                                    return payloads;
+                                }
 
- */
-                            }catch (Exception ex) {
+                                com.google.protobuf.Timestamp ts = com.google.protobuf.Timestamp.newBuilder().setSeconds(parsed.toEpochSecond(ZoneOffset.UTC)).setNanos(parsed.getNano()).build();
+
+                                Payload pl = Payload.newBuilder()
+                                        .setTimestamp(ts)
+                                        .setLatitude(Float.parseFloat(splitted[3]))
+                                        .setLongitude(Float.parseFloat(splitted[4]))
+                                        .setP1(Float.parseFloat(splitted[6]))
+                                        .setP2(Float.parseFloat(splitted[9]))
+                                        .build();
+
+                                payloads.add(pl);
+                            } catch (Exception ex) {
+                                //Logger.error(ex);
                                 ++errcnt;
                             }
+
+                            /*if((cnt % 10_000) == 0 || ((errcnt % 1000) == 1) || ((skippedInFile % 100_000) == 1)) {
+                                Logger.info("cnt: " + cnt + " payloads: " + payloads.size() + " errorcnt: " + errcnt + " skipped: " + skippedInFile);
+                            }
+                             */
+
                             ++cnt;
                             curr = br.readLine();
-
-                            /*
-
-
-
-
-                            Timestamp ts = parseDate(splitted[5]);
-
-                            Payload pl = Payload.newBuilder()
-                                    .setTimestamp(ts)
-                                    .setLatitude(Float.parseFloat(splitted[3]))
-                                    .setLongitude(Float.parseFloat(splitted[4]))
-                                    .setP1(Float.parseFloat(splitted[6]))
-                                    .setP2(Float.parseFloat(splitted[9]))
-                                    .build();
-
-                            payloads.add(pl);
-
-
-                           curr = br.readLine();
-                             */
                         }
+
+                        Logger.info("finished file: " + df.getFile() + " cnt: " + cnt + " errors: " + errcnt);
                     }
-
-
-                    //System.out.println(firstLine);
-
                 }
-                //System.out.println("test");
-
-                System.out.println("finished file: " + df.getFile() + " cnt: " + cnt + " errors: " + errcnt);
             }
         }
 
@@ -204,9 +203,11 @@ public class PrepareAirQualityDataset {
     public AirqualityDataset prepareDataset() throws IOException {
 
         //ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2019, 1, 1, 0, 0, 0), LocalDateTime.of(2019, 1, 2, 0, 0, 0));
-        ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2015, 1, 1, 0, 0, 0), LocalDateTime.of(2021, 1, 2, 0, 0, 0));
+        //ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2015, 1, 1, 0, 0, 0), LocalDateTime.of(2021, 1, 2, 0, 0, 0));
         //ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2019, 12, 1, 0, 0, 0), LocalDateTime.of(2021, 1, 2, 0, 0, 0));
-        //ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2020, 1, 1, 0, 0, 0), LocalDateTime.of(2020, 12, 1, 0, 0, 0));
+        ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2020, 1, 1, 1, 5, 0), LocalDateTime.of(2020, 1, 1, 1, 6, 0));
+        int size = payloads.size();
+        System.out.println("size: " + size);
 
 
         return new AirqualityDataset();
