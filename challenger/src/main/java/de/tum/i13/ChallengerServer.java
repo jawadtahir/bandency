@@ -2,6 +2,7 @@ package de.tum.i13;
 
 import com.google.protobuf.Empty;
 import de.tum.i13.bandency.*;
+import de.tum.i13.datasets.location.LocationDataset;
 import io.grpc.stub.StreamObserver;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {

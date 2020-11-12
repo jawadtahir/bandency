@@ -1,4 +1,4 @@
-package de.tum.i13;
+package de.tum.i13.datasets.location;
 
 import de.tum.i13.bandency.Locations;
 
