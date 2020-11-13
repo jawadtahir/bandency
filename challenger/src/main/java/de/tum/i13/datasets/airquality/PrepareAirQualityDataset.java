@@ -1,23 +1,10 @@
 package de.tum.i13.datasets.airquality;
 
-import de.tum.i13.bandency.Batch;
 import de.tum.i13.bandency.Payload;
-import org.tinylog.Logger;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.time.LocalDate;
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public class PrepareAirQualityDataset {
     private final DateTimeFormatter simplepattern;

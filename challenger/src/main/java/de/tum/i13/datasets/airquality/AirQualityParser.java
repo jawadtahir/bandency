@@ -166,6 +166,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
             }
         }
         Payload forReturn = curr;
+        curr = null;
         parseNext();
 
         ++cnt;
