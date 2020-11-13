@@ -1,6 +1,7 @@
 package de.tum.i13;
 
 import de.tum.i13.datasets.airquality.AirqualityDataset;
+import de.tum.i13.datasets.airquality.AirqualityFileAccess;
 import de.tum.i13.datasets.airquality.PrepareAirQualityDataset;
 import org.tinylog.Logger;
 
@@ -21,7 +22,8 @@ public class Main {
              */
 
             Logger.info("Loading AirQualityDataset");
-            PrepareAirQualityDataset paqd = new PrepareAirQualityDataset(Path.of("/home/chris/data/luftdaten"));
+            AirqualityFileAccess afa = new AirqualityFileAccess(Path.of("/home/chris/data/luftdaten"));
+            PrepareAirQualityDataset paqd = new PrepareAirQualityDataset(afa);
             AirqualityDataset airqualityDataset = paqd.prepareDataset();
 
             /*

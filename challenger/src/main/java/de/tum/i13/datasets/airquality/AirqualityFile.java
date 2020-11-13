@@ -8,13 +8,15 @@ public class AirqualityFile {
     private final int month;
     private final String sensor;
     private final File file;
+    private final DateConfig dateConfigForDate;
 
-    public AirqualityFile(int year, int month, String sensor, File file) {
+    public AirqualityFile(int year, int month, String sensor, File file, DateConfig dateConfigForDate) {
 
         this.year = year;
         this.month = month;
         this.sensor = sensor;
         this.file = file;
+        this.dateConfigForDate = dateConfigForDate;
     }
 
     public int getYear() {
@@ -37,6 +39,10 @@ public class AirqualityFile {
         return LocalDate.of(this.year, this.month, 1);
     }
 
+    public DateConfig getDateConfigForDate() {
+        return dateConfigForDate;
+    }
+
     @Override
     public String toString() {
         return "AirqualityFile{" +
@@ -44,6 +50,7 @@ public class AirqualityFile {
                 ", month=" + month +
                 ", sensor='" + sensor + '\'' +
                 ", file=" + file +
+                ", dateConfigForDate=" + dateConfigForDate +
                 '}';
     }
 }

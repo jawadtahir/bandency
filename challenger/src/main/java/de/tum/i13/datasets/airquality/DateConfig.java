@@ -44,4 +44,13 @@ public class DateConfig {
     public Timestamp asTimestamp(LocalDateTime dt) {
         return Timestamp.newBuilder().setSeconds(dt.toEpochSecond(ZoneOffset.UTC)).setNanos(dt.getNano()).build();
     }
+
+    @Override
+    public String toString() {
+        return "DateConfig{" +
+                "from=" + from +
+                ", to=" + to +
+                ", dateTimeFormatter=" + dateTimeFormatter +
+                '}';
+    }
 }

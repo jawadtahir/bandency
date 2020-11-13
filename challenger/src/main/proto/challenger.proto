@@ -25,6 +25,7 @@ message Payload {
 message Batch {
   int64 seq_id = 1;
   repeated Payload current = 2;
+  repeated Payload lastyear = 3;
 }
 
 message Benchmark {
