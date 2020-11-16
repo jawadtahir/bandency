@@ -52,15 +52,10 @@ public class AirqualityToBatch implements Enumeration<Batch>, AutoCloseable {
     private Batch readNextBatch() {
 
         Batch.Builder b = Batch.newBuilder();
-        Payload curr = null;
-        Payload last = null;
+        Payload curr = currentParser.nextElement();
+        Payload last = lastParser.nextElement();
         long cnt = 0;
-        while (cnt < this.batchSize && currentParser.hasMoreElements() && currentParser.hasMoreElements()) {
-            if(cnt == 0) {
-                curr = currentParser.nextElement();
-                last = lastParser.nextElement();
-            }
-
+        while (cnt < this.batchSize && (curr != null) && (last != null)) {
             long diff = muFrom(curr) - (muFrom(last) + diffmu);
 
             if(diff > 0) {

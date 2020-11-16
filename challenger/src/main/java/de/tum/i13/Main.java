@@ -10,6 +10,7 @@ import org.tinylog.Logger;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import static de.tum.i13.Util.convertPBTimestamp;
 
@@ -20,6 +21,9 @@ public class Main {
         try {
 
             Logger.info("Challenger Service");
+
+            LocalDateTime ld = LocalDateTime.ofEpochSecond(1580515200L, 0, ZoneOffset.UTC);
+            System.out.println(ld);
 
             /*
             PrepareLocationDataset pld = new PrepareLocationDataset(Path.of("/home/chris/data/challenge"));
@@ -32,14 +36,14 @@ public class Main {
             //PrepareAirQualityDataset paqd = new PrepareAirQualityDataset(afa);
             //AirqualityDataset airqualityDataset = paqd.prepareDataset();
 
-            AirqualityToBatch atb = new AirqualityToBatch(100, LocalDateTime.of(2020, 1, 1, 0, 0, 0), LocalDateTime.of(2020, 2, 1, 0, 0, 0), afa);
+            AirqualityToBatch atb = new AirqualityToBatch(5000, LocalDateTime.of(2020, 1, 1, 0, 0, 0), LocalDateTime.of(2020, 3, 5, 1, 0, 0), afa);
 
             Batch b = null;
             long cnt = 0;
             while(atb.hasMoreElements()) {
                 b = atb.nextElement();
                 ++cnt;
-                if((cnt % 100_000) == 0) {
+                if((cnt % 20_000) == 0) {
                     System.out.println("cnt: " + cnt + " curr_size: " + b.getCurrentCount() + " last: " + b.getLastyearCount());
                     if(b.getCurrentCount() > 0 && b.getLastyearCount() > 0) {
                         Payload firstCurrent = b.getCurrentList().get(0);
@@ -49,6 +53,10 @@ public class Main {
                     }
                 }
             }
+
+            System.out.println("cnt: " + cnt + " curr_size: " + b.getCurrentCount() + " last: " + b.getLastyearCount());
+
+
 
 
 
