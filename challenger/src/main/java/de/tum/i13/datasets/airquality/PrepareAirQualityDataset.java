@@ -4,7 +4,10 @@ import de.tum.i13.bandency.Payload;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+
+import static de.tum.i13.Util.convertPBTimestamp;
 
 public class PrepareAirQualityDataset {
     private final DateTimeFormatter simplepattern;
@@ -32,21 +35,16 @@ public class PrepareAirQualityDataset {
 
 
     public AirqualityDataset prepareDataset() throws IOException {
-
-
-
-        //ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2019, 1, 1, 0, 0, 0), LocalDateTime.of(2019, 1, 2, 0, 0, 0));
-        //ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2015, 1, 1, 0, 0, 0), LocalDateTime.of(2021, 1, 2, 0, 0, 0));
-        //ArrayList<Payload> payloads = readBetween(LocalDateTime.of(2019, 12, 1, 0, 0, 0), LocalDateTime.of(2021, 1, 2, 0, 0, 0));
-        AirQualityParser aqp = new AirQualityParser(LocalDateTime.of(2020, 1, 1, 1, 5, 0), LocalDateTime.of(2020, 1, 1, 1, 6, 0), afa);
+        AirQualityParser aqp = new AirQualityParser(LocalDateTime.of(2020, 2, 1, 0, 0, 0), LocalDateTime.of(2020, 3, 1, 0, 0, 0), afa);
 
         Payload p = null;
         long cnt = 0;
         while(aqp.hasMoreElements()) {
             p = aqp.nextElement();
             ++cnt;
-            if((cnt%1_000_000) == 0) {
-                System.out.println("cnt: " + cnt + " payload: " + p);
+            if((cnt % 10_000_000) == 0) {
+                LocalDateTime ld = convertPBTimestamp(p.getTimestamp());
+                System.out.println("cnt: " + cnt + " timestamp: " + ld + " payload: " + p);
             }
         }
         System.out.println("cnt: " + cnt + " payload: " + p);
