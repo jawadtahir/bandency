@@ -5,11 +5,12 @@ import de.tum.i13.bandency.*;
 import de.tum.i13.datasets.location.LocationDataset;
 import io.grpc.stub.StreamObserver;
 
+import java.util.Random;
+
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     final private LocationDataset ld;
 
     public ChallengerServer(LocationDataset ld) {
-
         this.ld = ld;
     }
 
@@ -21,7 +22,26 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void createNewBenchmark(BenchmarkConfiguration request, StreamObserver<Benchmark> responseObserver) {
-        super.createNewBenchmark(request, responseObserver);
+
+        //Verify the token that it is actually allowed to start a benchmark
+        //TODO: go to database, get groupname
+        String token = request.getToken();
+
+        //Only a certain configuration for the batchsize is allowed, check if this is allowed
+        //TODO: precompute the batchsizes
+        int batchSize = request.getBatchSize();
+
+        //Save this benchmarkname to database
+        //TODO:
+        String benchmarkName = request.getBenchmarkName();
+        long random_id = new Random().nextLong();
+
+        Benchmark bm = Benchmark.newBuilder()
+                .setId(random_id)
+                .build();
+
+        responseObserver.onNext(bm);
+        responseObserver.onCompleted();
     }
 
     @Override
