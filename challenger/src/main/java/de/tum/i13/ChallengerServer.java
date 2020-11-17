@@ -2,16 +2,26 @@ package de.tum.i13;
 
 import com.google.protobuf.Empty;
 import de.tum.i13.bandency.*;
+import de.tum.i13.challenger.BenchmarkState;
+import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.location.LocationDataset;
 import io.grpc.stub.StreamObserver;
 
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Random;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     final private LocationDataset ld;
+    private final AirqualityDataset ad;
 
-    public ChallengerServer(LocationDataset ld) {
+    final private HashMap<Long, BenchmarkState> benchmark;
+
+    public ChallengerServer(LocationDataset ld, AirqualityDataset ad) {
         this.ld = ld;
+        this.ad = ad;
+        benchmark = new HashMap<>();
     }
 
     @Override
@@ -35,6 +45,11 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         //TODO:
         String benchmarkName = request.getBenchmarkName();
         long random_id = new Random().nextLong();
+        BenchmarkState bms = new BenchmarkState();
+        bms.setToken(token);
+        bms.setBatchSize(batchSize);
+
+        this.benchmark.put(random_id, bms);
 
         Benchmark bm = Benchmark.newBuilder()
                 .setId(random_id)
@@ -46,27 +61,82 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void initializeLatencyMeasuring(Benchmark request, StreamObserver<Ping> responseObserver) {
-        super.initializeLatencyMeasuring(request, responseObserver);
+
+        if(!this.benchmark.containsKey(request.getId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        long random_id = new Random().nextLong();
+        Ping ping = Ping.newBuilder().setId(random_id).build();
+
+        BenchmarkState benchmarkState = this.benchmark.get(request.getId());
+        benchmarkState.addLatencyTimeStamp(random_id, System.nanoTime());
+
+        responseObserver.onNext(ping);
+        responseObserver.onCompleted();
     }
 
     @Override
     public void measure(Ping request, StreamObserver<Ping> responseObserver) {
-        super.measure(request, responseObserver);
+        if(!this.benchmark.containsKey(request.getId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        BenchmarkState benchmarkState = this.benchmark.get(request.getId());
+
+        long correlation_id = request.getId();
+        benchmarkState.correlatePing(correlation_id, System.nanoTime());
+
+        long random_id = new Random().nextLong();
+        Ping ping = Ping.newBuilder().setId(random_id).build();
+        benchmarkState.addLatencyTimeStamp(random_id, System.nanoTime());
+
+        responseObserver.onNext(ping);
+        responseObserver.onCompleted();
     }
 
     @Override
     public void endMeasurement(Ping request, StreamObserver<Empty> responseObserver) {
-        super.endMeasurement(request, responseObserver);
+        if(!this.benchmark.containsKey(request.getId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        BenchmarkState benchmarkState = this.benchmark.get(request.getId());
+
+        long correlation_id = request.getId();
+        benchmarkState.correlatePing(correlation_id, System.nanoTime());
+        benchmarkState.calcAverageTransportLatency();
+
+        responseObserver.onCompleted();
     }
 
     @Override
     public void startBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
-        super.startBenchmark(request, responseObserver);
+        if(!this.benchmark.containsKey(request.getId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        BenchmarkState benchmarkState = this.benchmark.get(request.getId());
+        benchmarkState.startBenchmark(System.nanoTime());
+        benchmarkState.setDatasource(ad.newDataSource(benchmarkState.getBatchSize()));
+
+        responseObserver.onCompleted();
     }
 
     @Override
-    public void nextMessage(Benchmark request, StreamObserver<Payload> responseObserver) {
-        super.nextMessage(request, responseObserver);
+    public void nextMessage(Benchmark request, StreamObserver<Batch> responseObserver) {
+        if(!this.benchmark.containsKey(request.getId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        Batch batch = this.benchmark.get(request.getId()).getDatasource().nextElement();
+        responseObserver.onNext(batch);
+        responseObserver.onCompleted();
     }
 
     @Override

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Enumeration;
 
-public class AirqualityToBatch implements Enumeration<Batch>, AutoCloseable {
+public class AirqualityToBatch implements AirQualityDataSource {
 
     private final long batchSize;
     private final LocalDateTime from;

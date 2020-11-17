@@ -2,10 +2,11 @@ package de.tum.i13;
 
 import de.tum.i13.bandency.Batch;
 import de.tum.i13.bandency.Payload;
-import de.tum.i13.datasets.airquality.AirqualityDataset;
-import de.tum.i13.datasets.airquality.AirqualityFileAccess;
-import de.tum.i13.datasets.airquality.AirqualityToBatch;
-import de.tum.i13.datasets.airquality.PrepareAirQualityDataset;
+import de.tum.i13.datasets.airquality.*;
+import de.tum.i13.datasets.location.LocationDataset;
+import de.tum.i13.datasets.location.PrepareLocationDataset;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;
@@ -21,23 +22,18 @@ public class Main {
         try {
 
             Logger.info("Challenger Service");
-
-            LocalDateTime ld = LocalDateTime.ofEpochSecond(1580515200L, 0, ZoneOffset.UTC);
-            System.out.println(ld);
-
-            /*
             PrepareLocationDataset pld = new PrepareLocationDataset(Path.of("/home/chris/data/challenge"));
-            Logger.info("Loading Locationdata");
             LocationDataset ld = pld.loadData();
-             */
 
-            Logger.info("Loading AirQualityDataset");
             AirqualityFileAccess afa = new AirqualityFileAccess(Path.of("/home/chris/data/luftdaten"));
             //PrepareAirQualityDataset paqd = new PrepareAirQualityDataset(afa);
             //AirqualityDataset airqualityDataset = paqd.prepareDataset();
 
-            AirqualityToBatch atb = new AirqualityToBatch(5000, LocalDateTime.of(2020, 1, 1, 0, 0, 0), LocalDateTime.of(2020, 3, 5, 1, 0, 0), afa);
+            AirqualityDataset ad = new AirqualityDataset(afa, AccessType.FromDisk);
 
+            //AirqualityToBatch atb = new AirqualityToBatch(5000, LocalDateTime.of(2020, 1, 1, 0, 0, 0), LocalDateTime.of(2020, 3, 5, 1, 0, 0), afa);
+
+            /*
             Batch b = null;
             long cnt = 0;
             while(atb.hasMoreElements()) {
@@ -55,16 +51,16 @@ public class Main {
             }
 
             System.out.println("cnt: " + cnt + " curr_size: " + b.getCurrentCount() + " last: " + b.getLastyearCount());
-
+            */
 
 
 
 
             //AirqualityToBatch atb = new AirqualityToBatch()
 
-            /*
+
             Logger.info("Initializing Challenger Service");
-            ChallengerServer cs = new ChallengerServer(ld);
+            ChallengerServer cs = new ChallengerServer(ld, ad);
 
 
             Logger.info("Initializing Service");
@@ -76,7 +72,7 @@ public class Main {
             server.start();
             Logger.info("Serving");
             server.awaitTermination();
-             */
+
         } catch (Exception ex) {
             Logger.error(ex);
         }

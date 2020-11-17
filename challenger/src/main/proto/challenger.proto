@@ -83,7 +83,7 @@ service Challenger {
 
   rpc StartBenchmark(Benchmark) returns(google.protobuf.Empty);
 
-  rpc nextMessage(Benchmark) returns (Payload);
+  rpc nextMessage(Benchmark) returns (Batch);
   rpc processed(Result) returns(google.protobuf.Empty);
 
   rpc EndBenchmark(Benchmark) returns(google.protobuf.Empty);
