@@ -134,14 +134,22 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             return;
         }
 
-        Batch batch = this.benchmark.get(request.getId()).getDatasource().nextElement();
+        Batch batch = this.benchmark.get(request.getId()).getNextBatch();
         responseObserver.onNext(batch);
         responseObserver.onCompleted();
     }
 
     @Override
     public void processed(Result request, StreamObserver<Empty> responseObserver) {
-        super.processed(request, responseObserver);
+        long nanoTime = System.nanoTime();
+
+        if(!this.benchmark.containsKey(request.getBenchmarkId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        this.benchmark.get(request.getBenchmarkId()).processed(request, nanoTime);
+        responseObserver.onCompleted();
     }
 
     @Override

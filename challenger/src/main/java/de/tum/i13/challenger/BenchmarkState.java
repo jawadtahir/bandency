@@ -1,5 +1,7 @@
 package de.tum.i13.challenger;
 
+import de.tum.i13.bandency.Batch;
+import de.tum.i13.bandency.Result;
 import de.tum.i13.datasets.airquality.AirQualityDataSource;
 
 import java.util.ArrayList;
@@ -8,8 +10,12 @@ import java.util.HashMap;
 public class BenchmarkState {
     private String token;
     private int batchSize;
-    private HashMap<Long, Long> lm;
+    private HashMap<Long, Long> pingCorrelation;
     private ArrayList<Long> measurements;
+
+    private HashMap<Long, Long> requestCorrelation;
+    private ArrayList<Long> requestMeasurements;
+
     private double averageLatency;
     private long startNanoTime;
     private AirQualityDataSource datasource;
@@ -17,7 +23,7 @@ public class BenchmarkState {
     public BenchmarkState() {
         this.averageLatency = 0.0;
         this.batchSize = -1;
-        lm = new HashMap<>();
+        pingCorrelation = new HashMap<>();
         this.measurements = new ArrayList<>();
 
         averageLatency = 0.0;
@@ -42,12 +48,13 @@ public class BenchmarkState {
     }
 
     public void addLatencyTimeStamp(long random_id, long nanoTime) {
-        lm.put(random_id, nanoTime);
+        pingCorrelation.put(random_id, nanoTime);
     }
 
     public void correlatePing(long correlation_id, long nanoTime) {
-        if(lm.containsKey(correlation_id)) {
-            Long sentTime = lm.get(correlation_id);
+        if(pingCorrelation.containsKey(correlation_id)) {
+            Long sentTime = pingCorrelation.get(correlation_id);
+            pingCorrelation.remove(correlation_id);
             long duration = nanoTime - sentTime;
             this.measurements.add(duration);
         }
@@ -69,5 +76,20 @@ public class BenchmarkState {
 
     public AirQualityDataSource getDatasource() {
         return this.datasource;
+    }
+
+    public Batch getNextBatch() {
+        Batch batch = this.datasource.nextElement();
+        this.requestCorrelation.put(batch.getSeqId(), System.nanoTime());
+        return batch;
+    }
+
+    public void processed(Result request, long nanoTime) {
+        if(pingCorrelation.containsKey(request.getPayloadSeqId())) {
+            Long sentTime = pingCorrelation.get(request.getPayloadSeqId());
+            pingCorrelation.remove(request.getPayloadSeqId());
+            long duration = nanoTime - sentTime;
+            this.requestMeasurements.add(duration);
+        }
     }
 }
