@@ -4,7 +4,7 @@ import logging
 import grpc
 from google.protobuf import empty_pb2
 
-import challenger_pb2
+import challenger_pb2 as ch
 import challenger_pb2_grpc
 
 
@@ -13,8 +13,9 @@ class QueryOne:
         self.challengerstub = challengerstub
 
     def run(self):
-        locations = self.challengerstub.GetLocations(empty_pb2.Empty())
-        logging.info('QueryOne: %s', len(locations.locations))
+        loc = self.challengerstub.GetLocations(empty_pb2.Empty())
+        print('got location data')
+        print('QueryOne: %s' % len(loc.locations))
 
 
 def main():
@@ -27,5 +28,6 @@ def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig()
+    #logging.basicConfig()
+    print('get')
     main()
