@@ -33,7 +33,7 @@ class RecentChanges(db.Model):
 
 
 async def get_recent_changes():
-    return await RecentChanges.query.gino.all()
+    return await RecentChanges.query.order_by(RecentChanges.timestamp).gino.all()
 
 
 class ChallengeGroup(db.Model):
