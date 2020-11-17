@@ -9,6 +9,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import org.tinylog.Logger;
 
+import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -21,11 +22,18 @@ public class Main {
 
         try {
 
-            Logger.info("Challenger Service");
-            PrepareLocationDataset pld = new PrepareLocationDataset(Path.of("/home/chris/data/challenge"));
+            String dataset = "/home/chris/data/challenge";
+            String hostName = InetAddress.getLocalHost().getHostName();
+
+            if(hostName.equalsIgnoreCase("vmjacobsen71")) {
+                dataset = "/var/www/html/datasets";
+            }
+
+            Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
+            PrepareLocationDataset pld = new PrepareLocationDataset(Path.of(dataset));
             LocationDataset ld = pld.loadData();
 
-            AirqualityFileAccess afa = new AirqualityFileAccess(Path.of("/home/chris/data/luftdaten"));
+            AirqualityFileAccess afa = new AirqualityFileAccess(Path.of(dataset));
             //PrepareAirQualityDataset paqd = new PrepareAirQualityDataset(afa);
             //AirqualityDataset airqualityDataset = paqd.prepareDataset();
 
