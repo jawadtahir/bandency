@@ -72,6 +72,17 @@ async def profile():
     return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
 
 
+@app.route('/rawdata/')
+@login_required
+async def rawdata():
+    group = await get_group_information(current_user.auth_id)
+    d = os.environ["DATASET_DIR"]
+    files = os.listdir(d)
+    filesandsize = map(lambda f: [f, (os.path.getsize(os.path.join(d, f))/(1024*1024))], files)
+
+    return await render_template('rawdata.html', name="Rawdata", group=group, files=filesandsize, menu=helper.menu(rawdata=True))
+
+
 @app.route('/recentchanges/')
 async def recentchanges():
     changes = await get_recent_changes()
@@ -130,7 +141,7 @@ def prepare_interactive_get_event_loop():
     return asyncio.get_event_loop()
 
 
-async def main(debug, loop):
+async def mainloop(debug, loop):
     print("Run Debug Version of webserver")
     tasks = []
     monitor_task = worker.process_server_monitor_metrics(loop, shutdown_event, os.environ['RABBIT_CONNECTION'])
@@ -158,12 +169,16 @@ async def main(debug, loop):
         pass
 
 
-if __name__ == "__main__":
+def main():
     loop = asyncio.get_event_loop()
 
     loop.add_signal_handler(SIGTERM, signal_handler)
     loop.add_signal_handler(SIGINT, signal_handler)
 
-    #loop.create_task(raise_shutdown(shutdown_event.wait, loop, "general"))
+    # loop.create_task(raise_shutdown(shutdown_event.wait, loop, "general"))
 
-    loop.run_until_complete(main(True, loop))
+    loop.run_until_complete(mainloop(True, loop))
+
+
+if __name__ == "__main__":
+    main()
