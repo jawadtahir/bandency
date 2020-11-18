@@ -72,7 +72,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
 
         long random_id = new Random().nextLong();
-        Ping ping = Ping.newBuilder().setId(random_id).build();
+        Ping ping = Ping.newBuilder()
+                .setBenchmarkId(request.getId())
+                .setCorrelationId(random_id)
+                .build();
 
         BenchmarkState benchmarkState = this.benchmark.get(request.getId());
         benchmarkState.addLatencyTimeStamp(random_id, System.nanoTime());
@@ -85,18 +88,21 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     public void measure(Ping request, StreamObserver<Ping> responseObserver) {
         Logger.debug("measure");
 
-        if(!this.benchmark.containsKey(request.getId())) {
+        if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
         }
 
-        BenchmarkState benchmarkState = this.benchmark.get(request.getId());
+        BenchmarkState benchmarkState = this.benchmark.get(request.getBenchmarkId());
 
-        long correlation_id = request.getId();
+        long correlation_id = request.getCorrelationId();
         benchmarkState.correlatePing(correlation_id, System.nanoTime());
 
         long random_id = new Random().nextLong();
-        Ping ping = Ping.newBuilder().setId(random_id).build();
+        Ping ping = Ping.newBuilder()
+                .setCorrelationId(random_id)
+                .setBenchmarkId(request.getBenchmarkId())
+                .build();
         benchmarkState.addLatencyTimeStamp(random_id, System.nanoTime());
 
         responseObserver.onNext(ping);
@@ -107,14 +113,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     public void endMeasurement(Ping request, StreamObserver<Empty> responseObserver) {
         Logger.debug("endMeasurement");
 
-        if(!this.benchmark.containsKey(request.getId())) {
+        if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
         }
 
-        BenchmarkState benchmarkState = this.benchmark.get(request.getId());
+        BenchmarkState benchmarkState = this.benchmark.get(request.getBenchmarkId());
 
-        long correlation_id = request.getId();
+        long correlation_id = request.getCorrelationId();
         benchmarkState.correlatePing(correlation_id, System.nanoTime());
         benchmarkState.calcAverageTransportLatency();
 
