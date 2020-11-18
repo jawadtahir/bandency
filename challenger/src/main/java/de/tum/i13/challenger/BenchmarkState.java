@@ -60,10 +60,12 @@ public class BenchmarkState {
         }
     }
 
-    public void calcAverageTransportLatency() {
+    public double calcAverageTransportLatency() {
         if(this.measurements.size() > 0) {
             this.averageLatency = this.measurements.stream().mapToLong(a -> a).average().getAsDouble();
         }
+
+        return this.averageLatency;
     }
 
     public void startBenchmark(long startNanoTime) {

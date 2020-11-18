@@ -122,8 +122,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         long correlation_id = request.getCorrelationId();
         benchmarkState.correlatePing(correlation_id, System.nanoTime());
-        benchmarkState.calcAverageTransportLatency();
+        double v = benchmarkState.calcAverageTransportLatency();
+        Logger.debug("average latency: " + v);
 
+        responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
     }
 
@@ -140,6 +142,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         benchmarkState.startBenchmark(System.nanoTime());
         benchmarkState.setDatasource(ad.newDataSource(benchmarkState.getBatchSize()));
 
+        responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
     }
 
@@ -169,6 +172,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
 
         this.benchmark.get(request.getBenchmarkId()).processed(request, nanoTime);
+
+        responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
     }
 
@@ -177,5 +182,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         Logger.debug("endBenchmark");
 
         super.endBenchmark(request, responseObserver);
+
+        responseObserver.onNext(Empty.newBuilder().build());
+        responseObserver.onCompleted();
     }
 }
