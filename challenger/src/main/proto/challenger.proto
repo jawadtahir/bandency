@@ -70,18 +70,18 @@ message Locations{
 }
 
 service Challenger {
-  rpc GetLocations(google.protobuf.Empty) returns (Locations);
+  rpc getLocations(google.protobuf.Empty) returns (Locations);
 
-  rpc CreateNewBenchmark(BenchmarkConfiguration) returns (Benchmark);
+  rpc createNewBenchmark(BenchmarkConfiguration) returns (Benchmark);
 
-  rpc InitializeLatencyMeasuring(Benchmark) returns (Ping);
-  rpc Measure(Ping) returns (Ping);
-  rpc EndMeasurement(Ping) returns (google.protobuf.Empty);
+  rpc initializeLatencyMeasuring(Benchmark) returns (Ping);
+  rpc measure(Ping) returns (Ping);
+  rpc endMeasurement(Ping) returns (google.protobuf.Empty);
 
-  rpc StartBenchmark(Benchmark) returns(google.protobuf.Empty);
+  rpc startBenchmark(Benchmark) returns(google.protobuf.Empty);
 
   rpc nextMessage(Benchmark) returns (Batch);
   rpc processed(Result) returns(google.protobuf.Empty);
 
-  rpc EndBenchmark(Benchmark) returns(google.protobuf.Empty);
+  rpc endBenchmark(Benchmark) returns(google.protobuf.Empty);
 }
