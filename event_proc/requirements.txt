@@ -1,0 +1,7 @@
+pymongo
+pulsar-client
+pandas
+numpy
+matplotlib
+geopy
+shapely

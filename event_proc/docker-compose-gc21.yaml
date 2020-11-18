@@ -1,0 +1,168 @@
+version: '3.8'
+networks:
+  zookeeper:
+volumes:
+  zconf:
+  bkconf:
+
+
+services:
+  zk1:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose/data/zk1:/data/zookeeper"
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/zconf"
+    environment:
+      PULSAR_ZK_CONF: /zconf/zoo.cfg
+    networks:
+      zookeeper:
+    image: apachepulsar/pulsar
+    command: bin/pulsar zookeeper
+    ports:
+      - "52923:2181"
+
+
+  zk2:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose/data/zk2:/data/zookeeper"
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/zconf"
+    environment:
+      PULSAR_ZK_CONF: /zconf/zoo.cfg
+    networks:
+      zookeeper:
+    image: apachepulsar/pulsar
+    command: bin/pulsar zookeeper
+#    ports:
+#      - "52924:2181"
+
+
+  zk3:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose/data/zk3:/data/zookeeper"
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/zconf"
+    environment:
+      PULSAR_ZK_CONF: /zconf/zoo.cfg
+    networks:
+      zookeeper:
+    image: apachepulsar/pulsar
+    command: bin/pulsar zookeeper
+#    ports:
+#      - "52925:2181"
+
+
+#  initlizer:
+#    networks:
+#      zookeeper:
+#    image: apachepulsar/pulsar
+#    depends_on:
+#      - zk1
+#      - zk2
+#      - zk3
+#
+#    command: >
+#      sh -c "sleep 2s && bin/pulsar initialize-cluster-metadata \
+#                        --cluster debs-gc21 \
+#                        --zookeeper zk1:2181 \
+#                        --configuration-store zk1:2181 \
+#                        --web-service-url http://pulsar:8080 \
+#                        --broker-service-url pulsar://pulsar:6650"
+
+
+  bk1:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose/data/bk1:/data/bookkeeper"
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/bkconf"
+    environment:
+      BOOKIE_CONF: /bkconf/bookkeeper.conf
+    networks:
+      zookeeper:
+    image: apachepulsar/pulsar
+    command: >
+      sh -c "sleep 2s && bin/pulsar initialize-cluster-metadata \
+                        --cluster debs-gc21 \
+                        --zookeeper zk1:2181 \
+                        --configuration-store zk1:2181 \
+                        --web-service-url http://broker1:8080 \
+                        --broker-service-url pulsar://broker1:6650 && \ 
+                        bin/bookkeeper bookie"
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+#    ports:
+#      - "52924:3181"
+
+
+  bk2:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose/data/bk2:/data/bookkeeper"
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/bkconf"
+    environment:
+      BOOKIE_CONF: /bkconf/bookkeeper.conf
+    networks:
+      zookeeper:
+    image: apachepulsar/pulsar
+    command: >
+      sh -c "bin/bookkeeper bookie"
+    depends_on:
+      - bk1
+
+
+  bk3:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose/data/bk3:/data/bookkeeper"
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/bkconf"
+    environment:
+      BOOKIE_CONF: /bkconf/bookkeeper.conf
+    networks:
+      zookeeper:
+    image: apachepulsar/pulsar
+    command: >
+      sh -c "bin/bookkeeper bookie"
+    depends_on:
+      - bk1
+
+
+  broker1:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/bconf"
+    environment:
+      PULSAR_BROKER_CONF: /bconf/broker.conf
+    networks:
+      zookeeper:
+#    hostname: broker1
+    image: apachepulsar/pulsar
+    command: bin/pulsar broker
+    depends_on:
+      - bk1
+      - bk2
+      - bk3
+#    ports:
+#      - "6650:6650"
+
+
+  consumer:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/pulsar/conf"
+#    environment:
+#      PULSAR_BROKER_CONF: /bconf/broker.conf
+    networks:
+      zookeeper:
+#    hostname: consumer
+    image: apachepulsar/pulsar
+    command: >
+      sh -c "sleep 15s && bin/pulsar-client consume -s testSub testTopic"
+    depends_on:
+      - broker1
+
+  producer:
+    volumes:
+      - "/home/jawad/Downloads/apache-pulsar-2.6.0/compose:/pulsar/conf"
+#    environment:
+#      PULSAR_BROKER_CONF: /bconf/broker.conf
+    networks:
+      zookeeper:
+    image: apachepulsar/pulsar
+    command: >
+      sh -c "sleep 15s && bin/pulsar-client produce -m "testMessage" testTopic"
+    depends_on:
+      - consumer
