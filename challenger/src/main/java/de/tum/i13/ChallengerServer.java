@@ -6,6 +6,7 @@ import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.location.LocationDataset;
 import io.grpc.stub.StreamObserver;
+import org.tinylog.Logger;
 
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -26,12 +27,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void getLocations(Empty request, StreamObserver<Locations> responseObserver) {
+        Logger.debug("getLocations");
         responseObserver.onNext(ld.getAllLocations());
         responseObserver.onCompleted();
     }
 
     @Override
     public void createNewBenchmark(BenchmarkConfiguration request, StreamObserver<Benchmark> responseObserver) {
+        Logger.debug("createNewBenchmark");
 
         //Verify the token that it is actually allowed to start a benchmark
         //TODO: go to database, get groupname
@@ -61,6 +64,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void initializeLatencyMeasuring(Benchmark request, StreamObserver<Ping> responseObserver) {
+        Logger.debug("initializeLatencyMeasuring");
 
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
@@ -79,6 +83,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void measure(Ping request, StreamObserver<Ping> responseObserver) {
+        Logger.debug("measure");
+
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -99,6 +105,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void endMeasurement(Ping request, StreamObserver<Empty> responseObserver) {
+        Logger.debug("endMeasurement");
+
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -115,6 +123,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void startBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
+        Logger.debug("startBenchmark");
+
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -129,6 +139,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void nextMessage(Benchmark request, StreamObserver<Batch> responseObserver) {
+        Logger.debug("nextMessage");
+
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -141,6 +153,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void processed(Result request, StreamObserver<Empty> responseObserver) {
+        Logger.debug("processed");
+
         long nanoTime = System.nanoTime();
 
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
@@ -154,6 +168,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void endBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
+        Logger.debug("endBenchmark");
+
         super.endBenchmark(request, responseObserver);
     }
 }
