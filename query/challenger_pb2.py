@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\023de.tum.i13.bandencyB\017ChallengerProtoP\001',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x89\x01\n\x07Payload\x12\x12\n\nrandomData\x18\x01 \x01(\x05\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08latitude\x18\x03 \x01(\x02\x12\x11\n\tlongitude\x18\x04 \x01(\x02\x12\n\n\x02p1\x18\x05 \x01(\x02\x12\n\n\x02p2\x18\x06 \x01(\x02\"d\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12$\n\x07\x63urrent\x18\x02 \x03(\x0b\x32\x13.Challenger.Payload\x12%\n\x08lastyear\x18\x03 \x03(\x0b\x32\x13.Challenger.Payload\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\"#\n\rResultPayload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"a\n\x06Result\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12)\n\x06result\x18\x03 \x01(\x0b\x32\x19.Challenger.ResultPayload\"\x12\n\x04Ping\x12\n\n\x02id\x18\x01 \x01(\x03\"\x12\n\x04Pong\x12\n\n\x02id\x18\x01 \x01(\x03\"S\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x16\n\x0e\x62\x65nchmark_name\x18\x03 \x01(\t\",\n\x05Point\x12\x11\n\tlongitude\x18\x01 \x01(\x01\x12\x10\n\x08latitude\x18\x02 \x01(\x01\"n\n\x08Location\x12\x0f\n\x07zipcode\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x0b\n\x03qkm\x18\x03 \x01(\x01\x12\x12\n\npopulation\x18\x04 \x01(\x05\x12\"\n\x07polygon\x18\x05 \x03(\x0b\x32\x11.Challenger.Point\"4\n\tLocations\x12\'\n\tlocations\x18\x01 \x03(\x0b\x32\x14.Challenger.Location2\xc2\x04\n\nChallenger\x12=\n\x0cGetLocations\x12\x16.google.protobuf.Empty\x1a\x15.Challenger.Locations\x12O\n\x12\x43reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12\x45\n\x1aInitializeLatencyMeasuring\x12\x15.Challenger.Benchmark\x1a\x10.Challenger.Ping\x12-\n\x07Measure\x12\x10.Challenger.Ping\x1a\x10.Challenger.Ping\x12:\n\x0e\x45ndMeasurement\x12\x10.Challenger.Ping\x1a\x16.google.protobuf.Empty\x12?\n\x0eStartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x39\n\x0bnextMessage\x12\x15.Challenger.Benchmark\x1a\x13.Challenger.Payload\x12\x37\n\tprocessed\x12\x12.Challenger.Result\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x45ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB(\n\x13\x64\x65.tum.i13.bandencyB\x0f\x43hallengerProtoP\x01\x62\x06proto3'
+  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x89\x01\n\x07Payload\x12\x12\n\nrandomData\x18\x01 \x01(\x05\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08latitude\x18\x03 \x01(\x02\x12\x11\n\tlongitude\x18\x04 \x01(\x02\x12\n\n\x02p1\x18\x05 \x01(\x02\x12\n\n\x02p2\x18\x06 \x01(\x02\"d\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12$\n\x07\x63urrent\x18\x02 \x03(\x0b\x32\x13.Challenger.Payload\x12%\n\x08lastyear\x18\x03 \x03(\x0b\x32\x13.Challenger.Payload\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\"#\n\rResultPayload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"a\n\x06Result\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12)\n\x06result\x18\x03 \x01(\x0b\x32\x19.Challenger.ResultPayload\"4\n\x04Ping\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\x03\"S\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x16\n\x0e\x62\x65nchmark_name\x18\x03 \x01(\t\",\n\x05Point\x12\x11\n\tlongitude\x18\x01 \x01(\x01\x12\x10\n\x08latitude\x18\x02 \x01(\x01\"n\n\x08Location\x12\x0f\n\x07zipcode\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x0b\n\x03qkm\x18\x03 \x01(\x01\x12\x12\n\npopulation\x18\x04 \x01(\x05\x12\"\n\x07polygon\x18\x05 \x03(\x0b\x32\x11.Challenger.Point\"4\n\tLocations\x12\'\n\tlocations\x18\x01 \x03(\x0b\x32\x14.Challenger.Location2\xc0\x04\n\nChallenger\x12=\n\x0cgetLocations\x12\x16.google.protobuf.Empty\x1a\x15.Challenger.Locations\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12\x45\n\x1ainitializeLatencyMeasuring\x12\x15.Challenger.Benchmark\x1a\x10.Challenger.Ping\x12-\n\x07measure\x12\x10.Challenger.Ping\x1a\x10.Challenger.Ping\x12:\n\x0e\x65ndMeasurement\x12\x10.Challenger.Ping\x1a\x16.google.protobuf.Empty\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x37\n\x0bnextMessage\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x37\n\tprocessed\x12\x12.Challenger.Result\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB(\n\x13\x64\x65.tum.i13.bandencyB\x0f\x43hallengerProtoP\x01\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -260,8 +260,15 @@ _PING = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='Challenger.Ping.id', index=0,
+      name='benchmark_id', full_name='Challenger.Ping.benchmark_id', index=0,
       number=1, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='correlation_id', full_name='Challenger.Ping.correlation_id', index=1,
+      number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -279,39 +286,7 @@ _PING = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=497,
-  serialized_end=515,
-)
-
-
-_PONG = _descriptor.Descriptor(
-  name='Pong',
-  full_name='Challenger.Pong',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='Challenger.Pong.id', index=0,
-      number=1, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=517,
-  serialized_end=535,
+  serialized_end=549,
 )
 
 
@@ -356,8 +331,8 @@ _BENCHMARKCONFIGURATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=537,
-  serialized_end=620,
+  serialized_start=551,
+  serialized_end=634,
 )
 
 
@@ -395,8 +370,8 @@ _POINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=622,
-  serialized_end=666,
+  serialized_start=636,
+  serialized_end=680,
 )
 
 
@@ -455,8 +430,8 @@ _LOCATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=668,
-  serialized_end=778,
+  serialized_start=682,
+  serialized_end=792,
 )
 
 
@@ -487,8 +462,8 @@ _LOCATIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=780,
-  serialized_end=832,
+  serialized_start=794,
+  serialized_end=846,
 )
 
 _PAYLOAD.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
@@ -503,7 +478,6 @@ DESCRIPTOR.message_types_by_name['Benchmark'] = _BENCHMARK
 DESCRIPTOR.message_types_by_name['ResultPayload'] = _RESULTPAYLOAD
 DESCRIPTOR.message_types_by_name['Result'] = _RESULT
 DESCRIPTOR.message_types_by_name['Ping'] = _PING
-DESCRIPTOR.message_types_by_name['Pong'] = _PONG
 DESCRIPTOR.message_types_by_name['BenchmarkConfiguration'] = _BENCHMARKCONFIGURATION
 DESCRIPTOR.message_types_by_name['Point'] = _POINT
 DESCRIPTOR.message_types_by_name['Location'] = _LOCATION
@@ -552,13 +526,6 @@ Ping = _reflection.GeneratedProtocolMessageType('Ping', (_message.Message,), {
   })
 _sym_db.RegisterMessage(Ping)
 
-Pong = _reflection.GeneratedProtocolMessageType('Pong', (_message.Message,), {
-  'DESCRIPTOR' : _PONG,
-  '__module__' : 'challenger_pb2'
-  # @@protoc_insertion_point(class_scope:Challenger.Pong)
-  })
-_sym_db.RegisterMessage(Pong)
-
 BenchmarkConfiguration = _reflection.GeneratedProtocolMessageType('BenchmarkConfiguration', (_message.Message,), {
   'DESCRIPTOR' : _BENCHMARKCONFIGURATION,
   '__module__' : 'challenger_pb2'
@@ -597,12 +564,12 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=835,
-  serialized_end=1413,
+  serialized_start=849,
+  serialized_end=1425,
   methods=[
   _descriptor.MethodDescriptor(
-    name='GetLocations',
-    full_name='Challenger.Challenger.GetLocations',
+    name='getLocations',
+    full_name='Challenger.Challenger.getLocations',
     index=0,
     containing_service=None,
     input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
@@ -611,8 +578,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
-    name='CreateNewBenchmark',
-    full_name='Challenger.Challenger.CreateNewBenchmark',
+    name='createNewBenchmark',
+    full_name='Challenger.Challenger.createNewBenchmark',
     index=1,
     containing_service=None,
     input_type=_BENCHMARKCONFIGURATION,
@@ -621,8 +588,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
-    name='InitializeLatencyMeasuring',
-    full_name='Challenger.Challenger.InitializeLatencyMeasuring',
+    name='initializeLatencyMeasuring',
+    full_name='Challenger.Challenger.initializeLatencyMeasuring',
     index=2,
     containing_service=None,
     input_type=_BENCHMARK,
@@ -631,8 +598,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
-    name='Measure',
-    full_name='Challenger.Challenger.Measure',
+    name='measure',
+    full_name='Challenger.Challenger.measure',
     index=3,
     containing_service=None,
     input_type=_PING,
@@ -641,8 +608,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
-    name='EndMeasurement',
-    full_name='Challenger.Challenger.EndMeasurement',
+    name='endMeasurement',
+    full_name='Challenger.Challenger.endMeasurement',
     index=4,
     containing_service=None,
     input_type=_PING,
@@ -651,8 +618,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
-    name='StartBenchmark',
-    full_name='Challenger.Challenger.StartBenchmark',
+    name='startBenchmark',
+    full_name='Challenger.Challenger.startBenchmark',
     index=5,
     containing_service=None,
     input_type=_BENCHMARK,
@@ -666,7 +633,7 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
     index=6,
     containing_service=None,
     input_type=_BENCHMARK,
-    output_type=_PAYLOAD,
+    output_type=_BATCH,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),
@@ -681,8 +648,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
-    name='EndBenchmark',
-    full_name='Challenger.Challenger.EndBenchmark',
+    name='endBenchmark',
+    full_name='Challenger.Challenger.endBenchmark',
     index=8,
     containing_service=None,
     input_type=_BENCHMARK,

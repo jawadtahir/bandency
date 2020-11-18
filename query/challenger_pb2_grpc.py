@@ -15,48 +15,48 @@ class ChallengerStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.GetLocations = channel.unary_unary(
-                '/Challenger.Challenger/GetLocations',
+        self.getLocations = channel.unary_unary(
+                '/Challenger.Challenger/getLocations',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=challenger__pb2.Locations.FromString,
                 )
-        self.CreateNewBenchmark = channel.unary_unary(
-                '/Challenger.Challenger/CreateNewBenchmark',
+        self.createNewBenchmark = channel.unary_unary(
+                '/Challenger.Challenger/createNewBenchmark',
                 request_serializer=challenger__pb2.BenchmarkConfiguration.SerializeToString,
                 response_deserializer=challenger__pb2.Benchmark.FromString,
                 )
-        self.InitializeLatencyMeasuring = channel.unary_unary(
-                '/Challenger.Challenger/InitializeLatencyMeasuring',
+        self.initializeLatencyMeasuring = channel.unary_unary(
+                '/Challenger.Challenger/initializeLatencyMeasuring',
                 request_serializer=challenger__pb2.Benchmark.SerializeToString,
                 response_deserializer=challenger__pb2.Ping.FromString,
                 )
-        self.Measure = channel.unary_unary(
-                '/Challenger.Challenger/Measure',
+        self.measure = channel.unary_unary(
+                '/Challenger.Challenger/measure',
                 request_serializer=challenger__pb2.Ping.SerializeToString,
                 response_deserializer=challenger__pb2.Ping.FromString,
                 )
-        self.EndMeasurement = channel.unary_unary(
-                '/Challenger.Challenger/EndMeasurement',
+        self.endMeasurement = channel.unary_unary(
+                '/Challenger.Challenger/endMeasurement',
                 request_serializer=challenger__pb2.Ping.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.StartBenchmark = channel.unary_unary(
-                '/Challenger.Challenger/StartBenchmark',
+        self.startBenchmark = channel.unary_unary(
+                '/Challenger.Challenger/startBenchmark',
                 request_serializer=challenger__pb2.Benchmark.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.nextMessage = channel.unary_unary(
                 '/Challenger.Challenger/nextMessage',
                 request_serializer=challenger__pb2.Benchmark.SerializeToString,
-                response_deserializer=challenger__pb2.Payload.FromString,
+                response_deserializer=challenger__pb2.Batch.FromString,
                 )
         self.processed = channel.unary_unary(
                 '/Challenger.Challenger/processed',
                 request_serializer=challenger__pb2.Result.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.EndBenchmark = channel.unary_unary(
-                '/Challenger.Challenger/EndBenchmark',
+        self.endBenchmark = channel.unary_unary(
+                '/Challenger.Challenger/endBenchmark',
                 request_serializer=challenger__pb2.Benchmark.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
@@ -65,37 +65,37 @@ class ChallengerStub(object):
 class ChallengerServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def GetLocations(self, request, context):
+    def getLocations(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CreateNewBenchmark(self, request, context):
+    def createNewBenchmark(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def InitializeLatencyMeasuring(self, request, context):
+    def initializeLatencyMeasuring(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Measure(self, request, context):
+    def measure(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def EndMeasurement(self, request, context):
+    def endMeasurement(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def StartBenchmark(self, request, context):
+    def startBenchmark(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -113,7 +113,7 @@ class ChallengerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def EndBenchmark(self, request, context):
+    def endBenchmark(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -122,48 +122,48 @@ class ChallengerServicer(object):
 
 def add_ChallengerServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'GetLocations': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetLocations,
+            'getLocations': grpc.unary_unary_rpc_method_handler(
+                    servicer.getLocations,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=challenger__pb2.Locations.SerializeToString,
             ),
-            'CreateNewBenchmark': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateNewBenchmark,
+            'createNewBenchmark': grpc.unary_unary_rpc_method_handler(
+                    servicer.createNewBenchmark,
                     request_deserializer=challenger__pb2.BenchmarkConfiguration.FromString,
                     response_serializer=challenger__pb2.Benchmark.SerializeToString,
             ),
-            'InitializeLatencyMeasuring': grpc.unary_unary_rpc_method_handler(
-                    servicer.InitializeLatencyMeasuring,
+            'initializeLatencyMeasuring': grpc.unary_unary_rpc_method_handler(
+                    servicer.initializeLatencyMeasuring,
                     request_deserializer=challenger__pb2.Benchmark.FromString,
                     response_serializer=challenger__pb2.Ping.SerializeToString,
             ),
-            'Measure': grpc.unary_unary_rpc_method_handler(
-                    servicer.Measure,
+            'measure': grpc.unary_unary_rpc_method_handler(
+                    servicer.measure,
                     request_deserializer=challenger__pb2.Ping.FromString,
                     response_serializer=challenger__pb2.Ping.SerializeToString,
             ),
-            'EndMeasurement': grpc.unary_unary_rpc_method_handler(
-                    servicer.EndMeasurement,
+            'endMeasurement': grpc.unary_unary_rpc_method_handler(
+                    servicer.endMeasurement,
                     request_deserializer=challenger__pb2.Ping.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'StartBenchmark': grpc.unary_unary_rpc_method_handler(
-                    servicer.StartBenchmark,
+            'startBenchmark': grpc.unary_unary_rpc_method_handler(
+                    servicer.startBenchmark,
                     request_deserializer=challenger__pb2.Benchmark.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'nextMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.nextMessage,
                     request_deserializer=challenger__pb2.Benchmark.FromString,
-                    response_serializer=challenger__pb2.Payload.SerializeToString,
+                    response_serializer=challenger__pb2.Batch.SerializeToString,
             ),
             'processed': grpc.unary_unary_rpc_method_handler(
                     servicer.processed,
                     request_deserializer=challenger__pb2.Result.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'EndBenchmark': grpc.unary_unary_rpc_method_handler(
-                    servicer.EndBenchmark,
+            'endBenchmark': grpc.unary_unary_rpc_method_handler(
+                    servicer.endBenchmark,
                     request_deserializer=challenger__pb2.Benchmark.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
@@ -178,7 +178,7 @@ class Challenger(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def GetLocations(request,
+    def getLocations(request,
             target,
             options=(),
             channel_credentials=None,
@@ -188,14 +188,14 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/GetLocations',
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/getLocations',
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             challenger__pb2.Locations.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def CreateNewBenchmark(request,
+    def createNewBenchmark(request,
             target,
             options=(),
             channel_credentials=None,
@@ -205,14 +205,14 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/CreateNewBenchmark',
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/createNewBenchmark',
             challenger__pb2.BenchmarkConfiguration.SerializeToString,
             challenger__pb2.Benchmark.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def InitializeLatencyMeasuring(request,
+    def initializeLatencyMeasuring(request,
             target,
             options=(),
             channel_credentials=None,
@@ -222,14 +222,14 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/InitializeLatencyMeasuring',
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/initializeLatencyMeasuring',
             challenger__pb2.Benchmark.SerializeToString,
             challenger__pb2.Ping.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def Measure(request,
+    def measure(request,
             target,
             options=(),
             channel_credentials=None,
@@ -239,14 +239,14 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/Measure',
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/measure',
             challenger__pb2.Ping.SerializeToString,
             challenger__pb2.Ping.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def EndMeasurement(request,
+    def endMeasurement(request,
             target,
             options=(),
             channel_credentials=None,
@@ -256,14 +256,14 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/EndMeasurement',
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/endMeasurement',
             challenger__pb2.Ping.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def StartBenchmark(request,
+    def startBenchmark(request,
             target,
             options=(),
             channel_credentials=None,
@@ -273,7 +273,7 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/StartBenchmark',
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/startBenchmark',
             challenger__pb2.Benchmark.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
@@ -292,7 +292,7 @@ class Challenger(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/nextMessage',
             challenger__pb2.Benchmark.SerializeToString,
-            challenger__pb2.Payload.FromString,
+            challenger__pb2.Batch.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -314,7 +314,7 @@ class Challenger(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def EndBenchmark(request,
+    def endBenchmark(request,
             target,
             options=(),
             channel_credentials=None,
@@ -324,7 +324,7 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/EndBenchmark',
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/endBenchmark',
             challenger__pb2.Benchmark.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
