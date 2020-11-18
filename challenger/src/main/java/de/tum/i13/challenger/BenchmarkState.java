@@ -23,8 +23,12 @@ public class BenchmarkState {
     public BenchmarkState() {
         this.averageLatency = 0.0;
         this.batchSize = -1;
-        pingCorrelation = new HashMap<>();
+
+        this.pingCorrelation = new HashMap<>();
         this.measurements = new ArrayList<>();
+
+        this.requestCorrelation = new HashMap<>();
+        this.requestMeasurements = new ArrayList<>();
 
         averageLatency = 0.0;
         startNanoTime = 0;
