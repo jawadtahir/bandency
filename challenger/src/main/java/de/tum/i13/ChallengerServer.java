@@ -123,7 +123,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         long correlation_id = request.getCorrelationId();
         benchmarkState.correlatePing(correlation_id, System.nanoTime());
         double v = benchmarkState.calcAverageTransportLatency();
-        Logger.debug("average latency: " + v);
+        if(v > 0) {
+            v /= 1_000_000;
+        }
+        Logger.debug("average latency: " + v + "ms");
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
