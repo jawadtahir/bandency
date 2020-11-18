@@ -28,6 +28,9 @@ public class Main {
             if(hostName.equalsIgnoreCase("vmjacobsen71")) {
                 dataset = "/var/www/html/datasets";
             }
+            if(hostName.equalsIgnoreCase("node-22")) {
+                dataset = "/home/msrg/data/luftdaten";
+            }
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
             PrepareLocationDataset pld = new PrepareLocationDataset(Path.of(dataset));
