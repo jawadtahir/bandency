@@ -3,11 +3,14 @@
 {% block content %}
     <h2>Api</h2>
 
-    <p>We offer a GRPC based Api. You can generate your client for your prefered language using the generators provided.
-        See <a href="https://grpc.io/">grpc.io</a> for tutorials.</p>
-    <p>You can download the protos to generate the client here: <a href="/static/resource/debs.proto">Proto</a></p>
+    <p>We offer a GRPC based Api. You can generate your client for your prefered language using the generators provided.</p>
+    <p>You can reach the public endpoint here: <code>challenge.msrg.in.tum.de:5023</code> </p>
+    <p>You can download the protos to generate the client here: <a href="/static/debs.proto">Proto</a></p>
+    <p>See <a href="https://grpc.io/">grpc.io</a> for tutorials.</p>
 
-    <h2>Api usage</h2>
+    <h2>Usage</h2>
+    <p>The illustration below shows the API interactions. Next we give more details to the steps and examples in Python code. Questions/Errors/Problems? => christoph.doblander@in.tum.de</p>
+    <img src="/static/img/debs.png" class="img-fluid" alt="Api usage">
 
     <h4>Step 1</h4>
     <p>First, get the location data. This returns a message which contains a list of Locations. The message is bigger then what the default configuration allows. Hence increase the max_receive_message_length</p>
@@ -15,7 +18,7 @@
         <code>
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-with grpc.insecure_channel('challenge.msrg.in.tum.de:8081', options=op) as channel:
+with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
     loc = stub.getLocations(empty_pb2.Empty()) #get all the locations
         </code>
@@ -66,6 +69,5 @@ while batch:
     batch = self.challengerstub.nextMessage(bench)
         </code>
     </pre>
-    <img src="/static/img/debs.png" class="img-fluid" alt="Api usage">
 
 {% endblock %}

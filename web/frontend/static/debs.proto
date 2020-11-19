@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "de.tum.i13.bandency";
+option java_outer_classname = "ChallengerProto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+package Challenger;
+
+message Payload {
+  int32 randomData = 1;
+  google.protobuf.Timestamp timestamp = 2;
+
+  float latitude = 3;
+  float longitude = 4;
+
+  float p1 = 5;
+  float p2 = 6;
+}
+
+message Batch {
+  int64 seq_id = 1;
+  bool last = 2; //Set to true when it is the last batch
+  repeated Payload current = 3;
+  repeated Payload lastyear = 4;
+}
+
+message Benchmark {
+  int64 id = 1;
+}
+
+message ResultPayload {
+  int32 resultData = 1;
+  //TODO add here the actual fields
+}
+
+message Result {
+  int64 benchmark_id = 1;
+  int64 payload_seq_id = 2;
+  ResultPayload result = 3;
+}
+
+message Ping {
+  int64 benchmark_id = 1;
+  int64 correlation_id = 2;
+}
+
+message BenchmarkConfiguration {
+  string token = 1; //Token from the webapp for authentication
+  int32 batch_size = 2; //Small batches might need different algorithms than large batches
+  string benchmark_name = 3; //chosen by the team, listed in the results
+}
+
+message Point {
+  double longitude = 1;
+  double latitude = 2;
+}
+
+message Location {
+  string zipcode = 1;
+  string city = 2;
+  double qkm = 3;
+  int32 population = 4;
+  repeated Point polygon = 5;
+}
+
+message Locations{
+  repeated Location locations = 1;
+}
+
+service Challenger {
+  //Get the polygons of all zip areas in germany
+  rpc getLocations(google.protobuf.Empty) returns (Locations);
+
+  //Create a new Benchmark based on the configuration
+  rpc createNewBenchmark(BenchmarkConfiguration) returns (Benchmark);
+
+  // Depending on your connectivity you have a latency and throughput.
+  // Optionally, we try to account for this by first measuring it.
+  // The payload of a Ping corresponds roughly to the payload of a batch and the returning Pong roughly the payload of a Result
+  // This kind of measurement is just for development and experimentation (since it could be easily cheated ;-))
+  // We do not consider that once you deploy your implementation on the VMs in our infrastructure
+  rpc initializeLatencyMeasuring(Benchmark) returns (Ping);
+  rpc measure(Ping) returns (Ping);
+  rpc endMeasurement(Ping) returns (google.protobuf.Empty);
+
+  //This marks the starting point of the throughput measurements
+  rpc startBenchmark(Benchmark) returns (google.protobuf.Empty);
+
+  //get the next Batch
+  rpc nextMessage(Benchmark) returns (Batch);
+  //post the result
+  rpc processed(Result) returns (google.protobuf.Empty);
+
+  //This marks the end of the throughput measurements
+  rpc endBenchmark(Benchmark) returns (google.protobuf.Empty);
+}
