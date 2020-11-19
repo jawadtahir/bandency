@@ -22,8 +22,9 @@ message Payload {
 
 message Batch {
   int64 seq_id = 1;
-  repeated Payload current = 2;
-  repeated Payload lastyear = 3;
+  bool last = 2; //Set to true when it is the last batch
+  repeated Payload current = 3;
+  repeated Payload lastyear = 4;
 }
 
 message Benchmark {
@@ -70,18 +71,29 @@ message Locations{
 }
 
 service Challenger {
+  //Get the polygons of all zip areas in germany
   rpc getLocations(google.protobuf.Empty) returns (Locations);
 
+  //Create a new Benchmark based on the configuration
   rpc createNewBenchmark(BenchmarkConfiguration) returns (Benchmark);
 
+  // Depending on your connectivity you have a latency and throughput.
+  // Optionally, we try to account for this by first measuring it.
+  // The payload of a Ping corresponds roughly to the payload of a batch and the returning Pong roughly the payload of a Result
+  // This kind of measurement is just for development and experimentation (since it could be easily cheated ;-))
+  // We do not consider that once you deploy your implementation on the VMs in our infrastructure
   rpc initializeLatencyMeasuring(Benchmark) returns (Ping);
   rpc measure(Ping) returns (Ping);
   rpc endMeasurement(Ping) returns (google.protobuf.Empty);
 
-  rpc startBenchmark(Benchmark) returns(google.protobuf.Empty);
+  //This marks the starting point of the throughput measurements
+  rpc startBenchmark(Benchmark) returns (google.protobuf.Empty);
 
+  //get the next Batch
   rpc nextMessage(Benchmark) returns (Batch);
-  rpc processed(Result) returns(google.protobuf.Empty);
+  //post the result
+  rpc processed(Result) returns (google.protobuf.Empty);
 
-  rpc endBenchmark(Benchmark) returns(google.protobuf.Empty);
+  //This marks the end of the throughput measurements
+  rpc endBenchmark(Benchmark) returns (google.protobuf.Empty);
 }
