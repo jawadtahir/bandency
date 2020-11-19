@@ -49,16 +49,18 @@ class QueryOne:
                 print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (cnt, duration_so_far, num_current, num_historic, ( num_current + num_historic)))
 
             cnt = cnt + 1
+            result_payload = ch.ResultPayload(resultData=1)
+            result = ch.Result(benchmark_id=bench.id, payload_seq_id=batch.seq_id, result=result_payload)
+            self.challengerstub.processed(result)
+
+            if batch.last:
+                break
+
             batch = self.challengerstub.nextMessage(bench)
 
 
-
-
-
-
-
 def main():
-    op = [('grpc.max_send_message_length', 100 * 1024 * 1024),
+    op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
           ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
     with grpc.insecure_channel('challenge.msrg.in.tum.de:8081', options=op) as channel:
     #with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:

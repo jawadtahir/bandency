@@ -1,0 +1,57 @@
+@startuml
+activate Participant
+
+group 1) Get Location Data
+Challenger <- Participant: getLocations()
+Challenger --> Participant: (Locations)
+end
+
+group 2) Create a new Benchmark
+Challenger <- Participant: createNewBenchmark(BenchmarkConfiguration)
+activate Challenger
+Challenger --> Participant: (Benchmark)
+deactivate Challenger
+end
+
+group 3) Calibrate Latency (optional)
+Challenger <- Participant: initializeLatencyMeasuring(Benchmark)
+activate Challenger
+Challenger --> Participant: Ping
+
+group Repeat multiple times, e.g., 10 times
+Challenger <- Participant: measure(Ping)
+activate Challenger
+Challenger --> Participant: Ping
+deactivate Challenger
+end
+
+Challenger <- Participant: endMeasurement(Ping)
+deactivate Challenger
+
+deactivate Challenger
+end
+
+group 4) Benchmark
+Challenger <- Participant: startBenchmark(Benchmark)
+activate Challenger
+
+
+group Repeat until finished
+Challenger <- Participant: nextMessage(Benchmark)
+activate Challenger
+Challenger --> Participant: Payload
+
+Challenger <- Participant: processed(Result)
+Challenger --> Participant:
+deactivate Challenger
+end
+
+
+Challenger <- Participant: endBenchmark(Benchmark)
+Challenger --> Participant:
+
+deactivate Challenger
+end
+
+
+@enduml

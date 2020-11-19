@@ -72,6 +72,13 @@ async def profile():
     return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
 
 
+@app.route('/documentation/')
+@login_required
+async def documentation():
+    group = await get_group_information(current_user.auth_id)
+    return await render_template('documentation.html', name="Documentation", group=group, menu=helper.menu(documentation=True))
+
+
 @app.route('/rawdata/')
 @login_required
 async def rawdata():
