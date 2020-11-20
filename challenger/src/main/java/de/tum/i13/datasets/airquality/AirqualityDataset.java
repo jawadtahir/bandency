@@ -23,7 +23,7 @@ public class AirqualityDataset {
     }
 
     private AirQualityDataSource prepareDiskReader(long batchsize) {
-        AirqualityToBatch atb = new AirqualityToBatch(batchsize, LocalDateTime.of(2020, 1, 1, 0, 0), LocalDateTime.of(2020, 4, 1, 0,0), afa);
+        AirqualityToBatch atb = new AirqualityToBatch(batchsize, LocalDateTime.of(2020, 1, 1, 0, 0), LocalDateTime.of(2020, 7, 1, 0,0), afa);
         return atb;
     }
 }
