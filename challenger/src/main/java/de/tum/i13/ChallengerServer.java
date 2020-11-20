@@ -183,8 +183,16 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     @Override
     public void endBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
         Logger.debug("endBenchmark");
+        long nanoTime = System.nanoTime();
 
-        super.endBenchmark(request, responseObserver);
+        if(!this.benchmark.containsKey(request.getId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        this.benchmark.get(request.getId()).endBenchmark(nanoTime);
+
+
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
