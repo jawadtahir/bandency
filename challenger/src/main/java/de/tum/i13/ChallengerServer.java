@@ -103,7 +103,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
 
         long current_time = System.nanoTime();
-        AtomicReference<Ping> ping = null;
+        AtomicReference<Ping> ping = new AtomicReference<>();
         this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b) -> {
             b.correlatePing(request.getCorrelationId(), current_time);
 
@@ -178,7 +178,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             return;
         }
 
-        AtomicReference<Batch> batchRef = null;
+        AtomicReference<Batch> batchRef = new AtomicReference<>();;
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
             batchRef.set(b.getNextBatch());
             return b;
