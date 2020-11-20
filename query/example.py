@@ -45,8 +45,15 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
     while batch:
         cnt_current += len(batch.current)
         cnt_historic += len(batch.lastyear)
+
         if(cnt % 100) == 0:
-            print("processed %s - num_current: %s, num_historic: %s, total_events: %s" % (cnt, cnt_current, cnt_historic, ( cnt_current + cnt_historic)))
+            ts_str = ""
+            if len(batch.current) > 0:
+                ts = batch.current[0].timestamp
+                dt = datetime.utcfromtimestamp(ts.seconds)
+                ts_str =dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+            print("processed %s - current_time: %s, num_current: %s, num_historic: %s, total_events: %s" % (cnt, ts_str, cnt_current, cnt_historic, ( cnt_current + cnt_historic)))
 
     #result_payload = processTheBatch(batch) #here is your implementation ;)
         result_payload = ch.ResultPayload(resultData=1)
