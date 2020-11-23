@@ -66,19 +66,26 @@ class ChallengerServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def getLocations(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Get the polygons of all zip areas in germany
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def createNewBenchmark(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Create a new Benchmark based on the configuration
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def initializeLatencyMeasuring(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Depending on your connectivity you have a latency and throughput.
+        Optionally, we try to account for this by first measuring it.
+        The payload of a Ping corresponds roughly to the payload of a batch and the returning Pong roughly the payload of a Result
+        This kind of measurement is just for development and experimentation (since it could be easily cheated ;-))
+        We do not consider that once you deploy your implementation on the VMs in our infrastructure
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -96,25 +103,29 @@ class ChallengerServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def startBenchmark(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """This marks the starting point of the throughput measurements
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def nextMessage(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """get the next Batch
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def processed(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """post the result
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def endBenchmark(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """This marks the end of the throughput measurements
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')

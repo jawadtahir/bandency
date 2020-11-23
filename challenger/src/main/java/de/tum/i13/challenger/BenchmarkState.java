@@ -85,9 +85,19 @@ public class BenchmarkState {
     }
 
     public Batch getNextBatch() {
-        Batch batch = this.datasource.nextElement();
-        this.requestCorrelation.put(batch.getSeqId(), System.nanoTime());
-        return batch;
+        if(this.datasource.hasMoreElements()) {
+            Batch batch = this.datasource.nextElement();
+            this.requestCorrelation.put(batch.getSeqId(), System.nanoTime());
+            return batch;
+        } else {
+            try {
+                this.datasource.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            this.datasource = null;
+            return Batch.newBuilder().setLast(true).build();
+        }
     }
 
     public void processed(Result request, long nanoTime) {
@@ -97,5 +107,9 @@ public class BenchmarkState {
             long duration = nanoTime - sentTime;
             this.requestMeasurements.add(duration);
         }
+    }
+
+    public void endBenchmark(long nanoTime) {
+        //TODO: calculate the statistics
     }
 }

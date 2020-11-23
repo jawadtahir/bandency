@@ -25,9 +25,6 @@ public class Main {
             String dataset = "/home/chris/data/challenge";
             String hostName = InetAddress.getLocalHost().getHostName();
 
-            if(hostName.equalsIgnoreCase("vmjacobsen71")) {
-                dataset = "/var/www/html/datasets";
-            }
             if(hostName.equalsIgnoreCase("node-22")) {
                 dataset = "/home/msrg/data/luftdaten";
             }
@@ -37,38 +34,7 @@ public class Main {
             LocationDataset ld = pld.loadData();
 
             AirqualityFileAccess afa = new AirqualityFileAccess(Path.of(dataset));
-            //PrepareAirQualityDataset paqd = new PrepareAirQualityDataset(afa);
-            //AirqualityDataset airqualityDataset = paqd.prepareDataset();
-
             AirqualityDataset ad = new AirqualityDataset(afa, AccessType.FromDisk);
-
-            //AirqualityToBatch atb = new AirqualityToBatch(5000, LocalDateTime.of(2020, 1, 1, 0, 0, 0), LocalDateTime.of(2020, 3, 5, 1, 0, 0), afa);
-
-            /*
-            Batch b = null;
-            long cnt = 0;
-            while(atb.hasMoreElements()) {
-                b = atb.nextElement();
-                ++cnt;
-                if((cnt % 20_000) == 0) {
-                    System.out.println("cnt: " + cnt + " curr_size: " + b.getCurrentCount() + " last: " + b.getLastyearCount());
-                    if(b.getCurrentCount() > 0 && b.getLastyearCount() > 0) {
-                        Payload firstCurrent = b.getCurrentList().get(0);
-                        Payload fistLastYear = b.getLastyearList().get(0);
-
-                        System.out.println("cnt: " + cnt + " curr: " + convertPBTimestamp(firstCurrent.getTimestamp()) + " last: " + convertPBTimestamp(fistLastYear.getTimestamp()));
-                    }
-                }
-            }
-
-            System.out.println("cnt: " + cnt + " curr_size: " + b.getCurrentCount() + " last: " + b.getLastyearCount());
-            */
-
-
-
-
-            //AirqualityToBatch atb = new AirqualityToBatch()
-
 
             Logger.info("Initializing Challenger Service");
             ChallengerServer cs = new ChallengerServer(ld, ad);

@@ -78,6 +78,7 @@ public class AirqualityToBatch implements AirQualityDataSource {
         }
 
         b.setSeqId(this.batchCnt);
+        b.setLast(false);
         ++this.batchCnt;
 
         return b.build();

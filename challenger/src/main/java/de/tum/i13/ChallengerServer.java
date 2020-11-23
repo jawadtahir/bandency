@@ -8,33 +8,39 @@ import de.tum.i13.datasets.location.LocationDataset;
 import io.grpc.stub.StreamObserver;
 import org.tinylog.Logger;
 
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
+    private final AtomicInteger reqcounter;
+
     final private LocationDataset ld;
     private final AirqualityDataset ad;
 
-    final private HashMap<Long, BenchmarkState> benchmark;
+    final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
     public ChallengerServer(LocationDataset ld, AirqualityDataset ad) {
         this.ld = ld;
         this.ad = ad;
-        benchmark = new HashMap<>();
+        benchmark = new ConcurrentHashMap<>();
+
+        reqcounter = new AtomicInteger(0);
     }
 
     @Override
     public void getLocations(Empty request, StreamObserver<Locations> responseObserver) {
-        Logger.debug("getLocations");
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("getLocations - cnt: " + req);
         responseObserver.onNext(ld.getAllLocations());
         responseObserver.onCompleted();
     }
 
     @Override
     public void createNewBenchmark(BenchmarkConfiguration request, StreamObserver<Benchmark> responseObserver) {
-        Logger.debug("createNewBenchmark");
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("createNewBenchmark - cnt: " + req);
 
         //Verify the token that it is actually allowed to start a benchmark
         //TODO: go to database, get groupname
@@ -64,7 +70,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void initializeLatencyMeasuring(Benchmark request, StreamObserver<Ping> responseObserver) {
-        Logger.debug("initializeLatencyMeasuring");
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("initializeLatencyMeasuring - cnt: " + req);
 
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
@@ -77,8 +84,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                 .setCorrelationId(random_id)
                 .build();
 
-        BenchmarkState benchmarkState = this.benchmark.get(request.getId());
-        benchmarkState.addLatencyTimeStamp(random_id, System.nanoTime());
+        this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
+            b.addLatencyTimeStamp(random_id, System.nanoTime());
+            return b;
+        });
 
         responseObserver.onNext(ping);
         responseObserver.onCompleted();
@@ -86,47 +95,58 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void measure(Ping request, StreamObserver<Ping> responseObserver) {
-        Logger.debug("measure");
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("measure - cnt: " + req);
 
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
         }
 
-        BenchmarkState benchmarkState = this.benchmark.get(request.getBenchmarkId());
+        long current_time = System.nanoTime();
+        AtomicReference<Ping> ping = new AtomicReference<>();
+        this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b) -> {
+            b.correlatePing(request.getCorrelationId(), current_time);
 
-        long correlation_id = request.getCorrelationId();
-        benchmarkState.correlatePing(correlation_id, System.nanoTime());
+            long random_id = new Random().nextLong();
+            Ping local = Ping.newBuilder()
+                    .setCorrelationId(random_id)
+                    .setBenchmarkId(request.getBenchmarkId())
+                    .build();
 
-        long random_id = new Random().nextLong();
-        Ping ping = Ping.newBuilder()
-                .setCorrelationId(random_id)
-                .setBenchmarkId(request.getBenchmarkId())
-                .build();
-        benchmarkState.addLatencyTimeStamp(random_id, System.nanoTime());
+            ping.set(local);
+            b.addLatencyTimeStamp(random_id, System.nanoTime());
+            return b;
+        });
 
-        responseObserver.onNext(ping);
+        Ping acquiredPing = ping.getAcquire();
+        if(acquiredPing == null) {
+            responseObserver.onError(new Exception(""));
+        }
+        responseObserver.onNext(ping.get());
         responseObserver.onCompleted();
     }
 
     @Override
     public void endMeasurement(Ping request, StreamObserver<Empty> responseObserver) {
-        Logger.debug("endMeasurement");
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("endMeasurement - cnt: " + req);
 
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
         }
 
-        BenchmarkState benchmarkState = this.benchmark.get(request.getBenchmarkId());
-
-        long correlation_id = request.getCorrelationId();
-        benchmarkState.correlatePing(correlation_id, System.nanoTime());
-        double v = benchmarkState.calcAverageTransportLatency();
-        if(v > 0) {
-            v /= 1_000_000;
-        }
-        Logger.debug("average latency: " + v + "ms");
+        this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b)-> {
+            long correlation_id = request.getCorrelationId();
+            b.correlatePing(correlation_id, System.nanoTime());
+            double v = b.calcAverageTransportLatency();
+            if(v > 0) {
+                v /= 1_000_000;
+            }
+            Logger.debug("average latency: " + v + "ms");
+            return b;
+        });
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
@@ -134,16 +154,19 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void startBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
-        Logger.debug("startBenchmark");
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("startBenchmark - cnt: " + req);
 
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
         }
 
-        BenchmarkState benchmarkState = this.benchmark.get(request.getId());
-        benchmarkState.startBenchmark(System.nanoTime());
-        benchmarkState.setDatasource(ad.newDataSource(benchmarkState.getBatchSize()));
+        this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
+            b.startBenchmark(System.nanoTime());
+            b.setDatasource(ad.newDataSource(b.getBatchSize()));
+            return b;
+        });
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
@@ -151,30 +174,45 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void nextMessage(Benchmark request, StreamObserver<Batch> responseObserver) {
-        Logger.debug("nextMessage");
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("nextMessage - cnt: " + req);
 
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
         }
 
-        Batch batch = this.benchmark.get(request.getId()).getNextBatch();
-        responseObserver.onNext(batch);
-        responseObserver.onCompleted();
+        AtomicReference<Batch> batchRef = new AtomicReference<>();;
+        this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
+            batchRef.set(b.getNextBatch());
+            return b;
+        });
+
+        Batch acquired_batch = batchRef.getAcquire();
+        if(acquired_batch == null) {
+            responseObserver.onError(new Exception("Could not get next batch"));
+        } else {
+            responseObserver.onNext(acquired_batch);
+            responseObserver.onCompleted();
+        }
     }
 
     @Override
     public void processed(Result request, StreamObserver<Empty> responseObserver) {
-        Logger.debug("processed");
-
         long nanoTime = System.nanoTime();
+
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("processed - cnt: " + req);
 
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
         }
 
-        this.benchmark.get(request.getBenchmarkId()).processed(request, nanoTime);
+        this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b) -> {
+            b.processed(request, nanoTime);
+            return b;
+        });
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
@@ -182,9 +220,20 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void endBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
-        Logger.debug("endBenchmark");
+        long nanoTime = System.nanoTime();
 
-        super.endBenchmark(request, responseObserver);
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("endBenchmark - cnt: " + req);
+
+        if(!this.benchmark.containsKey(request.getId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
+            b.endBenchmark(nanoTime);
+            return b;
+        });
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
