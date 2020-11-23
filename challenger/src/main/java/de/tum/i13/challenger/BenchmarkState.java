@@ -26,6 +26,8 @@ public class BenchmarkState {
     private AirQualityDataSource datasource;
     private boolean q1Active;
     private boolean q2Active;
+    private long benchmarkId;
+    private long endNanoTime;
 
     public BenchmarkState(ArrayBlockingQueue<ToVerify> dbInserter) {
         this.dbInserter = dbInserter;
@@ -39,11 +41,14 @@ public class BenchmarkState {
         this.q1measurements = new ArrayList<>();
 
         averageLatency = 0.0;
-        startNanoTime = 0;
+        startNanoTime = -1;
+        endNanoTime = -1;
         datasource = null;
 
         this.q1Active = false;
         this.q2Active = false;
+
+        this.benchmarkId = -1;
     }
 
     public void setQ1(boolean contains) {
@@ -69,6 +74,23 @@ public class BenchmarkState {
     public String getToken() {
         return token;
     }
+
+    public void setBenchmarkId(long random_id) {
+        this.benchmarkId = random_id;
+    }
+
+    public long getBenchmarkId() {
+        return benchmarkId;
+    }
+
+    public long getEndNanoTime() {
+        return endNanoTime;
+    }
+
+    public void setEndNanoTime(long endNanoTime) {
+        this.endNanoTime = endNanoTime;
+    }
+
 
     //Methods for latency measurement
     public void addLatencyTimeStamp(long random_id, long nanoTime) {
@@ -152,7 +174,22 @@ public class BenchmarkState {
     }
 
     public void endBenchmark(long benchmarkId, long endTime) {
+        this.endNanoTime = endTime;
         BenchmarkDuration bd = new BenchmarkDuration(benchmarkId, this.startNanoTime, endTime, this.averageLatency);
         this.dbInserter.add(new ToVerify(bd));
+    }
+
+    @Override
+    public String toString() {
+        return "BenchmarkState{" +
+                "token='" + token + '\'' +
+                ", benchmarkId=" + benchmarkId +
+                ", batchSize=" + batchSize +
+                ", averageLatency=" + averageLatency +
+                ", startNanoTime=" + startNanoTime +
+                ", q1Active=" + q1Active +
+                ", q2Active=" + q2Active +
+                ", endNanoTime=" + endNanoTime +
+                '}';
     }
 }

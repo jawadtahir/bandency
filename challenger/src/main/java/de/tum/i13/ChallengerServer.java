@@ -57,18 +57,22 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         //Save this benchmarkname to database
         //TODO:
         String benchmarkName = request.getBenchmarkName();
-        long random_id = new Random().nextLong();
+        long benchmarkId = new Random().nextLong();
 
         BenchmarkState bms = new BenchmarkState(this.dbInserter);
+        bms.setToken(token);
+        bms.setBenchmarkId(benchmarkId);
         bms.setToken(token);
         bms.setBatchSize(batchSize);
         bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
         bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
 
-        this.benchmark.put(random_id, bms);
+        Logger.info("Ready for benchmark: " + bms.toString());
+
+        this.benchmark.put(benchmarkId, bms);
 
         Benchmark bm = Benchmark.newBuilder()
-                .setId(random_id)
+                .setId(benchmarkId)
                 .build();
 
         responseObserver.onNext(bm);
