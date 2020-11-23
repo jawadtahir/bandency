@@ -10,14 +10,13 @@ import "google/protobuf/timestamp.proto";
 package Challenger;
 
 message Payload {
-  int32 randomData = 1;
-  google.protobuf.Timestamp timestamp = 2;
+  google.protobuf.Timestamp timestamp = 1;
 
-  float latitude = 3;
-  float longitude = 4;
+  float latitude = 2;
+  float longitude = 3;
 
-  float p1 = 5;
-  float p2 = 6;
+  float p1 = 4;
+  float p2 = 5;
 }
 
 message Batch {
@@ -75,12 +74,16 @@ message Point {
   double latitude = 2;
 }
 
+message Polygon {
+  repeated Point points = 1;
+}
+
 message Location {
   string zipcode = 1;
   string city = 2;
   double qkm = 3;
   int32 population = 4;
-  repeated Point polygon = 5;
+  repeated Polygon polygons = 5;
 }
 
 message Locations{

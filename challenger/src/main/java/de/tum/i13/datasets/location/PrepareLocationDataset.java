@@ -61,6 +61,7 @@ public class PrepareLocationDataset {
             Logger.debug("parsing time, seconds: " + sw.elapsed(TimeUnit.SECONDS));
 
             int cnt = 0;
+            int err_cnt = 0;
             Locations.Builder allLocations = Locations.newBuilder();
 
             for (Feature f : fc.features()) {
@@ -88,26 +89,31 @@ public class PrepareLocationDataset {
                     Geometry geometry = f.geometry();
                     if(geometry instanceof Polygon) {
                         Polygon p = (Polygon)geometry;
-                        if(p.coordinates().size() == 1) {
-                            List<Point> points = p.coordinates().get(0);
-                            if(points.size() <= 3) { //below it would be just a line
-                                continue;
-                            }
-
-                            Point first = points.get(0);
-                            Point last = points.get(points.size()-1);
-
-                            if(first.longitude() == last.longitude() && first.latitude() == last.latitude()) {
-                                for(com.mapbox.geojson.Point point : points) {
-                                    double latitude = point.latitude();
-                                    double longitude = point.longitude();
-                                    de.tum.i13.bandency.Point buildPoint = de.tum.i13.bandency.Point.newBuilder().setLatitude(latitude).setLongitude(longitude).build();
-
-                                    locationBuilder.addPolygon(buildPoint);
+                        if(p.coordinates().size() > 0) {
+                            for(List<Point> points : p.coordinates()) {
+                                if (points.size() <= 3) { //below it would be just a line
+                                    continue;
                                 }
-                            } else {
-                                Logger.debug("skipping, polygon open: cnt: " + cnt + " plz: " + plz + " node: " + note + " qkm: " + qkm + " einwohner: " + einwohner);
-                                continue;
+
+                                de.tum.i13.bandency.Polygon.Builder pb = de.tum.i13.bandency.Polygon.newBuilder();
+
+                                Point first = points.get(0);
+                                Point last = points.get(points.size() - 1);
+
+                                if (first.longitude() == last.longitude() && first.latitude() == last.latitude()) {
+                                    for (com.mapbox.geojson.Point point : points) {
+                                        double latitude = point.latitude();
+                                        double longitude = point.longitude();
+                                        de.tum.i13.bandency.Point buildPoint = de.tum.i13.bandency.Point.newBuilder().setLatitude(latitude).setLongitude(longitude).build();
+
+                                        pb.addPoints(buildPoint);
+                                    }
+                                } else {
+                                    Logger.debug("skipping, polygon open: cnt: " + cnt + " plz: " + plz + " node: " + note + " qkm: " + qkm + " einwohner: " + einwohner);
+                                    continue;
+                                }
+
+                                locationBuilder.addPolygons(pb);
                             }
                         } else {
                             Logger.debug("skipping, polygon no coordinates: cnt: " + cnt + " plz: " + plz + " node: " + note + " qkm: " + qkm + " einwohner: " + einwohner);
@@ -115,7 +121,13 @@ public class PrepareLocationDataset {
                         }
                     }
 
-                    allLocations.addLocations(locationBuilder.build());
+                    int size = locationBuilder.getPolygonsCount();
+                    if(size == 0) {
+                        ++err_cnt;
+                        System.out.println("error size: " + plz + " err_cnt: " + err_cnt);
+                    } else {
+                        allLocations.addLocations(locationBuilder.build());
+                    }
                     ++cnt;
                 } catch (Exception ex) {
                     Logger.error(ex);

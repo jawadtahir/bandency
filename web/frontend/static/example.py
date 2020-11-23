@@ -25,7 +25,8 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
     #Step 2 - Create a new Benchmark
     benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
                                                        batch_size=5000,
-                                                       benchmark_name="shows_up_in_dashboard")
+                                                       benchmark_name="shows_up_in_dashboard",
+                                                       queries=[ch.BenchmarkConfiguration.Query.Q1])
     benchmark = stub.createNewBenchmark(benchmarkconfiguration)
 
     #Step 3 (optional) - Calibrate the latency
@@ -45,20 +46,30 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
     while batch:
         cnt_current += len(batch.current)
         cnt_historic += len(batch.lastyear)
+
         if(cnt % 100) == 0:
-            print("processed %s - num_current: %s, num_historic: %s, total_events: %s" % (cnt, cnt_current, cnt_historic, ( cnt_current + cnt_historic)))
+            ts_str = ""
+            if len(batch.current) > 0:
+                ts = batch.current[0].timestamp
+                dt = datetime.utcfromtimestamp(ts.seconds)
+                ts_str =dt.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    #result_payload = processTheBatch(batch) #here is your implementation ;)
-        result_payload = ch.ResultPayload(resultData=1)
-        result = ch.Result(benchmark_id=benchmark.id, #The id of the benchmark
-                       payload_seq_id=batch.seq_id,
-                       result=result_payload)
+            print("processed %s - current_time: %s, num_current: %s, num_historic: %s, total_events: %s" % (cnt, ts_str, cnt_current, cnt_historic, ( cnt_current + cnt_historic)))
 
-        stub.processed(result) #send the result
-        if batch.last:
+
+        #result_payload_q1 = processTheBatchQ1(batch) #here is your implementation ;)
+        result_payload_q1 = ch.ResultQ1Payload(resultData=1)
+        result = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
+                             payload_seq_id=batch.seq_id,
+                             result=result_payload_q1)
+
+        stub.resultQ1(result) #send the result of query 1, also send the result of Q2 in case you calculate both
+        if batch.last or cnt > 1000: #here we just stop after 1000 so we see a result
             break
 
         cnt = cnt + 1
         batch = stub.nextMessage(benchmark)
+
+    stub.endMeasurement(benchmark)
 
 print("finished")
