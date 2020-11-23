@@ -39,7 +39,7 @@ class EventProcessor:
             
             
     def configure(self, location_info_list):
-        for location_info in location_info_list:
+        for location_info in location_info_list.locations:
             polygons = location_info.polygons
             for polygon in polygons:
                 for points in polygon:
