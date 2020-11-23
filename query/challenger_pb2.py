@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\023de.tum.i13.bandencyB\017ChallengerProtoP\001',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x89\x01\n\x07Payload\x12\x12\n\nrandomData\x18\x01 \x01(\x05\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08latitude\x18\x03 \x01(\x02\x12\x11\n\tlongitude\x18\x04 \x01(\x02\x12\n\n\x02p1\x18\x05 \x01(\x02\x12\n\n\x02p2\x18\x06 \x01(\x02\"r\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12\x0c\n\x04last\x18\x02 \x01(\x08\x12$\n\x07\x63urrent\x18\x03 \x03(\x0b\x32\x13.Challenger.Payload\x12%\n\x08lastyear\x18\x04 \x03(\x0b\x32\x13.Challenger.Payload\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\"%\n\x0fResultQ1Payload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"e\n\x08ResultQ1\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12+\n\x06result\x18\x03 \x01(\x0b\x32\x1b.Challenger.ResultQ1Payload\"%\n\x0fResultQ2Payload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"e\n\x08ResultQ2\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12+\n\x06result\x18\x03 \x01(\x0b\x32\x1b.Challenger.ResultQ2Payload\"4\n\x04Ping\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\x03\"\xa7\x01\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x16\n\x0e\x62\x65nchmark_name\x18\x03 \x01(\t\x12\x39\n\x07queries\x18\x04 \x03(\x0e\x32(.Challenger.BenchmarkConfiguration.Query\"\x17\n\x05Query\x12\x06\n\x02Q1\x10\x00\x12\x06\n\x02Q2\x10\x01\",\n\x05Point\x12\x11\n\tlongitude\x18\x01 \x01(\x01\x12\x10\n\x08latitude\x18\x02 \x01(\x01\"n\n\x08Location\x12\x0f\n\x07zipcode\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x0b\n\x03qkm\x18\x03 \x01(\x01\x12\x12\n\npopulation\x18\x04 \x01(\x05\x12\"\n\x07polygon\x18\x05 \x03(\x0b\x32\x11.Challenger.Point\"4\n\tLocations\x12\'\n\tlocations\x18\x01 \x03(\x0b\x32\x14.Challenger.Location2\xfb\x04\n\nChallenger\x12=\n\x0cgetLocations\x12\x16.google.protobuf.Empty\x1a\x15.Challenger.Locations\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12\x45\n\x1ainitializeLatencyMeasuring\x12\x15.Challenger.Benchmark\x1a\x10.Challenger.Ping\x12-\n\x07measure\x12\x10.Challenger.Ping\x1a\x10.Challenger.Ping\x12:\n\x0e\x65ndMeasurement\x12\x10.Challenger.Ping\x1a\x16.google.protobuf.Empty\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x37\n\x0bnextMessage\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x38\n\x08resultQ1\x12\x14.Challenger.ResultQ1\x1a\x16.google.protobuf.Empty\x12\x38\n\x08resultQ2\x12\x14.Challenger.ResultQ2\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB(\n\x13\x64\x65.tum.i13.bandencyB\x0f\x43hallengerProtoP\x01\x62\x06proto3'
+  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"u\n\x07Payload\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08latitude\x18\x02 \x01(\x02\x12\x11\n\tlongitude\x18\x03 \x01(\x02\x12\n\n\x02p1\x18\x04 \x01(\x02\x12\n\n\x02p2\x18\x05 \x01(\x02\"r\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12\x0c\n\x04last\x18\x02 \x01(\x08\x12$\n\x07\x63urrent\x18\x03 \x03(\x0b\x32\x13.Challenger.Payload\x12%\n\x08lastyear\x18\x04 \x03(\x0b\x32\x13.Challenger.Payload\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\"%\n\x0fResultQ1Payload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"e\n\x08ResultQ1\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12+\n\x06result\x18\x03 \x01(\x0b\x32\x1b.Challenger.ResultQ1Payload\"%\n\x0fResultQ2Payload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"e\n\x08ResultQ2\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12+\n\x06result\x18\x03 \x01(\x0b\x32\x1b.Challenger.ResultQ2Payload\"4\n\x04Ping\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\x03\"\xa7\x01\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x16\n\x0e\x62\x65nchmark_name\x18\x03 \x01(\t\x12\x39\n\x07queries\x18\x04 \x03(\x0e\x32(.Challenger.BenchmarkConfiguration.Query\"\x17\n\x05Query\x12\x06\n\x02Q1\x10\x00\x12\x06\n\x02Q2\x10\x01\",\n\x05Point\x12\x11\n\tlongitude\x18\x01 \x01(\x01\x12\x10\n\x08latitude\x18\x02 \x01(\x01\",\n\x07Polygon\x12!\n\x06points\x18\x01 \x03(\x0b\x32\x11.Challenger.Point\"q\n\x08Location\x12\x0f\n\x07zipcode\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x0b\n\x03qkm\x18\x03 \x01(\x01\x12\x12\n\npopulation\x18\x04 \x01(\x05\x12%\n\x08polygons\x18\x05 \x03(\x0b\x32\x13.Challenger.Polygon\"4\n\tLocations\x12\'\n\tlocations\x18\x01 \x03(\x0b\x32\x14.Challenger.Location2\xfb\x04\n\nChallenger\x12=\n\x0cgetLocations\x12\x16.google.protobuf.Empty\x1a\x15.Challenger.Locations\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12\x45\n\x1ainitializeLatencyMeasuring\x12\x15.Challenger.Benchmark\x1a\x10.Challenger.Ping\x12-\n\x07measure\x12\x10.Challenger.Ping\x1a\x10.Challenger.Ping\x12:\n\x0e\x65ndMeasurement\x12\x10.Challenger.Ping\x1a\x16.google.protobuf.Empty\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x37\n\x0bnextMessage\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x38\n\x08resultQ1\x12\x14.Challenger.ResultQ1\x1a\x16.google.protobuf.Empty\x12\x38\n\x08resultQ2\x12\x14.Challenger.ResultQ2\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB(\n\x13\x64\x65.tum.i13.bandencyB\x0f\x43hallengerProtoP\x01\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -47,8 +47,8 @@ _BENCHMARKCONFIGURATION_QUERY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=858,
-  serialized_end=881,
+  serialized_start=837,
+  serialized_end=860,
 )
 _sym_db.RegisterEnumDescriptor(_BENCHMARKCONFIGURATION_QUERY)
 
@@ -62,43 +62,36 @@ _PAYLOAD = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='randomData', full_name='Challenger.Payload.randomData', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='timestamp', full_name='Challenger.Payload.timestamp', index=1,
-      number=2, type=11, cpp_type=10, label=1,
+      name='timestamp', full_name='Challenger.Payload.timestamp', index=0,
+      number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='latitude', full_name='Challenger.Payload.latitude', index=2,
+      name='latitude', full_name='Challenger.Payload.latitude', index=1,
+      number=2, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='longitude', full_name='Challenger.Payload.longitude', index=2,
       number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='longitude', full_name='Challenger.Payload.longitude', index=3,
+      name='p1', full_name='Challenger.Payload.p1', index=3,
       number=4, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='p1', full_name='Challenger.Payload.p1', index=4,
+      name='p2', full_name='Challenger.Payload.p2', index=4,
       number=5, type=2, cpp_type=6, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='p2', full_name='Challenger.Payload.p2', index=5,
-      number=6, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -115,8 +108,8 @@ _PAYLOAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=95,
-  serialized_end=232,
+  serialized_start=94,
+  serialized_end=211,
 )
 
 
@@ -168,8 +161,8 @@ _BATCH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=234,
-  serialized_end=348,
+  serialized_start=213,
+  serialized_end=327,
 )
 
 
@@ -200,8 +193,8 @@ _BENCHMARK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=350,
-  serialized_end=373,
+  serialized_start=329,
+  serialized_end=352,
 )
 
 
@@ -232,8 +225,8 @@ _RESULTQ1PAYLOAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=375,
-  serialized_end=412,
+  serialized_start=354,
+  serialized_end=391,
 )
 
 
@@ -278,8 +271,8 @@ _RESULTQ1 = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=414,
-  serialized_end=515,
+  serialized_start=393,
+  serialized_end=494,
 )
 
 
@@ -310,8 +303,8 @@ _RESULTQ2PAYLOAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=517,
-  serialized_end=554,
+  serialized_start=496,
+  serialized_end=533,
 )
 
 
@@ -356,8 +349,8 @@ _RESULTQ2 = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=556,
-  serialized_end=657,
+  serialized_start=535,
+  serialized_end=636,
 )
 
 
@@ -395,8 +388,8 @@ _PING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=659,
-  serialized_end=711,
+  serialized_start=638,
+  serialized_end=690,
 )
 
 
@@ -449,8 +442,8 @@ _BENCHMARKCONFIGURATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=714,
-  serialized_end=881,
+  serialized_start=693,
+  serialized_end=860,
 )
 
 
@@ -488,8 +481,40 @@ _POINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=883,
-  serialized_end=927,
+  serialized_start=862,
+  serialized_end=906,
+)
+
+
+_POLYGON = _descriptor.Descriptor(
+  name='Polygon',
+  full_name='Challenger.Polygon',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='points', full_name='Challenger.Polygon.points', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=908,
+  serialized_end=952,
 )
 
 
@@ -530,7 +555,7 @@ _LOCATION = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='polygon', full_name='Challenger.Location.polygon', index=4,
+      name='polygons', full_name='Challenger.Location.polygons', index=4,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -548,8 +573,8 @@ _LOCATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=929,
-  serialized_end=1039,
+  serialized_start=954,
+  serialized_end=1067,
 )
 
 
@@ -580,8 +605,8 @@ _LOCATIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1041,
-  serialized_end=1093,
+  serialized_start=1069,
+  serialized_end=1121,
 )
 
 _PAYLOAD.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
@@ -591,7 +616,8 @@ _RESULTQ1.fields_by_name['result'].message_type = _RESULTQ1PAYLOAD
 _RESULTQ2.fields_by_name['result'].message_type = _RESULTQ2PAYLOAD
 _BENCHMARKCONFIGURATION.fields_by_name['queries'].enum_type = _BENCHMARKCONFIGURATION_QUERY
 _BENCHMARKCONFIGURATION_QUERY.containing_type = _BENCHMARKCONFIGURATION
-_LOCATION.fields_by_name['polygon'].message_type = _POINT
+_POLYGON.fields_by_name['points'].message_type = _POINT
+_LOCATION.fields_by_name['polygons'].message_type = _POLYGON
 _LOCATIONS.fields_by_name['locations'].message_type = _LOCATION
 DESCRIPTOR.message_types_by_name['Payload'] = _PAYLOAD
 DESCRIPTOR.message_types_by_name['Batch'] = _BATCH
@@ -603,6 +629,7 @@ DESCRIPTOR.message_types_by_name['ResultQ2'] = _RESULTQ2
 DESCRIPTOR.message_types_by_name['Ping'] = _PING
 DESCRIPTOR.message_types_by_name['BenchmarkConfiguration'] = _BENCHMARKCONFIGURATION
 DESCRIPTOR.message_types_by_name['Point'] = _POINT
+DESCRIPTOR.message_types_by_name['Polygon'] = _POLYGON
 DESCRIPTOR.message_types_by_name['Location'] = _LOCATION
 DESCRIPTOR.message_types_by_name['Locations'] = _LOCATIONS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -677,6 +704,13 @@ Point = _reflection.GeneratedProtocolMessageType('Point', (_message.Message,), {
   })
 _sym_db.RegisterMessage(Point)
 
+Polygon = _reflection.GeneratedProtocolMessageType('Polygon', (_message.Message,), {
+  'DESCRIPTOR' : _POLYGON,
+  '__module__' : 'challenger_pb2'
+  # @@protoc_insertion_point(class_scope:Challenger.Polygon)
+  })
+_sym_db.RegisterMessage(Polygon)
+
 Location = _reflection.GeneratedProtocolMessageType('Location', (_message.Message,), {
   'DESCRIPTOR' : _LOCATION,
   '__module__' : 'challenger_pb2'
@@ -701,8 +735,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1096,
-  serialized_end=1731,
+  serialized_start=1124,
+  serialized_end=1759,
   methods=[
   _descriptor.MethodDescriptor(
     name='getLocations',
