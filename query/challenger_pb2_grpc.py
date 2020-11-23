@@ -50,9 +50,14 @@ class ChallengerStub(object):
                 request_serializer=challenger__pb2.Benchmark.SerializeToString,
                 response_deserializer=challenger__pb2.Batch.FromString,
                 )
-        self.processed = channel.unary_unary(
-                '/Challenger.Challenger/processed',
-                request_serializer=challenger__pb2.Result.SerializeToString,
+        self.resultQ1 = channel.unary_unary(
+                '/Challenger.Challenger/resultQ1',
+                request_serializer=challenger__pb2.ResultQ1.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.resultQ2 = channel.unary_unary(
+                '/Challenger.Challenger/resultQ2',
+                request_serializer=challenger__pb2.ResultQ2.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.endBenchmark = channel.unary_unary(
@@ -116,9 +121,15 @@ class ChallengerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def processed(self, request, context):
+    def resultQ1(self, request, context):
         """post the result
         """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def resultQ2(self, request, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -168,9 +179,14 @@ def add_ChallengerServicer_to_server(servicer, server):
                     request_deserializer=challenger__pb2.Benchmark.FromString,
                     response_serializer=challenger__pb2.Batch.SerializeToString,
             ),
-            'processed': grpc.unary_unary_rpc_method_handler(
-                    servicer.processed,
-                    request_deserializer=challenger__pb2.Result.FromString,
+            'resultQ1': grpc.unary_unary_rpc_method_handler(
+                    servicer.resultQ1,
+                    request_deserializer=challenger__pb2.ResultQ1.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'resultQ2': grpc.unary_unary_rpc_method_handler(
+                    servicer.resultQ2,
+                    request_deserializer=challenger__pb2.ResultQ2.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'endBenchmark': grpc.unary_unary_rpc_method_handler(
@@ -308,7 +324,7 @@ class Challenger(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def processed(request,
+    def resultQ1(request,
             target,
             options=(),
             channel_credentials=None,
@@ -318,8 +334,25 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/processed',
-            challenger__pb2.Result.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/resultQ1',
+            challenger__pb2.ResultQ1.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def resultQ2(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/resultQ2',
+            challenger__pb2.ResultQ2.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
