@@ -265,6 +265,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
             b.endBenchmark(request.getId(), nanoTime);
+
+            Logger.info("Ended benchmark: " + b.toString());
             return b;
         });
 
