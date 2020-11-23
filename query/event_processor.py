@@ -174,7 +174,7 @@ class EventProcessor:
                 else:
                     self.location_improvment_map[location] = aqi_improvment
                     
-        loc_improv = OrderedDict(sorted(self.location_improvment_map.items(), key=lambda item:item[1]))
+        loc_improv = OrderedDict(sorted(self.location_improvment_map.items(), key=lambda item:item[1], reverse=True))
         loc_improv_iter = iter(loc_improv.items())
         
         print("Top 3 most improved zipcodes:")
