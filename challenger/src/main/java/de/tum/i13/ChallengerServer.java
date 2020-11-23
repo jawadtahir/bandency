@@ -54,6 +54,13 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         //TODO: precompute the batchsizes
         int batchSize = request.getBatchSize();
 
+        if(request.getQueriesList().size() < 1) {
+            Logger.info("no benchmark selected: " + request.getToken());
+            responseObserver.onError(new Exception("no benchmark selected"));
+            responseObserver.onCompleted();
+            return;
+        }
+
         //Save this benchmarkname to database
         //TODO:
         String benchmarkName = request.getBenchmarkName();
@@ -64,8 +71,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setBenchmarkId(benchmarkId);
         bms.setToken(token);
         bms.setBatchSize(batchSize);
+
         bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
         bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
+
 
         Logger.info("Ready for benchmark: " + bms.toString());
 
