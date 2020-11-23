@@ -62,8 +62,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         BenchmarkState bms = new BenchmarkState(this.dbInserter);
         bms.setToken(token);
         bms.setBatchSize(batchSize);
-        bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Queries.Q1));
-        bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Queries.Q2));
+        bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
+        bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
 
         this.benchmark.put(random_id, bms);
 

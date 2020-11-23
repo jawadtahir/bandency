@@ -63,11 +63,11 @@ message BenchmarkConfiguration {
   int32 batch_size = 2; //Small batches might need different algorithms than large batches
   string benchmark_name = 3; //chosen by the team, listed in the results
 
-  enum Queries {
+  enum Query {
     Q1 = 0;
     Q2 = 1;
   }
-  repeated Queries queries = 4;
+  repeated Query queries = 4;
 }
 
 message Point {
