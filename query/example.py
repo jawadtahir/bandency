@@ -63,7 +63,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
                              payload_seq_id=batch.seq_id,
                              result=result_payload_q1)
 
-        stub.resultQ1(result) #send the result of query 1, we have to
+        stub.resultQ1(result) #send the result of query 1, also send the result of Q2 in case you calculate both
         if batch.last or cnt > 1000: #here we just stop after 1000 so we see a result
             break
 

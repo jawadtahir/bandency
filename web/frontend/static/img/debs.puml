@@ -41,10 +41,16 @@ Challenger <- Participant: nextMessage(Benchmark)
 activate Challenger
 Challenger --> Participant: Payload
 
-Challenger <- Participant: processed(Result)
+group Parallelized calculation of results
+Challenger <- Participant: resultQ1(ResultQ1)
 Challenger --> Participant:
+Challenger <- Participant: resultQ2(ResultQ2)
+Challenger --> Participant:
+end
+
 deactivate Challenger
 end
+
 
 
 Challenger <- Participant: endBenchmark(Benchmark)

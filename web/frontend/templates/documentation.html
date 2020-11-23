@@ -39,13 +39,15 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
     </pre>
 
     <h4>Step 2</h4>
-    <p>Create a new Benchmark. You have to give it your token (see profile), set a benchmark name (this is used for your personal statistics) and the batchsize.
-        The event rate is around 4000 messages/second. For the final evaluation you will get access to VMs in our datacenter and bandwidth shouldn't be the bottleneck.</p>
+    <p>Create a new Benchmark. You have to give it your token (see profile), set a benchmark name (this is only shown in your team statistics) and the batchsize.
+        Also add the the list of which queries you want to run, either just one [Q1] [Q2] or both [Q1, Q2].
+        The real event rate of the source stream is around 4000 messages/second. </p>
     <pre>
         <code>
 benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
                                                    batch_size=5000,
-                                                   benchmark_name="shows_up_in_dashboard")
+                                                   benchmark_name="shows_up_in_dashboard"
+                                                   queries=[ch.BenchmarkConfiguration.Query.Q1])
 bench = stub.createNewBenchmark(benchmarkconfiguration)
         </code>
     </pre>
@@ -54,7 +56,7 @@ bench = stub.createNewBenchmark(benchmarkconfiguration)
     <p>Depending on your connectivity you might experience different latency and throughput. Optionally, we try to account for this by first measuring it.
         The payload of a Ping corresponds roughly to the payload of a batch and the returning Pong roughly the payload of a Result
         This kind of measurement is just for development and experimentation (since, well, it could be easily cheated ;-)).
-        We do not consider that once you deploy your implementation on the VMs in our infrastructure.</p>
+        We do not consider that once you deploy your implementation on the VMs in our infrastructure. The final evaluation will be run on VMs in our datacenter and bandwidth shouldn't be the bottleneck.</p>
     <pre>
         <code>
 ping = stub.initializeLatencyMeasuring(benchmark)
@@ -74,12 +76,13 @@ stub.startBenchmark(benchmark)
 
 batch = stub.nextMessage(benchmark)
 while batch:
-    result_payload = processTheBatch(batch) #here belongs your sophisticated implementation
-    result = ch.Result(benchmark_id=benchmark.id, #The id of the benchmark
-                       payload_seq_id=batch.seq_id,
-                       result=result_payload)
+    result_payload_q1 = processTheBatchQ1(batch) #here is your implementation ;)
+    result_payload_q1 = ch.ResultQ1Payload(resultData=1)
+    result = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
+                         payload_seq_id=batch.seq_id,
+                         result=result_payload_q1)
 
-    stub.processed(result) #send the result
+    stub.resultQ1(result) #send the result of query 1, also send the result of Q2 in case you calculate both
     if batch.last:
         break
 
@@ -89,6 +92,6 @@ stub.endBenchmark(benchmark)
         </code>
     </pre>
 
-    <p>Still have questions/Errors/Problems? => christoph.doblander@in.tum.de</p>
+    <p>Still have questions/Errors/Problems? => debschallenge2021@gmail.com</p>
 
 {% endblock %}
