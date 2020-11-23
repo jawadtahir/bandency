@@ -4,13 +4,9 @@ import com.google.common.base.Stopwatch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.geojson.Geometry;
-import com.mapbox.geojson.GeometryAdapterFactory;
-import com.mapbox.geojson.Point;
-import com.mapbox.geojson.Polygon;
+import com.mapbox.geojson.*;
 import com.mapbox.geojson.gson.GeoJsonAdapterFactory;
+import de.tum.i13.TodoException;
 import de.tum.i13.bandency.Location;
 import de.tum.i13.bandency.Locations;
 import okhttp3.OkHttpClient;
@@ -91,33 +87,25 @@ public class PrepareLocationDataset {
                         Polygon p = (Polygon)geometry;
                         if(p.coordinates().size() > 0) {
                             for(List<Point> points : p.coordinates()) {
-                                if (points.size() <= 3) { //below it would be just a line
-                                    continue;
+                                de.tum.i13.bandency.Polygon polygon = validatedFrom(points);
+                                if(polygon != null) {
+                                    locationBuilder.addPolygons(polygon);
                                 }
-
-                                de.tum.i13.bandency.Polygon.Builder pb = de.tum.i13.bandency.Polygon.newBuilder();
-
-                                Point first = points.get(0);
-                                Point last = points.get(points.size() - 1);
-
-                                if (first.longitude() == last.longitude() && first.latitude() == last.latitude()) {
-                                    for (com.mapbox.geojson.Point point : points) {
-                                        double latitude = point.latitude();
-                                        double longitude = point.longitude();
-                                        de.tum.i13.bandency.Point buildPoint = de.tum.i13.bandency.Point.newBuilder().setLatitude(latitude).setLongitude(longitude).build();
-
-                                        pb.addPoints(buildPoint);
-                                    }
-                                } else {
-                                    Logger.debug("skipping, polygon open: cnt: " + cnt + " plz: " + plz + " node: " + note + " qkm: " + qkm + " einwohner: " + einwohner);
-                                    continue;
-                                }
-
-                                locationBuilder.addPolygons(pb);
                             }
                         } else {
                             Logger.debug("skipping, polygon no coordinates: cnt: " + cnt + " plz: " + plz + " node: " + note + " qkm: " + qkm + " einwohner: " + einwohner);
                             continue;
+                        }
+                    } else if(geometry instanceof MultiPolygon){
+                        MultiPolygon p = (MultiPolygon)geometry;
+
+                        for(List<List<Point>> points_p : p.coordinates()) {
+                            for(List<Point> point_pp : points_p) {
+                                de.tum.i13.bandency.Polygon polygon = validatedFrom(point_pp);
+                                if(polygon != null) {
+                                    locationBuilder.addPolygons(polygon);
+                                }
+                            }
                         }
                     }
 
@@ -140,6 +128,32 @@ public class PrepareLocationDataset {
             LocationDataset ds = new LocationDataset(allLocations.build());
             return ds;
         }
+    }
+
+    private de.tum.i13.bandency.Polygon validatedFrom(List<Point> points) {
+        if (points.size() < 3) { //below it would be just a line
+            return null;
+        }
+
+        de.tum.i13.bandency.Polygon.Builder pb = de.tum.i13.bandency.Polygon.newBuilder();
+
+        Point first = points.get(0);
+        Point last = points.get(points.size() - 1);
+
+        if (first.longitude() == last.longitude() && first.latitude() == last.latitude()) {
+            for (com.mapbox.geojson.Point point : points) {
+                double latitude = point.latitude();
+                double longitude = point.longitude();
+                de.tum.i13.bandency.Point buildPoint = de.tum.i13.bandency.Point.newBuilder().setLatitude(latitude).setLongitude(longitude).build();
+
+                pb.addPoints(buildPoint);
+            }
+        } else {
+            //Logger.debug("skipping, polygon open: cnt: " + cnt + " plz: " + plz + " node: " + note + " qkm: " + qkm + " einwohner: " + einwohner);
+            return null;
+        }
+
+        return pb.build();
     }
 
     private void ensureDataSetDownloaded() throws IOException {
