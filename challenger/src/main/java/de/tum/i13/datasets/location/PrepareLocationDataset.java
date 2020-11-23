@@ -98,6 +98,7 @@ public class PrepareLocationDataset {
                         }
                     } else if(geometry instanceof MultiPolygon){
                         MultiPolygon p = (MultiPolygon)geometry;
+
                         for(List<List<Point>> points_p : p.coordinates()) {
                             for(List<Point> point_pp : points_p) {
                                 de.tum.i13.bandency.Polygon polygon = validatedFrom(point_pp);
