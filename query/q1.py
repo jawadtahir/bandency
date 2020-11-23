@@ -4,7 +4,7 @@ from datetime import datetime
 
 import grpc
 from google.protobuf import empty_pb2
-from data.event_processor import EventProcessor
+from event_processor import EventProcessor
 
 import challenger_pb2 as ch
 import challenger_pb2_grpc as api
@@ -54,10 +54,9 @@ class QueryOne:
                 print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (cnt, duration_so_far, num_current, num_historic, ( num_current + num_historic)))
 
             cnt = cnt + 1
-            event_proc.process(batch)
-            result_payload = ch.ResultPayload(resultData=1)
-            result = ch.Result(benchmark_id=bench.id, payload_seq_id=batch.seq_id, result=result_payload)
-            self.challengerstub.processed(result)
+            payload = event_proc.process(batch)
+            result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, result=payload)
+            self.challengerstub.resultQ1(result)
 
             if batch.last:
                 break

@@ -4,21 +4,17 @@ Created on Oct 22, 2020
 @author: foobar
 '''
 
-import csv
 import utils
 import numpy as np
 from datetime import datetime, timedelta
 from collections import OrderedDict
 from builtins import sorted
-from shapely.geometry import shape, Point
-import json
+from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
+import challenger_pb2 as ch
 from google.protobuf.json_format import MessageToDict
 
-SENSORS = ""
-MONTHSTAMPS = ""
 UNKNOWN = "UNKNOWN"
-ZIPCODE_GEOJSON_PATH = "/home/foobar/eclipse-workspace/gc/plz-5stellig.geojson"
 
 LATLONG_FORMATTER = "{:.6f}"
 DATETIME_FORMATTER = "%Y-%m-%dT%H:%M:%SZ"
@@ -27,6 +23,7 @@ DATETIME_FORMATTER = "%Y-%m-%dT%H:%M:%SZ"
 class EventProcessor:
 
     def __init__(self):
+        
         self.location_pm_window_map = {}
         self.location_year_aqi_map = {}
         self.last_processed_day = None
@@ -35,11 +32,10 @@ class EventProcessor:
         
         self.location_zip_cache = {}
         self.zipcode_polygons = []
-#         with open(ZIPCODE_GEOJSON_PATH) as f:
-#             self.zipcode_polygons = json.load(f)
             
             
     def configure(self, location_info_list):
+        
         print("Processing locations...")
         count = 0
         for location_info in location_info_list.locations:
@@ -59,9 +55,8 @@ class EventProcessor:
             count+=1
                 
             
-        
-        
     def _resolve_location(self, event):
+        
         if self.location_zip_cache.get(event["location"]):
             event["zipcode"] = self.location_zip_cache[event["location"]] 
             return
@@ -78,6 +73,7 @@ class EventProcessor:
         
         
     def pre_proc(self, batch):
+        
         events = list(batch.lastyear) + list(batch.current)
         ret_val = []
         for event in events:
@@ -89,6 +85,7 @@ class EventProcessor:
     
         
     def filter(self, event):
+        
         if event is None:
             return None
         
@@ -178,12 +175,14 @@ class EventProcessor:
                     self.location_improvment_map[location] = aqi_improvment
                     
         loc_improv = OrderedDict(sorted(self.location_improvment_map.items(), key=lambda item:item[1]))
-        loc_improv_iter = iter(loc_improv)
+        loc_improv_iter = iter(loc_improv.items())
         
         print("Top 3 most improved zipcodes:")
         print(next(loc_improv_iter))
         print(next(loc_improv_iter))
         print(next(loc_improv_iter))
+        
+        return ch.ResultQ1Payload(resultData=0)
                     
         
         
@@ -201,11 +200,8 @@ class EventProcessor:
                 self.execute(event)
                 count += 1
                 
-#         map(events, self.enrich)
-#         map(events, self.filter)
-#         map(events, self.execute)
                 
-        self.emit()
+        return self.emit()
         
 
 class TemporalSlidingWindow:
@@ -218,21 +214,8 @@ class TemporalSlidingWindow:
         # Expand
         self.timed_window[timestamp] = value
         # Contract
-        self.timed_window = {k: v for k,v in self.timed_window.items() if k < (timestamp + timedelta(hours=self.window))}
+        self.timed_window = {item[0]: item[1] for item in self.timed_window.items() if item[0] > (timestamp + timedelta(hours=self.window))}
             
     def get_array(self):
         return self.timed_window.values()
 
-
-# if __name__ == '__main__':
-#     proc = EventProcessor()
-#     
-#     gen = load_genrator.LoadGenerator()
-#     
-#     for record in gen.generate():
-#         proc.process(record)
-#     
-#     for fd in utils.get_fd_from_zipfiles(SENSORS , MONTHSTAMPS):
-#         for row in csv.DictReader(fd, delimiter=";"):
-#             proc.process(row)
-        
