@@ -5,7 +5,6 @@ import de.tum.i13.bandency.Payload;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Enumeration;
 
 public class AirqualityToBatch implements AirQualityDataSource {
 

@@ -3,12 +3,14 @@ package de.tum.i13;
 import com.google.protobuf.Empty;
 import de.tum.i13.bandency.*;
 import de.tum.i13.challenger.BenchmarkState;
+import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.location.LocationDataset;
 import io.grpc.stub.StreamObserver;
 import org.tinylog.Logger;
 
 import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,12 +20,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     final private LocationDataset ld;
     private final AirqualityDataset ad;
+    private final ArrayBlockingQueue<ToVerify> dbInserter;
 
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(LocationDataset ld, AirqualityDataset ad) {
+    public ChallengerServer(LocationDataset ld, AirqualityDataset ad, ArrayBlockingQueue<ToVerify> dbInserter) {
         this.ld = ld;
         this.ad = ad;
+        this.dbInserter = dbInserter;
         benchmark = new ConcurrentHashMap<>();
 
         reqcounter = new AtomicInteger(0);
@@ -53,15 +57,22 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         //Save this benchmarkname to database
         //TODO:
         String benchmarkName = request.getBenchmarkName();
-        long random_id = new Random().nextLong();
-        BenchmarkState bms = new BenchmarkState();
+        long benchmarkId = new Random().nextLong();
+
+        BenchmarkState bms = new BenchmarkState(this.dbInserter);
+        bms.setToken(token);
+        bms.setBenchmarkId(benchmarkId);
         bms.setToken(token);
         bms.setBatchSize(batchSize);
+        bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
+        bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
 
-        this.benchmark.put(random_id, bms);
+        Logger.info("Ready for benchmark: " + bms.toString());
+
+        this.benchmark.put(benchmarkId, bms);
 
         Benchmark bm = Benchmark.newBuilder()
-                .setId(random_id)
+                .setId(benchmarkId)
                 .build();
 
         responseObserver.onNext(bm);
@@ -184,7 +195,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         AtomicReference<Batch> batchRef = new AtomicReference<>();;
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
-            batchRef.set(b.getNextBatch());
+            batchRef.set(b.getNextBatch(request.getId()));
             return b;
         });
 
@@ -198,7 +209,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     }
 
     @Override
-    public void processed(Result request, StreamObserver<Empty> responseObserver) {
+    public void resultQ1(ResultQ1 request, StreamObserver<Empty> responseObserver) {
         long nanoTime = System.nanoTime();
 
         int req = reqcounter.incrementAndGet();
@@ -210,12 +221,34 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
 
         this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b) -> {
-            b.processed(request, nanoTime);
+            b.resultsQ1(request, nanoTime);
             return b;
         });
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void resultQ2(ResultQ2 request, StreamObserver<Empty> responseObserver) {
+        long nanoTime = System.nanoTime();
+
+        int req = reqcounter.incrementAndGet();
+        Logger.debug("processed - cnt: " + req);
+
+        if(!this.benchmark.containsKey(request.getBenchmarkId())) {
+            responseObserver.onError(new Exception("Benchmark not started"));
+            return;
+        }
+
+        this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b) -> {
+            b.resultsQ2(request, nanoTime);
+            return b;
+        });
+
+        responseObserver.onNext(Empty.newBuilder().build());
+        responseObserver.onCompleted();
+
     }
 
     @Override
@@ -231,7 +264,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
 
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
-            b.endBenchmark(nanoTime);
+            b.endBenchmark(request.getId(), nanoTime);
             return b;
         });
 

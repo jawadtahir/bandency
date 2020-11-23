@@ -1,7 +1,7 @@
 package de.tum.i13;
 
-import de.tum.i13.bandency.Batch;
-import de.tum.i13.bandency.Payload;
+import de.tum.i13.dal.ResultsVerifier;
+import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.*;
 import de.tum.i13.datasets.location.LocationDataset;
 import de.tum.i13.datasets.location.PrepareLocationDataset;
@@ -11,10 +11,7 @@ import org.tinylog.Logger;
 
 import java.net.InetAddress;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
-import static de.tum.i13.Util.convertPBTimestamp;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class Main {
 
@@ -36,8 +33,11 @@ public class Main {
             AirqualityFileAccess afa = new AirqualityFileAccess(Path.of(dataset));
             AirqualityDataset ad = new AirqualityDataset(afa, AccessType.FromDisk);
 
+            ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<ToVerify>(1_000_000, false);
+            ResultsVerifier rv = new ResultsVerifier(verificationQueue);
+
             Logger.info("Initializing Challenger Service");
-            ChallengerServer cs = new ChallengerServer(ld, ad);
+            ChallengerServer cs = new ChallengerServer(ld, ad, verificationQueue);
 
 
             Logger.info("Initializing Service");
@@ -48,6 +48,14 @@ public class Main {
                     .build();
 
             server.start();
+            Logger.info("Starting Results verifier");
+            Thread th = new Thread(rv);
+            th.start();
+
+
+            Runtime current = Runtime.getRuntime();
+            current.addShutdownHook(new ShutDown(rv, server));
+
             Logger.info("Serving");
             server.awaitTermination();
 

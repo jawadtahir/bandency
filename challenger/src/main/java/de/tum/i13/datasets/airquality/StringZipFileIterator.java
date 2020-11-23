@@ -1,7 +1,5 @@
 package de.tum.i13.datasets.airquality;
 
-import de.tum.i13.bandency.Payload;
-
 import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;

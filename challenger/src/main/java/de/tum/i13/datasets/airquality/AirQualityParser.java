@@ -2,7 +2,6 @@ package de.tum.i13.datasets.airquality;
 
 import com.google.protobuf.Timestamp;
 import de.tum.i13.bandency.Payload;
-import org.tinylog.Logger;
 
 import java.io.*;
 import java.time.LocalDate;

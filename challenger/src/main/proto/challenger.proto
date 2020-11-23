@@ -31,15 +31,26 @@ message Benchmark {
   int64 id = 1;
 }
 
-message ResultPayload {
+message ResultQ1Payload {
   int32 resultData = 1;
   //TODO add here the actual fields
 }
 
-message Result {
+message ResultQ1 {
   int64 benchmark_id = 1;
   int64 payload_seq_id = 2;
-  ResultPayload result = 3;
+  ResultQ1Payload result = 3;
+}
+
+message ResultQ2Payload {
+  int32 resultData = 1;
+  //TODO add here the actual fields
+}
+
+message ResultQ2 {
+  int64 benchmark_id = 1;
+  int64 payload_seq_id = 2;
+  ResultQ2Payload result = 3;
 }
 
 message Ping {
@@ -51,6 +62,12 @@ message BenchmarkConfiguration {
   string token = 1; //Token from the webapp for authentication
   int32 batch_size = 2; //Small batches might need different algorithms than large batches
   string benchmark_name = 3; //chosen by the team, listed in the results
+
+  enum Query {
+    Q1 = 0;
+    Q2 = 1;
+  }
+  repeated Query queries = 4;
 }
 
 message Point {
@@ -91,8 +108,10 @@ service Challenger {
 
   //get the next Batch
   rpc nextMessage(Benchmark) returns (Batch);
+
   //post the result
-  rpc processed(Result) returns (google.protobuf.Empty);
+  rpc resultQ1(ResultQ1) returns (google.protobuf.Empty);
+  rpc resultQ2(ResultQ2) returns (google.protobuf.Empty);
 
   //This marks the end of the throughput measurements
   rpc endBenchmark(Benchmark) returns (google.protobuf.Empty);
