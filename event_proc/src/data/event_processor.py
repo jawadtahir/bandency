@@ -6,7 +6,6 @@ Created on Oct 22, 2020
 
 import csv
 import utils
-from data import load_genrator
 import numpy as np
 from datetime import datetime, timedelta
 from collections import OrderedDict
@@ -14,13 +13,15 @@ from builtins import sorted
 from shapely.geometry import shape, Point
 import json
 from shapely.geometry.polygon import Polygon
+from google.protobuf.json_format import MessageToDict
 
 SENSORS = ""
 MONTHSTAMPS = ""
 UNKNOWN = "UNKNOWN"
 ZIPCODE_GEOJSON_PATH = "/home/foobar/eclipse-workspace/gc/plz-5stellig.geojson"
 
-LATLONG_FORMATTER = ":.6f"
+LATLONG_FORMATTER = "{:.6f}"
+DATETIME_FORMATTER = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class EventProcessor:
@@ -39,83 +40,110 @@ class EventProcessor:
             
             
     def configure(self, location_info_list):
+        print("Processing locations...")
+        count = 0
         for location_info in location_info_list.locations:
+            if count % 1000 == 0:
+                print("Locations processed: {}".format(count))
+                
             polygons = location_info.polygons
             for polygon in polygons:
-                for points in polygon:
-                    obj_points = []
-                    for point in points:
-                        obj_points.append(Point(point.longitude, point.latitude))
+                obj_points = []
+                for point in polygon.points:
+                    obj_points.append(Point(point.longitude, point.latitude))
                 
                 polygon = Polygon(obj_points)
                 polygon.zipcode = location_info.zipcode
                 self.zipcode_polygons.append(polygon)
                 
+            count+=1
+                
             
         
         
     def _resolve_location(self, event):
-        if self.location_zip_cache.get(event.location):
-            event.zipcode = self.location_zip_cache[event.location] 
+        if self.location_zip_cache.get(event["location"]):
+            event["zipcode"] = self.location_zip_cache[event["location"]] 
             return
         
-        point = Point(float(event.longitude), float(event.latitude))
+        point = Point(float(event["longitude"]), float(event["latitude"]))
         for polygon in self.zipcode_polygons:
             if polygon.contains(point):
-                event.zipcode = polygon.zipcode
-                self.location_zip_cache[event.location] = event.zipcode
+                event["zipcode"] = polygon.zipcode
+                self.location_zip_cache[event["location"]] = event["zipcode"]
                 return
         
-        self.location_zip_cache[event.location] = UNKNOWN
-        event.zipcode = UNKNOWN 
+        self.location_zip_cache[event["location"]] = UNKNOWN
+        event["zipcode"] = UNKNOWN 
         
         
     def pre_proc(self, batch):
-        events = [batch.lastyear, batch.current]
-        return events
+        events = list(batch.lastyear) + list(batch.current)
+        ret_val = []
+        for event in events:
+            if event.longitude is None or event.latitude is None:
+                continue
+            ret_val.append(MessageToDict(event))
+        print("Batch {}: {} events in batch".format(batch.seq_id, len(ret_val)))
+        return ret_val
     
         
     def filter(self, event):
-        if event.zipcode == UNKNOWN:
-            event = None
+        if event is None:
+            return None
+        
+        if event["zipcode"] == UNKNOWN:
+            return None
+        if not event.get("timestamp"):
+            return None
+        if not event.get("p2"):
+            return None
+        if not event.get("longitude") or not event.get("latitude"):
+            return None
+        else:
+            return event
         
     def enrich(self, event):
-        event.longitude = LATLONG_FORMATTER.format(event.longitude)
-        event.latitude = LATLONG_FORMATTER.format(event.latitude)
-        event.location = "{}, {}".format(event.longitude, event.latitude)
+        
+        if event.get("longitude") is None or event.get("latitude") is None:
+            return None
+         
+        event["longitude"] = LATLONG_FORMATTER.format(event["longitude"])
+        event["latitude"] = LATLONG_FORMATTER.format(event["latitude"])
+        event["location"] = "{}, {}".format(event["latitude"], event["longitude"])
             
         self._resolve_location(event)
         
-        event.timestamp = datetime.fromtimestamp(event.timestamp)
+        event["timestamp"] = datetime.strptime(event["timestamp"], DATETIME_FORMATTER)
         
-        if not event.p2:
-            event.p2 = np.nan
+            
+        return event
     
     
     def _calculate_AQI(self, event):
 
         def calculate_winavg_pm (event):
             
-            if self.location_pm_window_map.get(event.zipcode):
-                pm_window = self.location_pm_window_map[event.zipcode]
-                pm_window.add(event.timestamp, event.p2)
+            if self.location_pm_window_map.get(event["zipcode"]):
+                pm_window = self.location_pm_window_map[event["zipcode"]]
+                pm_window.add(event["timestamp"], event["p2"])
                 
             else:
-                pm_window = TemporalSlidingWindow(event.timestamp, event.p2)
-                self.location_pm_window_map[event.zipcode] = pm_window 
+                pm_window = TemporalSlidingWindow(event["timestamp"], event["p2"])
+                self.location_pm_window_map[event["zipcode"]] = pm_window 
                 
-            return np.nanmean(pm_window.get_array(
-                ))
+            return np.nanmean(list(pm_window.get_array(
+                )))
             
         con = calculate_winavg_pm(event)
-        event.AQI = utils.EPATableCalc(con)
+        event["AQI"] = utils.EPATableCalc(con)
         
-        aqi_map_index = "{}_{}".format(event.zipcode, event.timestamp.year)
+        aqi_map_index = "{}_{}".format(event["zipcode"], event["timestamp"].year)
         
         if self.location_year_aqi_map.get(aqi_map_index):
-            self.location_year_aqi_map[aqi_map_index] = self.location_year_aqi_map[aqi_map_index].add(event.timestamp, event.AQI) 
+            self.location_year_aqi_map[aqi_map_index].add(event["timestamp"], event["AQI"]) 
         else:
-            self.location_year_aqi_map[aqi_map_index] = TemporalSlidingWindow(event.timestamp, event.AQI)
+            self.location_year_aqi_map[aqi_map_index] = TemporalSlidingWindow(event["timestamp"], event["AQI"])
      
      
     def execute(self, event):
@@ -126,19 +154,6 @@ class EventProcessor:
         
     def emit(self):
 
-#         def get_previous_aqis(location, years_range):
-#             ret_val = []
-#             index_formatter = location + "_{}"
-#             for year_range in range(years_range):
-#                 previous_aqi = self.location_year_aqi_map.get(index_formatter.format(2019 - year_range))
-#                 if previous_aqi is None:
-#                     previous_aqi = np.nan
-#                 else:
-#                     previous_aqi = np.nanmean(previous_aqi.get_array())
-#                     
-#                 ret_val.insert(0, previous_aqi)
-#                 
-#             return ret_val
             
         for location_year in self.location_year_aqi_map.keys():
             location, year = location_year.split("_")
@@ -151,8 +166,8 @@ class EventProcessor:
                 current_aqi = self.location_year_aqi_map[location_year]
                 
                 
-                current_aqi = np.nanmean(current_aqi.get_array())
-                previous_aqi = np.nanmean(previous_aqi.get_array())
+                current_aqi = np.nanmean(list(current_aqi.get_array()))
+                previous_aqi = np.nanmean(list(previous_aqi.get_array()))
                 
                 
                 aqi_improvment = previous_aqi - current_aqi
@@ -162,7 +177,7 @@ class EventProcessor:
                 else:
                     self.location_improvment_map[location] = aqi_improvment
                     
-        loc_improv = OrderedDict(sorted(self.location_improvment_map, key=lambda k, v:v))
+        loc_improv = OrderedDict(sorted(self.location_improvment_map.items(), key=lambda item:item[1]))
         loc_improv_iter = iter(loc_improv)
         
         print("Top 3 most improved zipcodes:")
@@ -176,15 +191,19 @@ class EventProcessor:
     def process(self, batch):
         
         events = self.pre_proc(batch)
+        count = 0
         for event in events:
+            if count % 1000 == 0:
+                print("Events processed: {}".format(count))
             if event:
-#                 self.enrich(event)
-#                 self.filter(event)
-#                 self.execute(event)
+                event = self.enrich(event)
+                event = self.filter(event)
+                self.execute(event)
+                count += 1
                 
-                map(event, self.enrich)
-                map(event, self.filter)
-                map(event, self.execute)
+#         map(events, self.enrich)
+#         map(events, self.filter)
+#         map(events, self.execute)
                 
         self.emit()
         
@@ -199,11 +218,7 @@ class TemporalSlidingWindow:
         # Expand
         self.timed_window[timestamp] = value
         # Contract
-        for key in self.timed_window.keys():
-            if key < timestamp + timedelta(hours=self.window):
-                self.timed_window.pop(key)
-#             else:
-#                 break;
+        self.timed_window = {k: v for k,v in self.timed_window.items() if k < (timestamp + timedelta(hours=self.window))}
             
     def get_array(self):
         return self.timed_window.values()

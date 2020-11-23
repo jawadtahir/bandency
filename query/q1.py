@@ -30,7 +30,7 @@ class QueryOne:
         
         event_proc.configure(loc)
 
-        benchmarkconfiguration = ch.BenchmarkConfiguration(token="abc", batch_size=5000, benchmark_name="test benchmark")
+        benchmarkconfiguration = ch.BenchmarkConfiguration(token="abc", batch_size=5000, benchmark_name="test benchmark", queries=[ch.BenchmarkConfiguration.Query.Q1])
         bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
 
         # First, we measure the latency.
