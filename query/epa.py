@@ -33,6 +33,7 @@ class EPATable(object):
         self.table.append(EPAEntry(250.4, 150.5, 300.0, 201.0))
         self.table.append(EPAEntry(350.4, 250.5, 400.0, 301.0))
         self.table.append(EPAEntry(500.4, 350.5, 500.0, 401.0))
+        self.table.append(EPAEntry(99999.9, 500.5, 999.0, 501.0))
         
     def __getitem__(self, key):
         for entry in self.table:
