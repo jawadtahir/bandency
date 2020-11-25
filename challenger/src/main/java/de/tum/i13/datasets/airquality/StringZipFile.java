@@ -20,7 +20,7 @@ public class StringZipFile {
         ZipEntry zipEntry = zipFile.entries().nextElement();
         InputStream stream = zipFile.getInputStream(zipEntry);
         InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
-        BufferedReader br = new BufferedReader(isr, 64*1000);
+        BufferedReader br = new BufferedReader(isr, 10*1024*1024);
 
         return new StringZipFileIterator(zipFile, zipEntry, stream, isr, br);
     }
