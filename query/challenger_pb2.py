@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\023de.tum.i13.bandencyB\017ChallengerProtoP\001',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"u\n\x07Payload\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08latitude\x18\x02 \x01(\x02\x12\x11\n\tlongitude\x18\x03 \x01(\x02\x12\n\n\x02p1\x18\x04 \x01(\x02\x12\n\n\x02p2\x18\x05 \x01(\x02\"r\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12\x0c\n\x04last\x18\x02 \x01(\x08\x12$\n\x07\x63urrent\x18\x03 \x03(\x0b\x32\x13.Challenger.Payload\x12%\n\x08lastyear\x18\x04 \x03(\x0b\x32\x13.Challenger.Payload\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\"%\n\x0fResultQ1Payload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"e\n\x08ResultQ1\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12+\n\x06result\x18\x03 \x01(\x0b\x32\x1b.Challenger.ResultQ1Payload\"%\n\x0fResultQ2Payload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"e\n\x08ResultQ2\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12+\n\x06result\x18\x03 \x01(\x0b\x32\x1b.Challenger.ResultQ2Payload\"4\n\x04Ping\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\x03\"\xa7\x01\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x16\n\x0e\x62\x65nchmark_name\x18\x03 \x01(\t\x12\x39\n\x07queries\x18\x04 \x03(\x0e\x32(.Challenger.BenchmarkConfiguration.Query\"\x17\n\x05Query\x12\x06\n\x02Q1\x10\x00\x12\x06\n\x02Q2\x10\x01\",\n\x05Point\x12\x11\n\tlongitude\x18\x01 \x01(\x01\x12\x10\n\x08latitude\x18\x02 \x01(\x01\",\n\x07Polygon\x12!\n\x06points\x18\x01 \x03(\x0b\x32\x11.Challenger.Point\"q\n\x08Location\x12\x0f\n\x07zipcode\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x0b\n\x03qkm\x18\x03 \x01(\x01\x12\x12\n\npopulation\x18\x04 \x01(\x05\x12%\n\x08polygons\x18\x05 \x03(\x0b\x32\x13.Challenger.Polygon\"4\n\tLocations\x12\'\n\tlocations\x18\x01 \x03(\x0b\x32\x14.Challenger.Location2\xfb\x04\n\nChallenger\x12=\n\x0cgetLocations\x12\x16.google.protobuf.Empty\x1a\x15.Challenger.Locations\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12\x45\n\x1ainitializeLatencyMeasuring\x12\x15.Challenger.Benchmark\x1a\x10.Challenger.Ping\x12-\n\x07measure\x12\x10.Challenger.Ping\x1a\x10.Challenger.Ping\x12:\n\x0e\x65ndMeasurement\x12\x10.Challenger.Ping\x1a\x16.google.protobuf.Empty\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x37\n\x0bnextMessage\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x38\n\x08resultQ1\x12\x14.Challenger.ResultQ1\x1a\x16.google.protobuf.Empty\x12\x38\n\x08resultQ2\x12\x14.Challenger.ResultQ2\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB(\n\x13\x64\x65.tum.i13.bandencyB\x0f\x43hallengerProtoP\x01\x62\x06proto3'
+  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"u\n\x07Payload\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08latitude\x18\x02 \x01(\x02\x12\x11\n\tlongitude\x18\x03 \x01(\x02\x12\n\n\x02p1\x18\x04 \x01(\x02\x12\n\n\x02p2\x18\x05 \x01(\x02\"r\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12\x0c\n\x04last\x18\x02 \x01(\x08\x12$\n\x07\x63urrent\x18\x03 \x03(\x0b\x32\x13.Challenger.Payload\x12%\n\x08lastyear\x18\x04 \x03(\x0b\x32\x13.Challenger.Payload\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\"t\n\nTopKCities\x12\x10\n\x08position\x18\x01 \x01(\x05\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x1d\n\x15\x61verageAQIImprovement\x18\x03 \x01(\x02\x12\x12\n\ncurrentAQI\x18\x04 \x01(\x02\x12\x13\n\x0bpreviousAQI\x18\x05 \x01(\x02\"^\n\x08ResultQ1\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12$\n\x04topk\x18\x03 \x03(\x0b\x32\x16.Challenger.TopKCities\"%\n\x0fResultQ2Payload\x12\x12\n\nresultData\x18\x01 \x01(\x05\"e\n\x08ResultQ2\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12+\n\x06result\x18\x03 \x01(\x0b\x32\x1b.Challenger.ResultQ2Payload\"4\n\x04Ping\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\x03\"\xa7\x01\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x16\n\x0e\x62\x65nchmark_name\x18\x03 \x01(\t\x12\x39\n\x07queries\x18\x04 \x03(\x0e\x32(.Challenger.BenchmarkConfiguration.Query\"\x17\n\x05Query\x12\x06\n\x02Q1\x10\x00\x12\x06\n\x02Q2\x10\x01\",\n\x05Point\x12\x11\n\tlongitude\x18\x01 \x01(\x01\x12\x10\n\x08latitude\x18\x02 \x01(\x01\",\n\x07Polygon\x12!\n\x06points\x18\x01 \x03(\x0b\x32\x11.Challenger.Point\"q\n\x08Location\x12\x0f\n\x07zipcode\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x0b\n\x03qkm\x18\x03 \x01(\x01\x12\x12\n\npopulation\x18\x04 \x01(\x05\x12%\n\x08polygons\x18\x05 \x03(\x0b\x32\x13.Challenger.Polygon\"4\n\tLocations\x12\'\n\tlocations\x18\x01 \x03(\x0b\x32\x14.Challenger.Location2\xfb\x04\n\nChallenger\x12=\n\x0cgetLocations\x12\x16.google.protobuf.Empty\x1a\x15.Challenger.Locations\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12\x45\n\x1ainitializeLatencyMeasuring\x12\x15.Challenger.Benchmark\x1a\x10.Challenger.Ping\x12-\n\x07measure\x12\x10.Challenger.Ping\x1a\x10.Challenger.Ping\x12:\n\x0e\x65ndMeasurement\x12\x10.Challenger.Ping\x1a\x16.google.protobuf.Empty\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x37\n\x0bnextMessage\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x38\n\x08resultQ1\x12\x14.Challenger.ResultQ1\x1a\x16.google.protobuf.Empty\x12\x38\n\x08resultQ2\x12\x14.Challenger.ResultQ2\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB(\n\x13\x64\x65.tum.i13.bandencyB\x0f\x43hallengerProtoP\x01\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -47,8 +47,8 @@ _BENCHMARKCONFIGURATION_QUERY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=837,
-  serialized_end=860,
+  serialized_start=909,
+  serialized_end=932,
 )
 _sym_db.RegisterEnumDescriptor(_BENCHMARKCONFIGURATION_QUERY)
 
@@ -198,18 +198,46 @@ _BENCHMARK = _descriptor.Descriptor(
 )
 
 
-_RESULTQ1PAYLOAD = _descriptor.Descriptor(
-  name='ResultQ1Payload',
-  full_name='Challenger.ResultQ1Payload',
+_TOPKCITIES = _descriptor.Descriptor(
+  name='TopKCities',
+  full_name='Challenger.TopKCities',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='resultData', full_name='Challenger.ResultQ1Payload.resultData', index=0,
+      name='position', full_name='Challenger.TopKCities.position', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='city', full_name='Challenger.TopKCities.city', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='averageAQIImprovement', full_name='Challenger.TopKCities.averageAQIImprovement', index=2,
+      number=3, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='currentAQI', full_name='Challenger.TopKCities.currentAQI', index=3,
+      number=4, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='previousAQI', full_name='Challenger.TopKCities.previousAQI', index=4,
+      number=5, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -226,7 +254,7 @@ _RESULTQ1PAYLOAD = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=354,
-  serialized_end=391,
+  serialized_end=470,
 )
 
 
@@ -253,9 +281,9 @@ _RESULTQ1 = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='result', full_name='Challenger.ResultQ1.result', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='topk', full_name='Challenger.ResultQ1.topk', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -271,8 +299,8 @@ _RESULTQ1 = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=393,
-  serialized_end=494,
+  serialized_start=472,
+  serialized_end=566,
 )
 
 
@@ -303,8 +331,8 @@ _RESULTQ2PAYLOAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=496,
-  serialized_end=533,
+  serialized_start=568,
+  serialized_end=605,
 )
 
 
@@ -349,8 +377,8 @@ _RESULTQ2 = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=535,
-  serialized_end=636,
+  serialized_start=607,
+  serialized_end=708,
 )
 
 
@@ -388,8 +416,8 @@ _PING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=638,
-  serialized_end=690,
+  serialized_start=710,
+  serialized_end=762,
 )
 
 
@@ -442,8 +470,8 @@ _BENCHMARKCONFIGURATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=693,
-  serialized_end=860,
+  serialized_start=765,
+  serialized_end=932,
 )
 
 
@@ -481,8 +509,8 @@ _POINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=862,
-  serialized_end=906,
+  serialized_start=934,
+  serialized_end=978,
 )
 
 
@@ -513,8 +541,8 @@ _POLYGON = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=908,
-  serialized_end=952,
+  serialized_start=980,
+  serialized_end=1024,
 )
 
 
@@ -573,8 +601,8 @@ _LOCATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=954,
-  serialized_end=1067,
+  serialized_start=1026,
+  serialized_end=1139,
 )
 
 
@@ -605,14 +633,14 @@ _LOCATIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1069,
-  serialized_end=1121,
+  serialized_start=1141,
+  serialized_end=1193,
 )
 
 _PAYLOAD.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _BATCH.fields_by_name['current'].message_type = _PAYLOAD
 _BATCH.fields_by_name['lastyear'].message_type = _PAYLOAD
-_RESULTQ1.fields_by_name['result'].message_type = _RESULTQ1PAYLOAD
+_RESULTQ1.fields_by_name['topk'].message_type = _TOPKCITIES
 _RESULTQ2.fields_by_name['result'].message_type = _RESULTQ2PAYLOAD
 _BENCHMARKCONFIGURATION.fields_by_name['queries'].enum_type = _BENCHMARKCONFIGURATION_QUERY
 _BENCHMARKCONFIGURATION_QUERY.containing_type = _BENCHMARKCONFIGURATION
@@ -622,7 +650,7 @@ _LOCATIONS.fields_by_name['locations'].message_type = _LOCATION
 DESCRIPTOR.message_types_by_name['Payload'] = _PAYLOAD
 DESCRIPTOR.message_types_by_name['Batch'] = _BATCH
 DESCRIPTOR.message_types_by_name['Benchmark'] = _BENCHMARK
-DESCRIPTOR.message_types_by_name['ResultQ1Payload'] = _RESULTQ1PAYLOAD
+DESCRIPTOR.message_types_by_name['TopKCities'] = _TOPKCITIES
 DESCRIPTOR.message_types_by_name['ResultQ1'] = _RESULTQ1
 DESCRIPTOR.message_types_by_name['ResultQ2Payload'] = _RESULTQ2PAYLOAD
 DESCRIPTOR.message_types_by_name['ResultQ2'] = _RESULTQ2
@@ -655,12 +683,12 @@ Benchmark = _reflection.GeneratedProtocolMessageType('Benchmark', (_message.Mess
   })
 _sym_db.RegisterMessage(Benchmark)
 
-ResultQ1Payload = _reflection.GeneratedProtocolMessageType('ResultQ1Payload', (_message.Message,), {
-  'DESCRIPTOR' : _RESULTQ1PAYLOAD,
+TopKCities = _reflection.GeneratedProtocolMessageType('TopKCities', (_message.Message,), {
+  'DESCRIPTOR' : _TOPKCITIES,
   '__module__' : 'challenger_pb2'
-  # @@protoc_insertion_point(class_scope:Challenger.ResultQ1Payload)
+  # @@protoc_insertion_point(class_scope:Challenger.TopKCities)
   })
-_sym_db.RegisterMessage(ResultQ1Payload)
+_sym_db.RegisterMessage(TopKCities)
 
 ResultQ1 = _reflection.GeneratedProtocolMessageType('ResultQ1', (_message.Message,), {
   'DESCRIPTOR' : _RESULTQ1,
@@ -735,8 +763,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1124,
-  serialized_end=1759,
+  serialized_start=1196,
+  serialized_end=1831,
   methods=[
   _descriptor.MethodDescriptor(
     name='getLocations',

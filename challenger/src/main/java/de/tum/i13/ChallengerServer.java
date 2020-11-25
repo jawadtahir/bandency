@@ -7,6 +7,8 @@ import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.location.LocationDataset;
 import io.grpc.stub.StreamObserver;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Histogram;
 import org.tinylog.Logger;
 
 import java.util.Random;
@@ -22,6 +24,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     private final AirqualityDataset ad;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
 
+
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
     public ChallengerServer(LocationDataset ld, AirqualityDataset ad, ArrayBlockingQueue<ToVerify> dbInserter) {
@@ -33,13 +36,25 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         reqcounter = new AtomicInteger(0);
     }
 
+    static final Counter getLocationsCounter = Counter.build()
+            .name("getLocations")
+            .help("calls to getLocations methods")
+            .register();
+
     @Override
     public void getLocations(Empty request, StreamObserver<Locations> responseObserver) {
         int req = reqcounter.incrementAndGet();
         Logger.debug("getLocations - cnt: " + req);
         responseObserver.onNext(ld.getAllLocations());
         responseObserver.onCompleted();
+
+        getLocationsCounter.inc();
     }
+
+    static final Counter createNewBenchmarkCounter = Counter.build()
+            .name("createNewBenchmark")
+            .help("calls to createNewBenchmark methods")
+            .register();
 
     @Override
     public void createNewBenchmark(BenchmarkConfiguration request, StreamObserver<Benchmark> responseObserver) {
@@ -86,7 +101,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         responseObserver.onNext(bm);
         responseObserver.onCompleted();
+
+        createNewBenchmarkCounter.inc();
     }
+
+    static final Counter initializeLatencyMeasuringCounter = Counter.build()
+            .name("initializeLatencyMeasuring")
+            .help("calls to initializeLatencyMeasuring methods")
+            .register();
 
     @Override
     public void initializeLatencyMeasuring(Benchmark request, StreamObserver<Ping> responseObserver) {
@@ -111,7 +133,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         responseObserver.onNext(ping);
         responseObserver.onCompleted();
+
+        initializeLatencyMeasuringCounter.inc();
     }
+
+    static final Counter measureCounter = Counter.build()
+            .name("measure")
+            .help("calls to measure methods")
+            .register();
 
     @Override
     public void measure(Ping request, StreamObserver<Ping> responseObserver) {
@@ -145,7 +174,15 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
         responseObserver.onNext(ping.get());
         responseObserver.onCompleted();
+
+        measureCounter.inc();
     }
+
+
+    static final Counter endMeasurementCounter = Counter.build()
+            .name("endMeasurement")
+            .help("calls to endMeasurement methods")
+            .register();
 
     @Override
     public void endMeasurement(Ping request, StreamObserver<Empty> responseObserver) {
@@ -170,7 +207,15 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
+
+        endMeasurementCounter.inc();
     }
+
+
+    static final Counter startBenchmarkCounter = Counter.build()
+            .name("startBenchmark")
+            .help("calls to startBenchmark methods")
+            .register();
 
     @Override
     public void startBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
@@ -190,7 +235,18 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
+
+        startBenchmarkCounter.inc();
     }
+
+    static final Histogram batchReadLatency = Histogram.build()
+            .name("batchReadLatency_seconds")
+            .help("Batch read latency in seconds.").register();
+
+    static final Counter nextMessageCounter = Counter.build()
+            .name("nextMessage")
+            .help("calls to nextMessage methods")
+            .register();
 
     @Override
     public void nextMessage(Benchmark request, StreamObserver<Batch> responseObserver) {
@@ -204,7 +260,11 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         AtomicReference<Batch> batchRef = new AtomicReference<>();;
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
+
+            Histogram.Timer batchReadTimer = batchReadLatency.startTimer();
             batchRef.set(b.getNextBatch(request.getId()));
+            batchReadTimer.observeDuration();
+
             return b;
         });
 
@@ -215,7 +275,15 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             responseObserver.onNext(acquired_batch);
             responseObserver.onCompleted();
         }
+
+        nextMessageCounter.inc();
     }
+
+
+    static final Counter resultQ1Counter = Counter.build()
+            .name("resultQ1")
+            .help("calls to resultQ1 methods")
+            .register();
 
     @Override
     public void resultQ1(ResultQ1 request, StreamObserver<Empty> responseObserver) {
@@ -236,7 +304,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
+
+        resultQ1Counter.inc();
     }
+
+    static final Counter resultQ2Counter = Counter.build()
+            .name("resultQ2")
+            .help("calls to resultQ2 methods")
+            .register();
 
     @Override
     public void resultQ2(ResultQ2 request, StreamObserver<Empty> responseObserver) {
@@ -258,8 +333,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
 
+        resultQ2Counter.inc();
     }
 
+
+    static final Counter endBenchmarkCounter = Counter.build()
+            .name("endBenchmark")
+            .help("calls to endBenchmark methods")
+            .register();
     @Override
     public void endBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
         long nanoTime = System.nanoTime();
@@ -281,5 +362,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
+
+        endBenchmarkCounter.inc();
     }
 }

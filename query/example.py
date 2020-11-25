@@ -15,7 +15,8 @@ import challenger_pb2_grpc as api
 
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+#with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
     #Step 1 - get all locations
@@ -58,10 +59,9 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
 
 
         #result_payload_q1 = processTheBatchQ1(batch) #here is your implementation ;)
-        result_payload_q1 = ch.ResultQ1Payload(resultData=1)
         result = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
                              payload_seq_id=batch.seq_id,
-                             result=result_payload_q1)
+                             topk=[])
 
         stub.resultQ1(result) #send the result of query 1, also send the result of Q2 in case you calculate both
         if batch.last or cnt > 10_000: #here we just stop after 1000 so we see a result

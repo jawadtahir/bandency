@@ -92,7 +92,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
     }
 
     private void parseNext() {
-        while (curr == null) {
+        while (curr == null && szfi != null) {
             try {
                 Payload p = parseFromString(szfi.nextElement());
                 if(p == null) {

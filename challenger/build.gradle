@@ -54,6 +54,10 @@ dependencies {
     implementation 'com.mapbox.mapboxsdk:mapbox-sdk-geojson:5.5.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
 
+    implementation 'io.prometheus:simpleclient:0.9.0'
+    implementation 'io.prometheus:simpleclient_hotspot:0.9.0'
+    implementation 'io.prometheus:simpleclient_httpserver:0.9.0'
+
     implementation 'org.tinylog:tinylog-api:2.2.0'
     implementation 'org.tinylog:tinylog-impl:2.2.0'
 

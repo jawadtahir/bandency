@@ -13,6 +13,10 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import io.prometheus.client.exporter.HTTPServer;
+
+import javax.management.remote.JMXConnector;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -39,7 +43,6 @@ public class Main {
             Logger.info("Initializing Challenger Service");
             ChallengerServer cs = new ChallengerServer(ld, ad, verificationQueue);
 
-
             Logger.info("Initializing Service");
             Server server = ServerBuilder
                     .forPort(8081)
@@ -48,6 +51,10 @@ public class Main {
                     .build();
 
             server.start();
+
+            Logger.info("Initilize Prometheus");
+            new HTTPServer(8023); //This starts already a background thread serving the default registry
+
             Logger.info("Starting Results verifier");
             Thread th = new Thread(rv);
             th.start();
