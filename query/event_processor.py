@@ -5,6 +5,7 @@ Created on Oct 22, 2020
 '''
 
 import utils
+import os
 import numpy as np
 from datetime import datetime, timedelta
 from collections import OrderedDict
@@ -170,30 +171,30 @@ class EventProcessor:
                 aqi_improvment = previous_aqi - current_aqi
                 
                 if self.location_improvment_map.get(location):
-                    self.location_improvment_map[location] = self.location_improvment_map[location] + aqi_improvment
+                    self.location_improvment_map[location] = [self.location_improvment_map[location][0] + aqi_improvment, previous_aqi, current_aqi]
                 else:
-                    self.location_improvment_map[location] = aqi_improvment
+                    self.location_improvment_map[location] = [aqi_improvment, previous_aqi, current_aqi]
                     
-        loc_improv = OrderedDict(sorted(self.location_improvment_map.items(), key=lambda item:item[1], reverse=True))
+        loc_improv = OrderedDict(sorted(self.location_improvment_map.items(), key=lambda item:item[1][0], reverse=True))
         loc_improv_iter = iter(loc_improv.items())
-        
-        print("Top 3 most improved zipcodes:")
-        print(next(loc_improv_iter))
-        print(next(loc_improv_iter))
-        print(next(loc_improv_iter))
-        
+
+        os.system('clear')
+        topk = 50
+        print("Top %s most improved zipcodes:" % topk)
+        for i in range(topk):
+            res = next(loc_improv_iter)
+            print("pos: %s, city: %s, improvement: %s, previous: %s, current: %s " % (i, res[0], res[1][0], res[1][1], res[1][2]))
+
         return ch.ResultQ1Payload(resultData=0)
-                    
-        
-        
-    
+
+
     def process(self, batch):
         
         events = self.pre_proc(batch)
         count = 0
         for event in events:
-            if count % 1000 == 0:
-                print("Events processed: {}".format(count))
+            #if count % 1000 == 0:
+            #    print("Events processed: {}".format(count))
             if event:
                 event = self.enrich(event)
                 event = self.filter(event)

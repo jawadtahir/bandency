@@ -24,7 +24,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
 
     #Step 2 - Create a new Benchmark
     benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
-                                                       batch_size=5000,
+                                                       batch_size=10_000,
                                                        benchmark_name="shows_up_in_dashboard",
                                                        queries=[ch.BenchmarkConfiguration.Query.Q1])
     benchmark = stub.createNewBenchmark(benchmarkconfiguration)
@@ -64,7 +64,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
                              result=result_payload_q1)
 
         stub.resultQ1(result) #send the result of query 1, also send the result of Q2 in case you calculate both
-        if batch.last or cnt > 1000: #here we just stop after 1000 so we see a result
+        if batch.last or cnt > 10_000: #here we just stop after 1000 so we see a result
             break
 
         cnt = cnt + 1
