@@ -30,9 +30,17 @@ message Benchmark {
   int64 id = 1;
 }
 
+message TopKCities {
+  int32 position = 1;
+  string city = 2;
+  float averageImprovement = 3;
+  float currentAQI = 4;
+  float previousAQI = 5;
+}
+
 message ResultQ1Payload {
   int32 resultData = 1;
-  //TODO add here the actual fields
+  repeated TopKCities topk = 2;
 }
 
 message ResultQ1 {

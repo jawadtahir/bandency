@@ -33,6 +33,8 @@ class EventProcessor:
         
         self.location_zip_cache = {}
         self.zipcode_polygons = []
+
+        self.cnt = 0
             
             
     def configure(self, location_info_list):
@@ -151,6 +153,7 @@ class EventProcessor:
         self._calculate_AQI(event)
         
     def emit(self):
+        self.cnt = self.cnt + 1
 
             
         for location_year in self.location_year_aqi_map.keys():
@@ -171,11 +174,13 @@ class EventProcessor:
                 aqi_improvment = previous_aqi - current_aqi
                 
                 if self.location_improvment_map.get(location):
-                    self.location_improvment_map[location] = [self.location_improvment_map[location][0] + aqi_improvment, previous_aqi, current_aqi]
+                    self.location_improvment_map[location] = [self.location_improvment_map[location][0] + aqi_improvment, previous_aqi, current_aqi, 0]
                 else:
-                    self.location_improvment_map[location] = [aqi_improvment, previous_aqi, current_aqi]
+                    self.location_improvment_map[location] = [aqi_improvment, previous_aqi, current_aqi, 0]
+
+                self.location_improvment_map[location][3] = float(self.location_improvment_map[location][1])/float(self.cnt)
                     
-        loc_improv = OrderedDict(sorted(self.location_improvment_map.items(), key=lambda item:item[1][0], reverse=True))
+        loc_improv = OrderedDict(sorted(self.location_improvment_map.items(), key=lambda item:item[1][3], reverse=True))
         loc_improv_iter = iter(loc_improv.items())
 
         os.system('clear')
