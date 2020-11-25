@@ -155,6 +155,8 @@ class EventProcessor:
     def emit(self):
         self.cnt = self.cnt + 1
 
+        max_date_in_batch = None
+
             
         for location_year in self.location_year_aqi_map.keys():
             location, year = location_year.split("_")
@@ -169,6 +171,11 @@ class EventProcessor:
                 
                 current_aqi = np.nanmean(list(current_aqi.get_array()))
                 previous_aqi = np.nanmean(list(previous_aqi.get_array()))
+
+                if max_date_in_batch is None:
+                    max_date_in_batch = self.location_year_aqi_map[location_year].maxdatetime
+                elif self.location_year_aqi_map[location_year].maxdatetime is not None:
+                    max_date_in_batch = max(self.location_year_aqi_map[location_year].maxdatetime, max_date_in_batch)
                 
                 
                 aqi_improvment = previous_aqi - current_aqi
@@ -185,10 +192,11 @@ class EventProcessor:
 
         os.system('clear')
         topk = 50
-        print("Top %s most improved zipcodes:" % topk)
-        for i in range(topk):
+
+        print("Top %s most improved zipcodes, last 24h - date: %s :" % (topk, max_date_in_batch))
+        for i in range(1, topk+1):
             res = next(loc_improv_iter)
-            print("pos: %s, city: %s, improvement: %s, previous: %s, current: %s " % (i, res[0], res[1][0], res[1][1], res[1][2]))
+            print("pos: %s, city: %s, avg improvement: %s, previous: %s, current: %s " % (i, res[0], res[1][3], res[1][1], res[1][2]))
 
         return ch.ResultQ1Payload(resultData=0)
 
@@ -215,12 +223,18 @@ class TemporalSlidingWindow:
     def __init__(self, timestamp: datetime, value, window_hours=24):
         self.timed_window = OrderedDict({timestamp: value});
         self.window = -window_hours
+        self.maxdatetime = None
         
     def add(self, timestamp: datetime, value):
         # Expand
         self.timed_window[timestamp] = value
         # Contract
         self.timed_window = {item[0]: item[1] for item in self.timed_window.items() if item[0] > (timestamp + timedelta(hours=self.window))}
+
+        if self.maxdatetime is None:
+            self.maxdatetime = timestamp
+        else:
+            self.maxdatetime = max(self.maxdatetime, timestamp)
             
     def get_array(self):
         return self.timed_window.values()
