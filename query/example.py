@@ -15,8 +15,8 @@ import challenger_pb2_grpc as api
 
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-#with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
-with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
+with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+#with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
     #Step 1 - get all locations
@@ -25,7 +25,7 @@ with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
 
     #Step 2 - Create a new Benchmark
     benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
-                                                       batch_size=10_000,
+                                                       batch_size=1_000,
                                                        benchmark_name="shows_up_in_dashboard",
                                                        queries=[ch.BenchmarkConfiguration.Query.Q1])
     benchmark = stub.createNewBenchmark(benchmarkconfiguration)
