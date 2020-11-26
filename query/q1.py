@@ -55,7 +55,7 @@ class QueryOne:
 
             cnt = cnt + 1
             payload = event_proc.process(batch)
-            result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, result=payload)
+            result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topk=payload)
             self.challengerstub.resultQ1(result)
 
             if batch.last:

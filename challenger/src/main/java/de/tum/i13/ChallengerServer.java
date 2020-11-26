@@ -56,6 +56,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             .help("calls to createNewBenchmark methods")
             .register();
 
+
+    static final Histogram batchSizeHistogram = Histogram.build()
+            .name("batchsize")
+            .help("batchsize of benchmark")
+            .linearBuckets(0.0, 20_000.0, 10)
+            .create()
+            .register();
+
     @Override
     public void createNewBenchmark(BenchmarkConfiguration request, StreamObserver<Benchmark> responseObserver) {
         int req = reqcounter.incrementAndGet();
@@ -68,6 +76,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         //Only a certain configuration for the batchsize is allowed, check if this is allowed
         //TODO: precompute the batchsizes
         int batchSize = request.getBatchSize();
+        if(batchSize > 20_000) {
+            Logger.info("no benchmark selected: " + request.getToken());
+            responseObserver.onError(new Exception("batchsize to large"));
+            responseObserver.onCompleted();
+            return;
+        }
+
+        batchSizeHistogram.observe(batchSize);
 
         if(request.getQueriesList().size() < 1) {
             Logger.info("no benchmark selected: " + request.getToken());

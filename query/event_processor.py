@@ -199,14 +199,17 @@ class EventProcessor:
         os.system('clear')
         topk = 50
 
+        topklist = list()
         print("Top %s most improved zipcodes, last 24h - date: %s :" %
               (topk, max_date_in_batch))
         for i in range(1, topk + 1):
             res = next(loc_improv_iter)
             print("pos: %s, city: %s, avg improvement: %s, previous: %s, current: %s " % (
                 i, res[0], res[1][3], res[1][1], res[1][2]))
+            topklist.append(ch.TopKCities(position=1, city=res[0], averageAQIImprovement=res[1][3], currentAQI=res[1][1], previousAQI=res[1][2]))
 
-        return ch.ResultQ1Payload(resultData=0)
+
+        return topklist
 
     def process(self, batch):
 
