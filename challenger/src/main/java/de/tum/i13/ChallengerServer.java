@@ -177,6 +177,11 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             .help("calls to endMeasurement methods")
             .register();
 
+    static final Histogram measurementHistogram = Histogram.build()
+            .name("clientLatency")
+            .help("measurements of client latency")
+            .register();
+
     @Override
     public void endMeasurement(Ping request, StreamObserver<Empty> responseObserver) {
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
@@ -190,7 +195,9 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             double v = b.calcAverageTransportLatency();
             if(v > 0) {
                 v /= 1_000_000;
+                measurementHistogram.observe(v);
             }
+
             Logger.debug("average latency: " + v + "ms");
             return b;
         });
