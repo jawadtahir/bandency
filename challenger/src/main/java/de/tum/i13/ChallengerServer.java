@@ -245,7 +245,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     static final Histogram batchSizeHistogram = Histogram.build()
             .name("batchsize")
             .help("batchsize of benchmark")
-            .linearBuckets(0.0, 1_000.0, 20)
+            .linearBuckets(0.0, 1_000.0, 21)
             .create()
             .register();
 
