@@ -18,8 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
-    private final AtomicInteger reqcounter;
-
     final private LocationDataset ld;
     private final AirqualityDataset ad;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
@@ -32,8 +30,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         this.ad = ad;
         this.dbInserter = dbInserter;
         benchmark = new ConcurrentHashMap<>();
-
-        reqcounter = new AtomicInteger(0);
     }
 
     static final Counter getLocationsCounter = Counter.build()
@@ -43,8 +39,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void getLocations(Empty request, StreamObserver<Locations> responseObserver) {
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("getLocations - cnt: " + req);
         responseObserver.onNext(ld.getAllLocations());
         responseObserver.onCompleted();
 
@@ -56,19 +50,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             .help("calls to createNewBenchmark methods")
             .register();
 
-
-    static final Histogram batchSizeHistogram = Histogram.build()
-            .name("batchsize")
-            .help("batchsize of benchmark")
-            .linearBuckets(0.0, 20_000.0, 10)
-            .create()
-            .register();
-
     @Override
     public void createNewBenchmark(BenchmarkConfiguration request, StreamObserver<Benchmark> responseObserver) {
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("createNewBenchmark - cnt: " + req);
-
         //Verify the token that it is actually allowed to start a benchmark
         //TODO: go to database, get groupname
         String token = request.getToken();
@@ -128,9 +111,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void initializeLatencyMeasuring(Benchmark request, StreamObserver<Ping> responseObserver) {
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("initializeLatencyMeasuring - cnt: " + req);
-
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -160,9 +140,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void measure(Ping request, StreamObserver<Ping> responseObserver) {
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("measure - cnt: " + req);
-
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -202,9 +179,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void endMeasurement(Ping request, StreamObserver<Empty> responseObserver) {
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("endMeasurement - cnt: " + req);
-
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -235,9 +209,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void startBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("startBenchmark - cnt: " + req);
-
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -264,11 +235,15 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             .help("calls to nextMessage methods")
             .register();
 
+    static final Histogram batchSizeHistogram = Histogram.build()
+            .name("batchsize")
+            .help("batchsize of benchmark")
+            .linearBuckets(0.0, 20_000.0, 10)
+            .create()
+            .register();
+
     @Override
     public void nextMessage(Benchmark request, StreamObserver<Batch> responseObserver) {
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("nextMessage - cnt: " + req);
-
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -280,6 +255,9 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             Histogram.Timer batchReadTimer = batchReadLatency.startTimer();
             batchRef.set(b.getNextBatch(request.getId()));
             batchReadTimer.observeDuration();
+
+            //Additionally record the batchsize to put the latency into perspective
+            batchSizeHistogram.observe(b.getBatchSize());
 
             return b;
         });
@@ -304,9 +282,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     @Override
     public void resultQ1(ResultQ1 request, StreamObserver<Empty> responseObserver) {
         long nanoTime = System.nanoTime();
-
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("processed - cnt: " + req);
 
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
@@ -333,9 +308,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     public void resultQ2(ResultQ2 request, StreamObserver<Empty> responseObserver) {
         long nanoTime = System.nanoTime();
 
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("processed - cnt: " + req);
-
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
             return;
@@ -360,9 +332,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     @Override
     public void endBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
         long nanoTime = System.nanoTime();
-
-        int req = reqcounter.incrementAndGet();
-        Logger.debug("endBenchmark - cnt: " + req);
 
         if(!this.benchmark.containsKey(request.getId())) {
             responseObserver.onError(new Exception("Benchmark not started"));
