@@ -178,6 +178,7 @@ class QueryOneAlternative:
         self.measureLatency(bench)
 
         # start the benchmark
+        print("start processing batch")
         start_time = datetime.now()
         self.challengerstub.startBenchmark(bench)
         batch = self.challengerstub.nextMessage(bench)
@@ -204,7 +205,7 @@ class QueryOneAlternative:
             duration_so_far = (datetime.now() - start_time).total_seconds()
             if (duration_so_far - lastdisplay) > 10: #limit output every 10 seconds
                 os.system('clear')
-                print("Top %s most improved zipcodes, last 24h - date: %s cachemiss: %s cachehit: %s" % (len(topk), dtmax_curr, self.cachemiss, self.cachehit))
+                print("Top %s most improved zipcodes, last 24h - date: %s cachemiss: %s cachehit: %s cachsize: %s " % (len(payload), dtmax_curr, self.cachemiss, self.cachehit, len(self.location_to_city)))
                 print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (cnt, duration_so_far, num_current, num_historic, (num_current + num_historic)))
                 for topk in payload:
                     print("pos: %s, city: %s, avg improvement: %s, previous: %s, current: %s " % (topk.position, topk.city, topk.averageAQIImprovement, topk.currentAQI, topk.previousAQI))
