@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.DEBUG)
 async def index():
     if current_user.is_authenticated:
         return redirect(url_for('profile'))
-    else :
+    else:
         return await render_template('index.html', name="Welcome!")
 
 
@@ -79,7 +79,8 @@ async def profile():
 @login_required
 async def documentation():
     group = await get_group_information(current_user.auth_id)
-    return await render_template('documentation.html', name="Documentation", group=group, menu=helper.menu(documentation=True))
+    return await render_template('documentation.html', name="Documentation", group=group,
+                                 menu=helper.menu(documentation=True))
 
 
 @app.route('/rawdata/')
@@ -88,9 +89,10 @@ async def rawdata():
     group = await get_group_information(current_user.auth_id)
     d = os.environ["DATASET_DIR"]
     files = os.listdir(d)
-    filesandsize = map(lambda f: [f, (os.path.getsize(os.path.join(d, f))/(1024*1024))], files)
+    filesandsize = map(lambda f: [f, (os.path.getsize(os.path.join(d, f)) / (1024 * 1024))], files)
 
-    return await render_template('rawdata.html', name="Rawdata", group=group, files=filesandsize, menu=helper.menu(rawdata=True))
+    return await render_template('rawdata.html', name="Rawdata", group=group, files=filesandsize,
+                                 menu=helper.menu(rawdata=True))
 
 
 @app.route('/recentchanges/')

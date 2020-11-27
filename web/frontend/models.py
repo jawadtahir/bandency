@@ -44,6 +44,7 @@ class ChallengeGroup(db.Model):
     password = db.Column(db.Unicode())
     groupemail = db.Column(db.Unicode())
     groupnick = db.Column(db.Unicode())
+    groupapikey = db.Column(db.String(255))
 
 async def get_group_information(group_id):
     return await ChallengeGroup.get(group_id)

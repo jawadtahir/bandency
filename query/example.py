@@ -25,7 +25,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
 
     #Step 2 - Create a new Benchmark
     benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
-                                                       batch_size=1_000,
+                                                       batch_size=3_000,
                                                        benchmark_name="shows_up_in_dashboard",
                                                        queries=[ch.BenchmarkConfiguration.Query.Q1])
     benchmark = stub.createNewBenchmark(benchmarkconfiguration)

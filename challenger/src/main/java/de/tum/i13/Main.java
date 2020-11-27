@@ -1,5 +1,6 @@
 package de.tum.i13;
 
+import de.tum.i13.dal.DB;
 import de.tum.i13.dal.ResultsVerifier;
 import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.*;
@@ -11,6 +12,7 @@ import org.tinylog.Logger;
 
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import io.prometheus.client.exporter.HTTPServer;
@@ -23,12 +25,16 @@ public class Main {
 
         try {
 
+            Map<String, String> env = System.getenv();
+
             String dataset = "/home/chris/data/challenge";
             String hostName = InetAddress.getLocalHost().getHostName();
 
             if(hostName.equalsIgnoreCase("node-22")) {
                 dataset = "/home/msrg/data/luftdaten";
             }
+
+            DB db = DB.createDBConnection(env.get("BANDENCY_DB_CONNECTION"));
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
             PrepareLocationDataset pld = new PrepareLocationDataset(Path.of(dataset));
@@ -38,7 +44,6 @@ public class Main {
             AirqualityDataset ad = new AirqualityDataset(afa, AccessType.FromDisk);
 
             ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<ToVerify>(1_000_000, false);
-            ResultsVerifier rv = new ResultsVerifier(verificationQueue);
 
             Logger.info("Initializing Challenger Service");
             ChallengerServer cs = new ChallengerServer(ld, ad, verificationQueue);
@@ -56,12 +61,13 @@ public class Main {
             new HTTPServer(8023); //This starts already a background thread serving the default registry
 
             Logger.info("Starting Results verifier");
+            ResultsVerifier rv = new ResultsVerifier(verificationQueue, db);
             Thread th = new Thread(rv);
             th.start();
 
 
             Runtime current = Runtime.getRuntime();
-            current.addShutdownHook(new ShutDown(rv, server));
+            current.addShutdownHook(new ShutDown(rv, server, db));
 
             Logger.info("Serving");
             server.awaitTermination();

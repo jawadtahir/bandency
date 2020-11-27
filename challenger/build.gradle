@@ -58,6 +58,8 @@ dependencies {
     implementation 'io.prometheus:simpleclient_hotspot:0.9.0'
     implementation 'io.prometheus:simpleclient_httpserver:0.9.0'
 
+    implementation 'org.postgresql:postgresql:42.2.18'
+
     implementation 'org.tinylog:tinylog-api:2.2.0'
     implementation 'org.tinylog:tinylog-impl:2.2.0'
 

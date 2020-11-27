@@ -9,7 +9,7 @@ public class ResultsVerifier implements Runnable{
     private AtomicReference<Boolean> shutdown;
     private AtomicReference<Boolean> shuttingDown;
 
-    public ResultsVerifier(ArrayBlockingQueue<ToVerify> verificationQueue) {
+    public ResultsVerifier(ArrayBlockingQueue<ToVerify> verificationQueue, DB db) {
         this.verificationQueue = verificationQueue;
         this.shuttingDown = new AtomicReference(false);
         this.shutdown = new AtomicReference(true);
@@ -25,7 +25,7 @@ public class ResultsVerifier implements Runnable{
                 ToVerify poll = verificationQueue.poll(100, TimeUnit.MILLISECONDS);
                 if(poll != null) {
                     //Here we do some database operations, verifcation of results and so on
-
+                    System.out.println(poll);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
