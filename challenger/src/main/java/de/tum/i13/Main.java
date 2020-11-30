@@ -22,7 +22,6 @@ import javax.management.remote.JMXConnector;
 public class Main {
 
     public static void main(String[] args) {
-
         try {
 
             Map<String, String> env = System.getenv();
@@ -34,7 +33,8 @@ public class Main {
                 dataset = "/home/msrg/data/luftdaten";
             }
 
-            DB db = DB.createDBConnection(env.get("BANDENCY_DB_CONNECTION"));
+            //DB db = DB.createDBConnection(env.get("BANDENCY_DB_CONNECTION"));
+            DB db = null;
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
             PrepareLocationDataset pld = new PrepareLocationDataset(Path.of(dataset));

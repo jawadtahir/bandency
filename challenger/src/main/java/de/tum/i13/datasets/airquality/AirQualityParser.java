@@ -1,5 +1,6 @@
 package de.tum.i13.datasets.airquality;
 
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Timestamp;
 import de.tum.i13.bandency.Payload;
 
@@ -93,13 +94,19 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
 
     private void parseNext() {
         while (curr == null && szfi != null) {
+            String nextElement = "";
             try {
-                Payload p = parseFromString(szfi.nextElement());
-                if(p == null) {
+                nextElement = szfi.nextElement();
+                if(nextElement == null) {
                     this.dataFiles.poll();
                     setupNewFile();
-                    p = parseFromString(szfi.nextElement());
+                    nextElement = szfi.nextElement();
                 }
+
+                Payload p = parseFromString(nextElement);
+                if(p == null)
+                    continue;
+
                 if(compare(p.getTimestamp(), from_ts) < 0) {
                     continue;
                 }
@@ -109,6 +116,9 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
 
                 curr = p;
 
+            } catch (NumberFormatException nfex) {
+                System.out.println("could not parse numbers: " + nextElement);
+                continue;
             } catch (Exception ex) {
                 ++errcnt;
             }
@@ -122,6 +132,10 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
         String[] splitted = line.split(";", -1);
         LocalDateTime parsed = this.dataFiles.peek().getDateConfigForDate().parse(splitted[5]);
 
+        //continue only if fields are not empty
+        if(splitted[3].length() == 0 || splitted[4].length() == 0 || splitted[6].length() == 0 || splitted[9].length() == 0)
+            return null;
+
         com.google.protobuf.Timestamp ts = com.google.protobuf.Timestamp.newBuilder()
                 .setSeconds(parsed.toEpochSecond(ZoneOffset.UTC))
                 .setNanos(parsed.getNano())
@@ -134,6 +148,10 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
                 .setP1(Float.parseFloat(splitted[6]))
                 .setP2(Float.parseFloat(splitted[9]))
                 .build();
+
+        //validate that a value is set
+        if(pl.getLatitude() == 0.0 || pl.getLongitude() == 0.0 || pl.getP1() == 0.0 || pl.getP2() == 0.0)
+            return null;
 
         return pl;
     }
