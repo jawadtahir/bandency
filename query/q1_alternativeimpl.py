@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 
 import grpc
 from google.protobuf import empty_pb2
+from tqdm import tqdm
+
 from event_processor import EventProcessor
 
 from shapely.geometry import Point
@@ -35,10 +37,7 @@ class QueryOneAlternative:
     def setup_locations(self, location_info_list):
         print("Processing locations...")
         count = 0
-        for location_info in location_info_list.locations:
-            if count % 1000 == 0:
-                print("Locations processed: {}".format(count))
-
+        for location_info in tqdm(location_info_list.locations):
             polygons = location_info.polygons
             for polygon in polygons:
                 obj_points = []
@@ -47,6 +46,7 @@ class QueryOneAlternative:
 
                 polygon = Polygon(obj_points)
                 polygon.zipcode = location_info.zipcode
+
                 self.zipcode_polygons.append(polygon)
 
             count += 1
@@ -116,7 +116,9 @@ class QueryOneAlternative:
             return
         result = {}
         for (k, v) in self.data[year].items():
-            result[k] = utils.EPATableCalc(v.getMean())
+            mean_per_city = v.getMean()
+            if mean_per_city is not np.nan: #in case there are no sensor measurements
+                result[k] = utils.EPATableCalc(mean_per_city)
         return result
 
 
@@ -203,7 +205,7 @@ class QueryOneAlternative:
 
             cnt = cnt + 1
             duration_so_far = (datetime.now() - start_time).total_seconds()
-            if (duration_so_far - lastdisplay) > 10: #limit output every 10 seconds
+            if (duration_so_far - lastdisplay) >= 2: #limit output every 2 seconds
                 os.system('clear')
                 print("Top %s most improved zipcodes, last 24h - date: %s cachemiss: %s cachehit: %s cachsize: %s " % (len(payload), dtmax_curr, self.cachemiss, self.cachehit, len(self.location_to_city)))
                 print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (cnt, duration_so_far, num_current, num_historic, (num_current + num_historic)))

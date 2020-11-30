@@ -210,7 +210,7 @@ class QueryOneAlternative:
 
             (dtmax_curr, payload) = self.process(batch)
 
-            sorted_pl = sorted(list(payload.items()), key=lambda a: a[1])
+            sorted_pl = sorted(list(payload.items()), key=lambda a: a[1], reverse=True)
 
             # result = ch.ResultQ2(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topk=payload)
             # self.challengerstub.resultQ2(result)
@@ -263,8 +263,8 @@ class AverageSlidingWindow:
 def main():
     op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
           ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-    #with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
-    with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
+    with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+    #with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
         stub = api.ChallengerStub(channel)
         q1 = QueryOneAlternative(stub)
         q1.run()
