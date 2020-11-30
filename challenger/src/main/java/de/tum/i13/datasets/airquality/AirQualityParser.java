@@ -21,6 +21,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
     private final Queue<AirqualityFile> dataFiles;
     private long cnt = 0;
     private long errcnt = 0;
+    private long parseerror = 0;
     private final long skippedInFile = 0;
 
     private boolean firstCall;
@@ -104,8 +105,10 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
                 }
 
                 Payload p = parseFromString(nextElement);
-                if(p == null)
+                if(p == null) {
+                    ++parseerror;
                     continue;
+                }
 
                 if(compare(p.getTimestamp(), from_ts) < 0) {
                     continue;
@@ -117,7 +120,8 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
                 curr = p;
 
             } catch (NumberFormatException nfex) {
-                System.out.println("could not parse numbers: " + nextElement);
+                //System.out.println("could not parse numbers: " + nextElement);
+                ++parseerror;
                 continue;
             } catch (Exception ex) {
                 ++errcnt;

@@ -1,5 +1,8 @@
 package de.tum.i13.dal;
 
+import io.prometheus.client.Counter;
+import io.prometheus.client.Histogram;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,6 +18,23 @@ public class ResultsVerifier implements Runnable{
         this.shutdown = new AtomicReference(true);
     }
 
+    static final Counter verifyMeasurementCounter = Counter.build()
+            .name("verifyMeasurementCounter")
+            .help("calls to verifyMeasurementCounter methods")
+            .register();
+
+    static final Counter durationMeasurementCounter = Counter.build()
+            .name("durationMeasurementCounter")
+            .help("calls to durationMeasurementCounter methods")
+            .register();
+
+    static final Histogram resultVerificationQueue = Histogram.build()
+            .name("verificationQueue")
+            .help("verificationQueue of Resultsverifier")
+            .linearBuckets(0.0, 1_000.0, 21)
+            .create()
+            .register();
+
     @Override
     public void run() {
         this.shuttingDown.set(false);
@@ -23,9 +43,15 @@ public class ResultsVerifier implements Runnable{
         while(!shuttingDown.get() || verificationQueue.size() > 0) {
             try {
                 ToVerify poll = verificationQueue.poll(100, TimeUnit.MILLISECONDS);
+                resultVerificationQueue.observe(verificationQueue.size());
                 if(poll != null) {
+                    if(poll.getType() == VerificationType.Measurement) {
+                        verifyMeasurementCounter.inc();
+                    } else if(poll.getType() == VerificationType.Duration) {
+                        durationMeasurementCounter.inc();
+                    }
                     //Here we do some database operations, verifcation of results and so on
-                    System.out.println(poll);
+                    //System.out.println(poll);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

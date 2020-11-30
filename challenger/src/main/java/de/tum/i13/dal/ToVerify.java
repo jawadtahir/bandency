@@ -16,4 +16,12 @@ public class ToVerify {
         this.type = VerificationType.Duration;
         this.bd = bd;
     }
+
+    public VerificationType getType() {
+        return type;
+    }
+
+    public void setType(VerificationType type) {
+        this.type = type;
+    }
 }
