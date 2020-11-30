@@ -42,7 +42,8 @@ def EPATableCalc(C):
         except IndexError:
             return numpy.nan    
     
-    
+def epaDescription(meanv):
+    return epa_table[meanv].description
     
 def it_fd_from_zipfiles(sensors: list, months: list):
     """

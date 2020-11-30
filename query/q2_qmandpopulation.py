@@ -1,4 +1,3 @@
-
 import logging
 import os
 from datetime import datetime, timedelta
@@ -18,6 +17,7 @@ import challenger_pb2_grpc as api
 import numpy as np
 import utils
 
+
 class QueryOneAlternative:
     def __init__(self, challengerstub):
         self.challengerstub = challengerstub
@@ -26,6 +26,7 @@ class QueryOneAlternative:
         self.data = {}
         self.cachemiss = 0
         self.cachehit = 0
+        self.qmlookup = {}
 
     def measureLatency(self, benchmark):
         ping = self.challengerstub.initializeLatencyMeasuring(benchmark)
@@ -46,6 +47,11 @@ class QueryOneAlternative:
 
                 polygon = Polygon(obj_points)
                 polygon.zipcode = location_info.zipcode
+                if location_info.zipcode not in self.qmlookup:
+                    self.qmlookup[location_info.zipcode] = location_info.qkm
+                else:
+                    self.qmlookup[location_info.zipcode] = self.qmlookup[location_info.zipcode] + location_info.qkm
+
                 self.zipcode_polygons.append(polygon)
 
             count += 1
@@ -90,7 +96,7 @@ class QueryOneAlternative:
         per_city = self.data[year]
         for payload in payloads:
             city = self._resolve_location(payload)
-            if not city: #outside
+            if not city:  # outside
                 continue
 
             if city not in per_city:
@@ -98,6 +104,10 @@ class QueryOneAlternative:
 
             ts = payload.timestamp
             dt = datetime.fromtimestamp(ts.seconds) + timedelta(microseconds=ts.nanos / 1000.0)
+            if not payload.p2:
+                print("payload.p2 was none")
+                print(payload)
+
             per_city[city].add(dt, payload.p2)
 
         self.data[year] = per_city
@@ -115,21 +125,21 @@ class QueryOneAlternative:
             return
         result = {}
         for (k, v) in self.data[year].items():
-            result[k] = utils.EPATableCalc(v.getMean())
+            m = v.getMean()
+            if m is not np.nan:
+                result[k] = utils.EPATableCalc(v.getMean())
         return result
-
 
     def process(self, batch):
         dtmax_current_batch = self.maxDate(batch.current)
         dtmax_lastyear_batch = self.maxDate(batch.lastyear)
         if dtmax_current_batch is None:
-            dtmax_current_batch = dtmax_lastyear_batch.replace(year=dtmax_lastyear_batch.year+1)
+            dtmax_current_batch = dtmax_lastyear_batch.replace(year=dtmax_lastyear_batch.year + 1)
         if dtmax_lastyear_batch is None:
-            dtmax_lastyear_batch = dtmax_current_batch.replace(year=dtmax_current_batch.year-1)
-
+            dtmax_lastyear_batch = dtmax_current_batch.replace(year=dtmax_current_batch.year - 1)
 
         dtmax_curr = max(dtmax_current_batch, dtmax_lastyear_batch.replace(year=dtmax_current_batch.year))
-        dtmax_lastyear = dtmax_curr.replace(year=dtmax_curr.year -1)
+        dtmax_lastyear = dtmax_curr.replace(year=dtmax_curr.year - 1)
 
         self.process_payloads(dtmax_curr.year, batch.current)
         self.process_payloads(dtmax_lastyear.year, batch.lastyear)
@@ -139,9 +149,28 @@ class QueryOneAlternative:
 
         scores_curr = self.calculate_epa_scores(dtmax_curr.year)
 
-        print("test")
+        dc = {}
 
-        return None
+        for (k, v) in scores_curr.items():
+            try:
+                rating = utils.epaDescription(v)
+                if rating not in dc:
+                    dc[rating] = self.qmlookup[k]
+                else:
+                    dc[rating] = dc[rating] + self.qmlookup[k]
+            except:
+                print("error occured: %s, %s" % (k, v))
+
+        qmgermany = 100.0 / 357386.0
+        dcres = {}
+        coverage = 0
+        for (epatype, qkm) in dc.items():
+            coverage = coverage + qkm
+            dcres[epatype] = (qkm, qmgermany*qkm)
+
+        dcres["unknown"] =(coverage, coverage*qmgermany)
+
+        return (dtmax_curr, dcres)
 
     def run(self):
         event_proc = EventProcessor()
@@ -181,17 +210,22 @@ class QueryOneAlternative:
 
             (dtmax_curr, payload) = self.process(batch)
 
-            result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topk=payload)
-            self.challengerstub.resultQ1(result)
+            sorted_pl = sorted(list(payload.items()), key=lambda a: a[1])
+
+            # result = ch.ResultQ2(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topk=payload)
+            # self.challengerstub.resultQ2(result)
 
             cnt = cnt + 1
             duration_so_far = (datetime.now() - start_time).total_seconds()
-            if (duration_so_far - lastdisplay) > 10: #limit output every 10 seconds
+            if (duration_so_far - lastdisplay) > 10:  # limit output every 10 seconds
                 os.system('clear')
-                print("Top %s most improved zipcodes, last 24h - date: %s cachemiss: %s cachehit: %s cachsize: %s " % (len(payload), dtmax_curr, self.cachemiss, self.cachehit, len(self.location_to_city)))
-                print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (cnt, duration_so_far, num_current, num_historic, (num_current + num_historic)))
-                for topk in payload:
-                    print("pos: %s, city: %s, avg improvement: %s, previous: %s, current: %s " % (topk.position, topk.city, topk.averageAQIImprovement, topk.currentAQI, topk.previousAQI))
+                print(
+                    "Sum of qkm of zipcodes where average sensor readout was in average at a certain treshold - date: %s cachemiss: %s cachehit: %s cachsize: %s " % (
+                    dtmax_curr, self.cachemiss, self.cachehit, len(self.location_to_city)))
+                print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (
+                cnt, duration_so_far, num_current, num_historic, (num_current + num_historic)))
+                for item in sorted_pl:
+                    print("description: %s, qkm: %s percent: %s" % (item[0], item[1][0], item[1][1]))
 
                 lastdisplay = duration_so_far
 
@@ -229,7 +263,8 @@ class AverageSlidingWindow:
 def main():
     op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
           ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-    with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+    #with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+    with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
         stub = api.ChallengerStub(channel)
         q1 = QueryOneAlternative(stub)
         q1.run()

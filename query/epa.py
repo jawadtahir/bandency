@@ -37,8 +37,9 @@ class EPATable(object):
         self.table.append(EPAEntry(99999.9, 500.5, 999.0, 501.0, "hazardous"))
         
     def __getitem__(self, key):
+        kr = round(key, 1)
         for entry in self.table:
-            if entry.C_high >= key >= entry.C_low:
+            if entry.C_high >= kr >= entry.C_low:
                 return entry
-            
+        print("error epatable- key: %s kr: %s" % (key, kr))
         raise IndexError
