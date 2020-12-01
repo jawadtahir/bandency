@@ -1,6 +1,7 @@
 package de.tum.i13;
 
 import de.tum.i13.dal.DB;
+import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ResultsVerifier;
 import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.*;
@@ -29,12 +30,15 @@ public class Main {
             String dataset = "/home/chris/data/challenge";
             String hostName = InetAddress.getLocalHost().getHostName();
 
+            String url = "jdbc:postgresql://127.0.0.1:5432/bandency?user=bandency&password=bandency";
+
             if(hostName.equalsIgnoreCase("node-22")) {
                 dataset = "/home/msrg/data/luftdaten";
+                url = env.get("JDBC_DB_CONNECTION");
             }
 
-            //DB db = DB.createDBConnection(env.get("BANDENCY_DB_CONNECTION"));
-            DB db = null;
+            Logger.info("opening database connection");
+            DB db = DB.createDBConnection(url);
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
             PrepareLocationDataset pld = new PrepareLocationDataset(Path.of(dataset));
@@ -46,7 +50,8 @@ public class Main {
             ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<ToVerify>(1_000_000, false);
 
             Logger.info("Initializing Challenger Service");
-            ChallengerServer cs = new ChallengerServer(ld, ad, verificationQueue);
+            Queries q = new Queries(db.getConnection());
+            ChallengerServer cs = new ChallengerServer(ld, ad, verificationQueue, q);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder
@@ -61,7 +66,7 @@ public class Main {
             new HTTPServer(8023); //This starts already a background thread serving the default registry
 
             Logger.info("Starting Results verifier");
-            ResultsVerifier rv = new ResultsVerifier(verificationQueue, db);
+            ResultsVerifier rv = new ResultsVerifier(verificationQueue, db.getConnection());
             Thread th = new Thread(rv);
             th.start();
 

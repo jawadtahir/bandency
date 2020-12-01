@@ -24,4 +24,12 @@ public class ToVerify {
     public void setType(VerificationType type) {
         this.type = type;
     }
+
+    public LatencyMeasurement getLatencyMeasurement() {
+        return lm;
+    }
+
+    public BenchmarkDuration getBenchmarkDuration() {
+        return bd;
+    }
 }

@@ -1,39 +1,39 @@
 package de.tum.i13;
 
-import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
-import com.google.rpc.Code;
 import de.tum.i13.bandency.*;
 import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
+import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.location.LocationDataset;
 import io.grpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
 import org.tinylog.Logger;
 
+import java.sql.SQLException;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     final private LocationDataset ld;
     private final AirqualityDataset ad;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
+    private final Queries q;
 
 
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(LocationDataset ld, AirqualityDataset ad, ArrayBlockingQueue<ToVerify> dbInserter) {
+    public ChallengerServer(LocationDataset ld, AirqualityDataset ad, ArrayBlockingQueue<ToVerify> dbInserter, Queries q) {
         this.ld = ld;
         this.ad = ad;
         this.dbInserter = dbInserter;
+        this.q = q;
         benchmark = new ConcurrentHashMap<>();
     }
 
@@ -66,7 +66,23 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         int batchSize = request.getBatchSize();
         if(batchSize > 20_000) {
             Logger.info("no benchmark selected: " + request.getToken());
-            responseObserver.onError(new Exception("batchsize to large"));
+
+            Status status = Status.FAILED_PRECONDITION.withDescription("batchsize to large");
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        try {
+            if(!q.checkIfGroupExists(token)) {
+                Status status = Status.FAILED_PRECONDITION.withDescription("token invalid");
+                responseObserver.onError(status.asException());
+                responseObserver.onCompleted();
+                return;
+            }
+        } catch (SQLException throwables) {
+            Status status = Status.INTERNAL.withDescription("database offline - plz. inform the challenge organizers");
+            responseObserver.onError(status.asException());
             responseObserver.onCompleted();
             return;
         }
@@ -74,9 +90,9 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         batchSizeHistogram.observe(batchSize);
 
         if(request.getQueriesList().size() < 1) {
-            Logger.info("no benchmark selected: " + request.getToken());
+            Logger.info("no query selected: " + request.getToken());
 
-            Status status = Status.FAILED_PRECONDITION.withDescription("no benchmark selected");
+            Status status = Status.FAILED_PRECONDITION.withDescription("no query selected");
             responseObserver.onError(status.asException());
             responseObserver.onCompleted();
             return;

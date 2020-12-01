@@ -1,19 +1,23 @@
 package de.tum.i13.dal;
 
+import de.tum.i13.challenger.LatencyMeasurement;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
 
+import java.sql.Connection;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ResultsVerifier implements Runnable{
     private final ArrayBlockingQueue<ToVerify> verificationQueue;
+    private final Connection db;
     private AtomicReference<Boolean> shutdown;
     private AtomicReference<Boolean> shuttingDown;
 
-    public ResultsVerifier(ArrayBlockingQueue<ToVerify> verificationQueue, DB db) {
+    public ResultsVerifier(ArrayBlockingQueue<ToVerify> verificationQueue, Connection db) {
         this.verificationQueue = verificationQueue;
+        this.db = db;
         this.shuttingDown = new AtomicReference(false);
         this.shutdown = new AtomicReference(true);
     }
@@ -46,8 +50,12 @@ public class ResultsVerifier implements Runnable{
                 resultVerificationQueue.observe(verificationQueue.size());
                 if(poll != null) {
                     if(poll.getType() == VerificationType.Measurement) {
+                        LatencyMeasurement lm = poll.getLatencyMeasurement();
+
                         verifyMeasurementCounter.inc();
                     } else if(poll.getType() == VerificationType.Duration) {
+
+
                         durationMeasurementCounter.inc();
                     }
                     //Here we do some database operations, verifcation of results and so on
