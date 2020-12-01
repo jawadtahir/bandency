@@ -191,12 +191,12 @@ async def mainloop(debug, loop):
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
 
     tasks.append(webserver_task)
-    #tasks.append(monitor_task)
+    tasks.append(monitor_task)
 
     # create the database connect, without starting doesn't make sense
     await db_connection()
 
-    # await asyncio.gather(monitor_task, webserver_task, wakeup(shutdown_event))
+    #await asyncio.gather(monitor_task, webserver_task, wakeup(shutdown_event))
     try:
         gathered_tasks = asyncio.gather(*tasks)
         await gathered_tasks
