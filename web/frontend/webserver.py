@@ -132,8 +132,8 @@ async def leaderboard():
 
 @app.route('/testruns')
 @login_required
-async def leaderboard():
-    return await render_template('testruns.html', menu=helper.menu(leaderboard=True), name="Test runs")
+async def testruns():
+    return await render_template('testruns.html', menu=helper.menu(testruns=True), name="Test runs")
 
 
 @app.route('/feedback')
