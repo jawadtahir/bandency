@@ -130,6 +130,11 @@ async def systemstatus():
 async def leaderboard():
     return await render_template('leaderboard.html', menu=helper.menu(leaderboard=True), name="Leaderboard")
 
+@app.route('/testruns')
+@login_required
+async def leaderboard():
+    return await render_template('testruns.html', menu=helper.menu(leaderboard=True), name="Test runs")
+
 
 @app.route('/feedback')
 @login_required

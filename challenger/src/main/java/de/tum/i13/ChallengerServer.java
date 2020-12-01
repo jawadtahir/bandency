@@ -3,6 +3,7 @@ package de.tum.i13;
 import com.google.protobuf.Empty;
 import de.tum.i13.bandency.*;
 import de.tum.i13.challenger.BenchmarkState;
+import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.location.LocationDataset;
@@ -75,6 +76,19 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             return;
         }
 
+        if(!request.getBenchmarkType().equalsIgnoreCase("test")) {
+            Logger.info("different BenchmarkType set: " + request.getBenchmarkType());
+            responseObserver.onError(new Exception("different BenchmarkType"));
+            responseObserver.onCompleted();
+            return;
+        }
+
+        BenchmarkType bt = BenchmarkType.Test;
+
+        if(request.getBenchmarkType().equalsIgnoreCase("test")) {
+            bt = BenchmarkType.Test;
+        }
+
         //Save this benchmarkname to database
         //TODO:
         String benchmarkName = request.getBenchmarkName();
@@ -85,6 +99,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setBenchmarkId(benchmarkId);
         bms.setToken(token);
         bms.setBatchSize(batchSize);
+        bms.setBenchmarkType(bt);
 
         bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
         bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
@@ -223,7 +238,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
             b.startBenchmark(System.nanoTime());
-            b.setDatasource(ad.newDataSource(b.getBatchSize()));
+            b.setDatasource(ad.newDataSource(b.getBenchmarkType(), b.getBatchSize()));
             return b;
         });
 

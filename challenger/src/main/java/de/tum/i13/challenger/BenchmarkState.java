@@ -28,6 +28,7 @@ public class BenchmarkState {
     private boolean q2Active;
     private long benchmarkId;
     private long endNanoTime;
+    private BenchmarkType benchmarkType;
 
     public BenchmarkState(ArrayBlockingQueue<ToVerify> dbInserter) {
         this.dbInserter = dbInserter;
@@ -49,6 +50,8 @@ public class BenchmarkState {
         this.q2Active = false;
 
         this.benchmarkId = -1;
+
+        this.benchmarkType = BenchmarkType.Test;
     }
 
     public void setQ1(boolean contains) {
@@ -90,6 +93,15 @@ public class BenchmarkState {
     public void setEndNanoTime(long endNanoTime) {
         this.endNanoTime = endNanoTime;
     }
+
+    public BenchmarkType getBenchmarkType() {
+        return benchmarkType;
+    }
+
+    public void setBenchmarkType(BenchmarkType benchmarkType) {
+        this.benchmarkType = benchmarkType;
+    }
+
 
 
     //Methods for latency measurement
@@ -182,14 +194,20 @@ public class BenchmarkState {
     @Override
     public String toString() {
         return "BenchmarkState{" +
-                "token='" + token + '\'' +
-                ", benchmarkId=" + benchmarkId +
+                "dbInserter=" + dbInserter.size() +
+                ", token='" + token + '\'' +
                 ", batchSize=" + batchSize +
+                ", pingCorrelation=" + pingCorrelation.size() +
+                ", measurements=" + measurements.size() +
+                ", latencyCorrelation=" + latencyCorrelation.size() +
+                ", q1measurements=" + q1measurements.size() +
                 ", averageLatency=" + averageLatency +
                 ", startNanoTime=" + startNanoTime +
                 ", q1Active=" + q1Active +
                 ", q2Active=" + q2Active +
+                ", benchmarkId=" + benchmarkId +
                 ", endNanoTime=" + endNanoTime +
+                ", benchmarkType=" + benchmarkType +
                 '}';
     }
 }
