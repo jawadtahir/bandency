@@ -18,7 +18,10 @@
 
     <pre>
     <code>
+# Install dependencies
 pip install grpcio
+
+# Generate client code
 python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. challenger.proto
     </code>
     </pre>
@@ -39,14 +42,17 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
     </pre>
 
     <h4>Step 2</h4>
-    <p>Create a new Benchmark. You have to give it your token (see profile), set a benchmark name (this is only shown in your team statistics) and the batchsize.
-        Also add the the list of which queries you want to run, either just one [Q1] [Q2] or both [Q1, Q2].
-        The real event rate of the source stream is around 4000 messages/second. </p>
+    <p>Create a new Benchmark. You have set your token (see profile), set a benchmark name (this is only shown in your statistics) and the batchsize.
+        The benchmark_type should be set to "test" if you experiment. If you choose "test", only your team will see the statistics.
+        Also add the the list of which queries you want to run, either just one, [Q1] or [Q2] or both at the same time [Q1, Q2].
+        The real event rate of the source stream is around 4000 messages/second. The maximum batch size allowed is 20k.</p>
+    <p>For the final evaluation we will post the specific benchmark configuration.</p>
     <pre>
         <code>
 benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
                                                    batch_size=5000,
-                                                   benchmark_name="shows_up_in_dashboard"
+                                                   benchmark_name="shows_up_in_dashboard",
+                                                   benchmark_type="test",
                                                    queries=[ch.BenchmarkConfiguration.Query.Q1])
 bench = stub.createNewBenchmark(benchmarkconfiguration)
         </code>
@@ -55,8 +61,9 @@ bench = stub.createNewBenchmark(benchmarkconfiguration)
     <h4>Step 3 (optional)</h4>
     <p>Depending on your connectivity you might experience different latency and throughput. Optionally, we try to account for this by first measuring it.
         The payload of a Ping corresponds roughly to the payload of a batch and the returning Pong roughly the payload of a Result
-        This kind of measurement is just for development and experimentation (since, well, it could be easily cheated ;-)).
-        We do not consider that once you deploy your implementation on the VMs in our infrastructure. The final evaluation will be run on VMs in our datacenter and bandwidth shouldn't be the bottleneck.</p>
+        This kind of measurement is just for development and experimentation (since, well, it could be easily cheated ;-), how is a thought exercise for the participant).
+        We do not consider these measurements once you deploy your implementation on the VMs in our infrastructure.
+        The final evaluation will be run on VMs in our datacenter which assures level playing field.</p>
     <pre>
         <code>
 ping = stub.initializeLatencyMeasuring(benchmark)

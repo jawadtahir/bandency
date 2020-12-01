@@ -6,7 +6,7 @@ from typing import Any, Callable, Awaitable
 
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
-from quart import Quart, websocket, render_template, redirect, url_for, request
+from quart import Quart, websocket, render_template, redirect, url_for, request, flash
 from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
 import frontend.helper as helper
@@ -68,11 +68,28 @@ async def redirect_to_login(*_):
     return redirect(url_for("login"))
 
 
-@app.route('/profile/')
+@app.route('/profile/', methods=['GET', 'POST'])
 @login_required
 async def profile():
-    group = await get_group_information(current_user.auth_id)
-    return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+    if request.method == 'POST':
+        group = await get_group_information(current_user.auth_id)
+
+        form = await request.form
+        groupnick = form['groupnick'].strip()
+        sshkey = form['sshpubkey'].strip()
+        groupemail = form['groupemail'].strip()
+
+        if len(groupnick) > 32:
+            await flash('Nickname should be below 32 chars')
+            return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+
+        await group.update(groupnick=groupnick, groupemail=groupemail).apply()
+        await flash('Profile saved')
+
+        return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+    else:
+        group = await get_group_information(current_user.auth_id)
+        return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
 
 
 @app.route('/documentation/')
@@ -157,11 +174,11 @@ async def mainloop(debug, loop):
     print("Run Debug Version of webserver")
     tasks = []
     monitor_task = worker.process_server_monitor_metrics(loop, shutdown_event, os.environ['RABBIT_CONNECTION'])
-    tasks.append(monitor_task)
 
     if debug:
         cfg = Config()
         cfg.debug = True
+        print("starting with debugging enabled")
         cfg.use_reloader = True
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
     else:
@@ -169,6 +186,7 @@ async def mainloop(debug, loop):
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
 
     tasks.append(webserver_task)
+    #tasks.append(monitor_task)
 
     # create the database connect, without starting doesn't make sense
     await db_connection()

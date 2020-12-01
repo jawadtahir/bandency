@@ -1,6 +1,18 @@
 {% extends "layout.html" %}
 
 {% block content %}
+    <div class="form-group row">
+        <label for="staticGroupNameId" class="col-sm-3 col-form-label">API Key</label>
+        <div class="col-sm-5">
+            <input type="text" readonly class="form-control-plaintext" id="groupapikey" value="{{ group.groupapikey }}">
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-5">
+            <button type="button" class="btn btn-info btn-clipboard" data-clipboard-action="copy" data-clipboard-target="#groupapikey">Copy to clipboard</button>
+        </div>
+    </div>
 
     <form action="{{ url_for('profile') }}" method="post" class="form">
         <div class="form-group row">
@@ -18,7 +30,7 @@
         <div class="form-group row">
             <label for="inputSSHKeyId" class="col-sm-3 col-form-label">SSH-Key Public Key</label>
             <div class="col-sm-7">
-                <input type="text" name="sshpubkey" class="form-control" id="inputSSHKeyId">
+                <input type="text" name="sshpubkey" class="form-control" id="inputSSHKeyId" readonly value="will be enabled January">
             </div>
         </div>
         <div class="form-group row">
@@ -36,6 +48,6 @@
     <p>We'll send all notifications to this address</p>
     <h4>SSH-Key</h4>
     <p>Use an existing public key or create a new public key locally on your machine. Prefered are ed25519 keys.</p>
-    <p>Once you have access to your VM, you can login using that key. More keys for other teammembers should be added directly on the machine</p>
+    <p>Once we enabled access to the VM, you will be able to login with the key. More keys for other teammembers should be added directly on the machine.</p>
 </div>
 {% endblock %}
