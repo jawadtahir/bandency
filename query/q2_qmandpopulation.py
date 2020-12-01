@@ -182,6 +182,7 @@ class QueryOneAlternative:
         benchmarkconfiguration = ch.BenchmarkConfiguration(token="abc",
                                                            batch_size=5000,
                                                            benchmark_name="test benchmark",
+                                                           benchmark_type="test",
                                                            queries=[ch.BenchmarkConfiguration.Query.Q1])
         bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
 

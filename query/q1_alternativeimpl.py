@@ -26,6 +26,7 @@ class QueryOneAlternative:
         self.data = {}
         self.cachemiss = 0
         self.cachehit = 0
+        self.movingaqi = {}
 
     def measureLatency(self, benchmark):
         ping = self.challengerstub.initializeLatencyMeasuring(benchmark)
@@ -121,6 +122,12 @@ class QueryOneAlternative:
                 result[k] = utils.EPATableCalc(mean_per_city)
         return result
 
+    def moving_epa_scores(self, year, increment_sec, span_sec):
+        if not year in self.movingaqi:
+            self.movingaqi[year] = {}
+
+
+
 
     def process(self, batch):
         dtmax_current_batch = self.maxDate(batch.current)
@@ -172,6 +179,7 @@ class QueryOneAlternative:
         benchmarkconfiguration = ch.BenchmarkConfiguration(token="abc",
                                                            batch_size=5000,
                                                            benchmark_name="test benchmark",
+                                                           benchmark_type="test",
                                                            queries=[ch.BenchmarkConfiguration.Query.Q1])
         bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
 
