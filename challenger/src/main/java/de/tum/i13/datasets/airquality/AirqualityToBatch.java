@@ -2,6 +2,7 @@ package de.tum.i13.datasets.airquality;
 
 import de.tum.i13.bandency.Batch;
 import de.tum.i13.bandency.Payload;
+import org.tinylog.Logger;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -35,6 +36,8 @@ public class AirqualityToBatch implements AirQualityDataSource {
 
         LocalDateTime fromLastYear = from.minusDays(365);
         LocalDateTime toLastYear = to.minusDays(365);
+
+        Logger.info("Starting new AirqualityToBatch - from: " + from + " to: " + to + " fromLastYear: " + fromLastYear + " toLastYear: " + toLastYear);
 
         this.diffmu = fromLastYear.until(from, ChronoUnit.SECONDS) * 1000;
         this.lastParser = new AirQualityParser(fromLastYear, toLastYear, afa);
