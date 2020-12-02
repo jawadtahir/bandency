@@ -33,8 +33,8 @@ public class AirqualityToBatch implements AirQualityDataSource {
     private void init() {
         this.currentParser = new AirQualityParser(from, to, afa);
 
-        LocalDateTime fromLastYear = from.minusYears(1);
-        LocalDateTime toLastYear = to.minusYears(1);
+        LocalDateTime fromLastYear = from.minusDays(365);
+        LocalDateTime toLastYear = to.minusDays(365);
 
         this.diffmu = fromLastYear.until(from, ChronoUnit.SECONDS) * 1000;
         this.lastParser = new AirQualityParser(fromLastYear, toLastYear, afa);
