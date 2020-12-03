@@ -142,13 +142,6 @@ async def feedback():
     return await render_template('feedback.html', menu=helper.menu(feedback=True), name="Feedback")
 
 
-@app.route('/scheduledbenchmarks')
-@login_required
-async def scheduledbenchmarks():
-    return await render_template('scheduledbenchmarks.html', menu=helper.menu(scheduled_benchmarks=True),
-                                 name="Scheduled benchmarks")
-
-
 @app.websocket('/ws')
 @login_required
 async def notifications():

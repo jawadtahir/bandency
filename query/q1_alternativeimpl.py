@@ -1,6 +1,6 @@
-
 import logging
 import os
+import pickle
 from datetime import datetime, timedelta
 
 import grpc
@@ -18,15 +18,22 @@ import challenger_pb2_grpc as api
 import numpy as np
 import utils
 
+
 class QueryOneAlternative:
     def __init__(self, challengerstub):
         self.challengerstub = challengerstub
         self.location_to_city = {}
         self.zipcode_polygons = []
         self.data = {}
+        self.avg_aqi = {}
         self.cachemiss = 0
         self.cachehit = 0
         self.movingaqi = {}
+        self.id_lastyear = 1
+        self.id_curr = 2
+        self.nextSnapshot_curr = None
+        self.nextsn = {}
+        self.firstbatch = True
 
     def measureLatency(self, benchmark):
         ping = self.challengerstub.initializeLatencyMeasuring(benchmark)
@@ -46,9 +53,8 @@ class QueryOneAlternative:
                     obj_points.append(Point(point.longitude, point.latitude))
 
                 polygon = Polygon(obj_points)
-                polygon.zipcode = location_info.zipcode
-
-                self.zipcode_polygons.append(polygon)
+                # polygon.zipcode = location_info.zipcode
+                self.zipcode_polygons.append([location_info.zipcode, polygon])
 
             count += 1
 
@@ -62,19 +68,20 @@ class QueryOneAlternative:
 
         # otherwise we have to search
         point = Point(event.longitude, event.latitude)
-        for polygon in self.zipcode_polygons:
+        for [city, polygon] in self.zipcode_polygons:
             if polygon.contains(point):
                 self.cachemiss = self.cachemiss + 1
-                self.location_to_city[location] = polygon.zipcode
-                return polygon.zipcode
+                self.location_to_city[location] = city
+                return city
 
         # haven't found, hence we store it as unknown
         self.location_to_city[location] = None
         return None
 
     # todo: merge with process payloads
-    def maxDate(self, payloads):
+    def min_max_fromdate(self, payloads):
         dtmax = None
+        dtmin = None
         for payload in payloads:
             ts = payload.timestamp
             dt = datetime.fromtimestamp(ts.seconds) + timedelta(microseconds=ts.nanos / 1000.0)
@@ -83,7 +90,27 @@ class QueryOneAlternative:
             else:
                 dtmax = max(dtmax, dt)
 
-        return dtmax
+            if dtmin == None:
+                dtmin = dt
+            else:
+                dtmin = min(dtmin, dt)
+
+        return dtmin, dtmax
+
+    def snapshot_aqi(self, year, ts):
+        windowbegin = ts - timedelta(hours=24)
+        if year not in self.avg_aqi:
+            self.avg_aqi[year] = {}
+        for (city, window) in self.data[year].items():
+            window.resize(windowbegin)
+            if city not in self.avg_aqi[year]:
+                self.avg_aqi[year][city] = AverageSlidingWindow()
+
+            if window.hasElements():
+                mean_per_city = utils.EPATableCalc(window.getMean())
+                if mean_per_city is not np.nan:
+                    self.avg_aqi[year][city].add(ts, mean_per_city)
+                self.avg_aqi[year][city].resize(windowbegin - timedelta(days=5))
 
     def process_payloads(self, year, payloads):
         if not year in self.data:
@@ -92,7 +119,7 @@ class QueryOneAlternative:
         per_city = self.data[year]
         for payload in payloads:
             city = self._resolve_location(payload)
-            if not city: #outside
+            if not city:  # outside
                 continue
 
             if city not in per_city:
@@ -100,16 +127,28 @@ class QueryOneAlternative:
 
             ts = payload.timestamp
             dt = datetime.fromtimestamp(ts.seconds) + timedelta(microseconds=ts.nanos / 1000.0)
+            if dt > self.nextsn[year]:  # do the snapshot
+                if year == self.id_curr:
+                    self.snapshot_aqi(self.id_curr, dt)
+                    self.nextsn[self.id_curr] = self.next_ts(self.nextsn[year])
+
+                    self.snapshot_aqi(self.id_lastyear, dt - timedelta(days=365))
+                    self.nextsn[self.id_lastyear] = self.next_ts(self.nextsn[year])
+
+                elif year == self.id_lastyear:
+                    self.snapshot_aqi(self.id_curr, dt + timedelta(days=365))
+                    self.nextsn[self.id_curr] = self.next_ts(self.nextsn[year])
+
+                    self.snapshot_aqi(self.id_lastyear, dt)
+                    self.nextsn[self.id_lastyear] = self.next_ts(self.nextsn[year])
+
             per_city[city].add(dt, payload.p2)
 
         self.data[year] = per_city
 
-    def truncate_old_values(self, dt):
-        if not dt.year in self.data:
-            return
-
+    def truncate_old_values(self, year, dt):
         mindate = dt - timedelta(hours=24)
-        for (k, v) in self.data[dt.year].items():
+        for (k, v) in self.data[year].items():
             v.resize(mindate)
 
     def calculate_epa_scores(self, year):
@@ -118,44 +157,74 @@ class QueryOneAlternative:
         result = {}
         for (k, v) in self.data[year].items():
             mean_per_city = v.getMean()
-            if mean_per_city is not np.nan: #in case there are no sensor measurements
+            if mean_per_city is not np.nan:  # in case there are no sensor measurements
                 result[k] = utils.EPATableCalc(mean_per_city)
         return result
 
-    def moving_epa_scores(self, year, increment_sec, span_sec):
-        if not year in self.movingaqi:
-            self.movingaqi[year] = {}
+    interval_minutes = 1
+    last_interval_ts = None
 
+    span_year = timedelta(days=365)
 
+    def dt_comp(self, first, second, fun):
+        if first is None and second is None:
+            return None
 
+        if first is None:
+            return second
+        if second is None:
+            return first
+
+        return fun(first, second)
+
+    def next_ts(self, ts):
+        return ts + timedelta(minutes=5)
+
+    def max_timestamp(self, payloads):
+        maxdt = None
+        for payload in payloads:
+            dt = datetime.fromtimestamp(payload.timestamp.seconds) + timedelta(
+                microseconds=payload.timestamp.nanos / 1000.0)
+            if maxdt is None:
+                maxdt = dt
+            else:
+                maxdt = max(maxdt, dt)
+        return maxdt
 
     def process(self, batch):
-        dtmax_current_batch = self.maxDate(batch.current)
-        dtmax_lastyear_batch = self.maxDate(batch.lastyear)
-        if dtmax_current_batch is None:
-            dtmax_current_batch = dtmax_lastyear_batch.replace(year=dtmax_lastyear_batch.year+1)
-        if dtmax_lastyear_batch is None:
-            dtmax_lastyear_batch = dtmax_current_batch.replace(year=dtmax_current_batch.year-1)
+        if len(batch.current) == 0 and len(batch.lastyear) == 0:
+            return None, None
 
+        dtmax_curr = self.max_timestamp(batch.current)
+        if not dtmax_curr:
+            dtmax_curr = self.max_timestamp(batch.lastyear) + timedelta(days=365)
 
-        dtmax_curr = max(dtmax_current_batch, dtmax_lastyear_batch.replace(year=dtmax_current_batch.year))
-        dtmax_lastyear = dtmax_curr.replace(year=dtmax_curr.year -1)
+        dtmax_lastyear = dtmax_curr - timedelta(days=365)
 
-        self.process_payloads(dtmax_curr.year, batch.current)
-        self.process_payloads(dtmax_lastyear.year, batch.lastyear)
+        if len(self.nextsn) == 0:
+            startminute = dtmax_curr.minute - (dtmax_curr.minute % 5)
+            next_snap_curr = dtmax_curr.replace(minute=startminute, second=0, microsecond=0) + timedelta(minutes=5)
+            self.nextsn[self.id_curr] = next_snap_curr
+            self.nextsn[self.id_lastyear] = next_snap_curr - timedelta(days=365)
 
-        self.truncate_old_values(dtmax_curr)
-        self.truncate_old_values(dtmax_lastyear)
+        self.process_payloads(self.id_curr, batch.current)
+        self.process_payloads(self.id_lastyear, batch.lastyear)
 
-        scores_curr = self.calculate_epa_scores(dtmax_curr.year)
-        scores_lastyear = self.calculate_epa_scores(dtmax_lastyear.year)
+        if self.firstbatch:
+            self.snapshot_aqi(self.id_curr, dtmax_curr)
+            self.snapshot_aqi(self.id_lastyear, dtmax_lastyear)
+            self.firstbatch = False
 
+        cnt = 1
         res = list()
-        for (k, v) in scores_curr.items():
-            if k in scores_lastyear:
-                last_year_aqi = scores_lastyear[k]
-                curr_year_aqi = v
-                res.append((k, last_year_aqi - curr_year_aqi, last_year_aqi, curr_year_aqi))
+        for (city, window_curr) in self.avg_aqi[self.id_curr].items():
+            if city in self.avg_aqi[self.id_lastyear]:
+                window_last = self.avg_aqi[self.id_lastyear][city]
+                last_year_avg_aqi = window_curr.getMean()
+                curr_year_avg_aqi = window_last.getMean()
+
+                res.append((city, last_year_avg_aqi - curr_year_avg_aqi, last_year_avg_aqi, curr_year_avg_aqi))
+                cnt = cnt + 1
 
         sort_res = sorted(res, key=lambda r: r[1], reverse=True)
 
@@ -164,19 +233,33 @@ class QueryOneAlternative:
         topklist = list()
         for i in range(1, topk + 1):
             if len(sort_res) >= i:
-                res = sort_res[i-1]
-                topklist.append(ch.TopKCities(position=i, city=res[0], averageAQIImprovement=res[1], currentAQI=res[2], previousAQI=res[3]))
+                res = sort_res[i - 1]
+                topklist.append(ch.TopKCities(position=i, city=res[0], averageAQIImprovement=res[1], currentAQI=res[2],
+                                              previousAQI=res[3]))
 
         return (dtmax_curr, topklist)
 
     def run(self):
         event_proc = EventProcessor()
 
-        loc = self.challengerstub.getLocations(empty_pb2.Empty())
-        print('got location data: %s' % len(loc.locations))
-        self.setup_locations(loc)
+        locationfile = "locationcache5.pickle"
+        locationcache = "locationlookupcache1.pickle"
 
-        benchmarkconfiguration = ch.BenchmarkConfiguration(token="abc",
+        if os.path.exists(locationfile):
+            with open(locationfile, "rb") as f:
+                self.zipcode_polygons = pickle.load(f)
+        else:
+            loc = self.challengerstub.getLocations(empty_pb2.Empty())
+            print('got location data: %s' % len(loc.locations))
+            self.setup_locations(loc)
+            with open(locationfile, "wb") as f:
+                pickle.dump(self.zipcode_polygons, f)
+
+        if os.path.exists(locationcache):
+            with open(locationcache, "rb") as f:
+                self.location_to_city = pickle.load(f)
+
+        benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
                                                            batch_size=5000,
                                                            benchmark_name="test benchmark",
                                                            benchmark_type="test",
@@ -211,14 +294,21 @@ class QueryOneAlternative:
             result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topk=payload)
             self.challengerstub.resultQ1(result)
 
+
             cnt = cnt + 1
             duration_so_far = (datetime.now() - start_time).total_seconds()
-            if (duration_so_far - lastdisplay) >= 2: #limit output every 2 seconds
+            if (duration_so_far - lastdisplay) >= 2:  # limit output every 2 seconds
+                with open(locationcache, "wb") as f:
+                    pickle.dump(self.location_to_city, f)
+
                 os.system('clear')
-                print("Top %s most improved zipcodes, last 24h - date: %s cachemiss: %s cachehit: %s cachsize: %s " % (len(payload), dtmax_curr, self.cachemiss, self.cachehit, len(self.location_to_city)))
-                print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (cnt, duration_so_far, num_current, num_historic, (num_current + num_historic)))
+                print("Top %s most improved zipcodes, last 24h - date: %s cachemiss: %s cachehit: %s cachsize: %s " % (
+                    len(payload), dtmax_curr, self.cachemiss, self.cachehit, len(self.location_to_city)))
+                print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (
+                    cnt, duration_so_far, num_current, num_historic, (num_current + num_historic)))
                 for topk in payload:
-                    print("pos: %s, city: %s, avg improvement: %s, previous: %s, current: %s " % (topk.position, topk.city, topk.averageAQIImprovement, topk.currentAQI, topk.previousAQI))
+                    print("pos: %s, city: %s, avg improvement: %s, previous: %s, current: %s " % (
+                        topk.position, topk.city, topk.averageAQIImprovement, topk.currentAQI, topk.previousAQI))
 
                 lastdisplay = duration_so_far
 
@@ -245,6 +335,9 @@ class AverageSlidingWindow:
                 self.timed_window.pop(0)
             else:
                 return
+
+    def hasElements(self):
+        return not len(self.timed_window) == 0
 
     def getMean(self):
         if len(self.timed_window) > 0:
