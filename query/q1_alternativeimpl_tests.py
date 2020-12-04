@@ -13,7 +13,7 @@ class QueryOneAlternativeTestCase(unittest.TestCase):
         self.q1 = None
 
     def test_nextTimestamp(self):
-        self.q1.
+        pass
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:

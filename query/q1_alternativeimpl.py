@@ -24,7 +24,7 @@ class MeanSlidingWindow:
         self.timed_window = list()
         self.csum = 0
 
-    def add(self, timestamp: datetime, value):
+    def add(self, timestamp: datetime, value: float):
         self.csum = self.csum + value
         self.timed_window.append((timestamp, value))
 
@@ -45,6 +45,9 @@ class MeanSlidingWindow:
             return False
         else:
             return self.timed_window[len(self.timed_window) - 1][0] >= dt
+
+    def size(self) -> int:
+        return len(self.timed_window)
 
     def getMean(self) -> float:
         if len(self.timed_window) > 0:
@@ -173,6 +176,7 @@ class QueryOneEventProcessor:
 
         cnt = 1
         res = list()
+        not_active_cnt = 0
         if self.id_curr in self.avg_aqi:
             for (city, window_aqi_curr) in self.avg_aqi[self.id_curr].items():
                 if city in self.avg_aqi[self.id_lastyear]:
@@ -181,8 +185,7 @@ class QueryOneEventProcessor:
                     window_aqi_curr.resize(dtmax_curr - timedelta(days=5))
                     window_aqi_last.resize(dtmax_curr - timedelta(days=365 + 5))
 
-                    if (window_aqi_curr.active(dtmax_curr - timedelta(minutes=5))) and (
-                            window_aqi_last.active(dtmax_curr - timedelta(days=365, minutes=5))):
+                    if (window_aqi_curr.active(dtmax_curr - timedelta(minutes=5))) and (window_aqi_last.active(dtmax_curr - timedelta(days=365, minutes=5))):
                         last_year_avg_aqi = window_aqi_curr.getMean()
                         curr_year_avg_aqi = window_aqi_last.getMean()
 
@@ -192,12 +195,22 @@ class QueryOneEventProcessor:
                         curr_year_window.resize(dtmax_curr - timedelta(hours=24))
                         last_year_window.resize(dtmax_curr - timedelta(days=365, hours=24))
 
-                        curr_year_aqi = utils.EPATableCalc(curr_year_window.getMean())
-                        last_year_aqi = utils.EPATableCalc(last_year_window.getMean())
+                        if curr_year_window.active(dtmax_curr - timedelta(minutes=5)) and (last_year_window.active(dtmax_curr - timedelta(days=365 + 5, minutes=5))):
+                            mtemp = curr_year_window.getMean()
+                            if not mtemp:
+                                print("city: %s dtmax_curr: %s valvs: %s window_aqi_curr: %s window_aqi_last: %s" %
+                                      (city, dtmax_curr, curr_year_window.has_elements(), window_aqi_curr.size(), window_aqi_last.size()))
+                                exit(0)
+                            curr_year_aqi = utils.EPATableCalc(mtemp)
+                            last_year_aqi = utils.EPATableCalc(last_year_window.getMean())
 
-                        res.append((city, round(last_year_avg_aqi - curr_year_avg_aqi, 3), round(last_year_aqi, 3),
-                                    round(curr_year_aqi, 3)))
-                        cnt = cnt + 1
+                            res.append((city, round(last_year_avg_aqi - curr_year_avg_aqi, 3), round(last_year_aqi, 3),
+                                        round(curr_year_aqi, 3)))
+                            cnt = cnt + 1
+                        else:
+                            not_active_cnt = not_active_cnt + 1
+                    else:
+                        not_active_cnt = not_active_cnt + 1
 
         sort_res = sorted(res, key=lambda r: r[1], reverse=True)
 
@@ -213,7 +226,7 @@ class QueryOneEventProcessor:
                                               currentAQI=int(res[2] * 1000.0),
                                               previousAQI=int(res[3] * 1000.0)))
 
-        return dtmax_curr, topklist
+        return not_active_cnt, dtmax_curr, topklist
 
 
 class QueryOneAlternative:
@@ -247,7 +260,7 @@ class QueryOneAlternative:
                 self.event_processor.location_to_city = pickle.load(f)
 
         benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
-                                                           batch_size=500,
+                                                           batch_size=20000,
                                                            benchmark_name="test benchmark",
                                                            benchmark_type="test",
                                                            queries=[ch.BenchmarkConfiguration.Query.Q1])
@@ -266,6 +279,7 @@ class QueryOneAlternative:
         num_current = 0
         num_historic = 0
         cnt = 0
+        emptycount = 0
 
         lastdisplay = 0
 
@@ -276,7 +290,10 @@ class QueryOneAlternative:
             num_current += len(batch.current)
             num_historic += len(batch.lastyear)
 
-            (dtmax_curr, payload) = self.event_processor.process(batch)
+            (not_active, dtmax_curr, payload) = self.event_processor.process(batch)
+
+            if len(payload) == 0:
+                emptycount = emptycount + 1
 
             result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topk=payload)
             self.challengerstub.resultQ1(result)
@@ -289,8 +306,8 @@ class QueryOneAlternative:
 
                 os.system('clear')
                 print("Top %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
-                print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (
-                    cnt, duration_so_far, num_current, num_historic, (num_current + num_historic)))
+                print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
+                    cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
                 for topk in payload:
                     print("pos: %2s, city: %25.25s, avg imp.: %7.3f, curr: %7.3f, prev: %7.3f " % (
                         topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
