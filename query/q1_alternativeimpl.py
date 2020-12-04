@@ -37,11 +37,11 @@ class MeanSlidingWindow:
             else:
                 return
 
-    def hasElements(self) -> bool:
+    def has_elements(self) -> bool:
         return not len(self.timed_window) == 0
 
     def active(self, dt: datetime) -> bool:
-        if(len(self.timed_window) == 0):
+        if len(self.timed_window) == 0:
             return False
         else:
             return self.timed_window[len(self.timed_window) - 1][0] > dt
@@ -111,19 +111,18 @@ class QueryOneAlternative:
         return None
 
     def snapshot_aqi(self, year, ts):
-        windowbegin = ts - timedelta(hours=24)
         if year not in self.avg_aqi:
             self.avg_aqi[year] = {}
         for (city, window) in self.data[year].items():
-            window.resize(windowbegin)
+            window.resize(ts - timedelta(hours=24))
             if city not in self.avg_aqi[year]:
                 self.avg_aqi[year][city] = MeanSlidingWindow()
 
-            if window.hasElements():
+            if window.has_elements():
                 mean_per_city = utils.EPATableCalc(window.getMean())
                 if mean_per_city is not np.nan:
                     self.avg_aqi[year][city].add(ts, mean_per_city)
-                self.avg_aqi[year][city].resize(windowbegin - timedelta(days=5))
+                self.avg_aqi[year][city].resize(ts - timedelta(days=5))
 
     def next_aqi_snapshot(self, ts):
         return ts + timedelta(minutes=5)
