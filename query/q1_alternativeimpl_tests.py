@@ -2,8 +2,18 @@ import unittest
 
 from datetime import datetime, timedelta
 
-from q1_alternativeimpl import MeanSlidingWindow
+from q1_alternativeimpl import MeanSlidingWindow, QueryOneAlternative
 
+
+class QueryOneAlternativeTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.q1 = QueryOneAlternative(None)
+
+    def tearDown(self) -> None:
+        self.q1 = None
+
+    def test_nextTimestamp(self):
+        self.q1.
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:

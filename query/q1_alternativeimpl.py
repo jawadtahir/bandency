@@ -53,12 +53,11 @@ class MeanSlidingWindow:
             return None
 
 
-class QueryOneAlternative:
-    def __init__(self, challengerstub):
+class QueryOneEventProcessor:
+    def __init__(self):
         self.id_curr = 2
         self.id_lastyear = 1
 
-        self.challengerstub = challengerstub
         self.location_to_city = {}
         self.zipcode_polygons = []
 
@@ -71,15 +70,11 @@ class QueryOneAlternative:
         self.nextSnapshot_curr = None
         self.next_snapshot = None
 
-    def measureLatency(self, benchmark):
-        ping = self.challengerstub.initializeLatencyMeasuring(benchmark)
-        for i in range(10):
-            ping = self.challengerstub.measure(ping)
-
-        self.challengerstub.endMeasurement(ping)
+        self.interval_minutes = 1
+        self.last_interval_ts = None
+        self.span_year = timedelta(days=365)
 
     def setup_locations(self, location_info_list):
-        print("Processing locations...")
         for location_info in tqdm(location_info_list.locations):
             polygons = location_info.polygons
             for polygon in polygons:
@@ -95,14 +90,12 @@ class QueryOneAlternative:
 
         # lookup in cache
         if location in self.location_to_city:
-            self.cachehit = self.cachehit + 1
             return self.location_to_city[location]
 
         # otherwise we have to search
         point = Point(event.longitude, event.latitude)
         for [city, polygon] in self.zipcode_polygons:
             if polygon.contains(point):
-                self.cachemiss = self.cachemiss + 1
                 self.location_to_city[location] = city
                 return city
 
@@ -150,11 +143,6 @@ class QueryOneAlternative:
 
         self.data[year] = per_city
 
-    interval_minutes = 1
-    last_interval_ts = None
-
-    span_year = timedelta(days=365)
-
     def max_timestamp(self, payloads):
         maxdt = None
         for payload in payloads:
@@ -193,7 +181,8 @@ class QueryOneAlternative:
                     window_aqi_curr.resize(dtmax_curr - timedelta(days=5))
                     window_aqi_last.resize(dtmax_curr - timedelta(days=365 + 5))
 
-                    if(window_aqi_curr.active(dtmax_curr - timedelta(minutes=5))) and (window_aqi_last.active(dtmax_curr - timedelta(days=365, minutes=5))):
+                    if (window_aqi_curr.active(dtmax_curr - timedelta(minutes=5))) and (
+                            window_aqi_last.active(dtmax_curr - timedelta(days=365, minutes=5))):
                         last_year_avg_aqi = window_aqi_curr.getMean()
                         curr_year_avg_aqi = window_aqi_last.getMean()
 
@@ -206,7 +195,8 @@ class QueryOneAlternative:
                         curr_year_aqi = utils.EPATableCalc(curr_year_window.getMean())
                         last_year_aqi = utils.EPATableCalc(last_year_window.getMean())
 
-                        res.append((city, round(last_year_avg_aqi - curr_year_avg_aqi, 3), round(last_year_aqi, 3), round(curr_year_aqi, 3)))
+                        res.append((city, round(last_year_avg_aqi - curr_year_avg_aqi, 3), round(last_year_aqi, 3),
+                                    round(curr_year_aqi, 3)))
                         cnt = cnt + 1
 
         sort_res = sorted(res, key=lambda r: r[1], reverse=True)
@@ -219,34 +209,45 @@ class QueryOneAlternative:
                 res = sort_res[i - 1]
                 topklist.append(ch.TopKCities(position=i,
                                               city=res[0],
-                                              averageAQIImprovement=int(res[1]*1000.0),
-                                              currentAQI=int(res[2]*1000.0),
+                                              averageAQIImprovement=int(res[1] * 1000.0),
+                                              currentAQI=int(res[2] * 1000.0),
                                               previousAQI=int(res[3] * 1000.0)))
 
-        return (dtmax_curr, topklist)
+        return dtmax_curr, topklist
+
+
+class QueryOneAlternative:
+    def __init__(self, challengerstub):
+        self.event_processor = QueryOneEventProcessor()
+        self.challengerstub = challengerstub
+
+    def measureLatency(self, benchmark):
+        ping = self.challengerstub.initializeLatencyMeasuring(benchmark)
+        for i in range(10):
+            ping = self.challengerstub.measure(ping)
+
+        self.challengerstub.endMeasurement(ping)
 
     def run(self):
-        event_proc = EventProcessor()
-
         locationfile = "locationcache5.pickle"
         locationcache = "locationlookupcache1.pickle"
 
         if os.path.exists(locationfile):
             with open(locationfile, "rb") as f:
-                self.zipcode_polygons = pickle.load(f)
+                self.event_processor.zipcode_polygons = pickle.load(f)
         else:
             loc = self.challengerstub.getLocations(empty_pb2.Empty())
             print('got location data: %s' % len(loc.locations))
-            self.setup_locations(loc)
+            self.event_processor.setup_locations(loc)
             with open(locationfile, "wb") as f:
-                pickle.dump(self.zipcode_polygons, f)
+                pickle.dump(self.event_processor.zipcode_polygons, f)
 
         if os.path.exists(locationcache):
             with open(locationcache, "rb") as f:
-                self.location_to_city = pickle.load(f)
+                self.event_processor.location_to_city = pickle.load(f)
 
         benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
-                                                           batch_size=5000,
+                                                           batch_size=500,
                                                            benchmark_name="test benchmark",
                                                            benchmark_type="test",
                                                            queries=[ch.BenchmarkConfiguration.Query.Q1])
@@ -275,7 +276,7 @@ class QueryOneAlternative:
             num_current += len(batch.current)
             num_historic += len(batch.lastyear)
 
-            (dtmax_curr, payload) = self.process(batch)
+            (dtmax_curr, payload) = self.event_processor.process(batch)
 
             result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topk=payload)
             self.challengerstub.resultQ1(result)
@@ -284,16 +285,16 @@ class QueryOneAlternative:
             duration_so_far = (datetime.now() - start_time).total_seconds()
             if (duration_so_far - lastdisplay) >= 2:  # limit output every 2 seconds
                 with open(locationcache, "wb") as f:
-                    pickle.dump(self.location_to_city, f)
+                    pickle.dump(self.event_processor.location_to_city, f)
 
                 os.system('clear')
-                print("Top %s most improved zipcodes, last 24h - date: %s cachemiss: %s cachehit: %s cachsize: %s " % (
-                    len(payload), dtmax_curr, self.cachemiss, self.cachehit, len(self.location_to_city)))
+                print("Top %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
                 print("processed %s in %s seconds - num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, num_current, num_historic, (num_current + num_historic)))
                 for topk in payload:
-                    print("pos: %2s, city: %15.15s, avg imp.: %7.3f, curr: %7.3f, prev: %7.3f " % (
-                        topk.position, topk.city, topk.averageAQIImprovement/1000.0, topk.currentAQI/1000.0, topk.previousAQI/1000.0))
+                    print("pos: %2s, city: %25.25s, avg imp.: %7.3f, curr: %7.3f, prev: %7.3f " % (
+                        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
+                        topk.previousAQI / 1000.0))
 
                 lastdisplay = duration_so_far
 
