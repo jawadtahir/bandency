@@ -44,7 +44,7 @@ class MeanSlidingWindow:
         if len(self.timed_window) == 0:
             return False
         else:
-            return self.timed_window[len(self.timed_window) - 1][0] > dt
+            return self.timed_window[len(self.timed_window) - 1][0] >= dt
 
     def getMean(self) -> float:
         if len(self.timed_window) > 0:
