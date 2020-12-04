@@ -127,8 +127,12 @@ class QueryOneEventProcessor:
         per_city = self.data[year]
         for payload in payloads:
             city = self._resolve_location(payload)
+
             if not city:  # outside
                 continue
+
+            #if "Beetzsee" in city:
+            #    print("Beetsee")
 
             if city not in per_city:
                 per_city[city] = MeanSlidingWindow()
@@ -174,6 +178,8 @@ class QueryOneEventProcessor:
         self.process_payloads(self.id_curr, batch.current)
         self.process_payloads(self.id_lastyear, batch.lastyear)
 
+        activity_timeout = timedelta(minutes=10)
+
         cnt = 1
         res = list()
         not_active_cnt = 0
@@ -185,7 +191,7 @@ class QueryOneEventProcessor:
                     window_aqi_curr.resize(dtmax_curr - timedelta(days=5))
                     window_aqi_last.resize(dtmax_curr - timedelta(days=365 + 5))
 
-                    if (window_aqi_curr.active(dtmax_curr - timedelta(minutes=5))) and (window_aqi_last.active(dtmax_curr - timedelta(days=365, minutes=5))):
+                    if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
                         last_year_avg_aqi = window_aqi_curr.getMean()
                         curr_year_avg_aqi = window_aqi_last.getMean()
 
@@ -195,7 +201,7 @@ class QueryOneEventProcessor:
                         curr_year_window.resize(dtmax_curr - timedelta(hours=24))
                         last_year_window.resize(dtmax_curr - timedelta(days=365, hours=24))
 
-                        if curr_year_window.active(dtmax_curr - timedelta(minutes=5)) and (last_year_window.active(dtmax_curr - timedelta(days=365 + 5, minutes=5))):
+                        if curr_year_window.active(dtmax_curr - activity_timeout) and (last_year_window.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
                             mtemp = curr_year_window.getMean()
                             if not mtemp:
                                 print("city: %s dtmax_curr: %s valvs: %s window_aqi_curr: %s window_aqi_last: %s" %
@@ -325,6 +331,7 @@ def main():
     op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
           ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
     with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+    #with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
         stub = api.ChallengerStub(channel)
         q1 = QueryOneAlternative(stub)
         q1.run()
