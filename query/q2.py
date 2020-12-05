@@ -123,9 +123,8 @@ class Q2:
         dtmax_current_batch = self.maxDate(batch.current)
 
         self.process_payloads(dtmax_current_batch.year, batch.current)
-        self.process_payloads(dtmax_lastyear.year, batch.lastyear)
 
-        self.truncate_old_values(dtmax_curr)
+        self.truncate_old_values(dtmax_current_batch)
         self.truncate_old_values(dtmax_lastyear)
 
         scores_curr = self.calculate_epa_scores(dtmax_curr.year)
