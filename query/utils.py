@@ -35,7 +35,7 @@ def ensure_dir(dir):
 
 
 def EPATableCalc(C, pollutant="P2"):
-    if pollutant is "P1":
+    if pollutant == "P1":
         epa_table = epa_tableP1
     else:
         epa_table = epa_tableP2
@@ -50,7 +50,7 @@ def EPATableCalc(C, pollutant="P2"):
 
 
 def epaDescription(meanv, pollutant="P2"):
-    if pollutant is "P1":
+    if pollutant == "P1":
         epa_table = epa_tableP1
     else:
         epa_table = epa_tableP2
