@@ -62,7 +62,7 @@ class EPATableP1(object):
         self.table.append(EPAEntry(99999.0, 605.0, 999.0, 501.0, "hazardous"))
 
     def __getitem__(self, key):
-        kr = round(key, 1)
+        kr = round(key)
         for entry in self.table:
             if entry.C_high >= kr >= entry.C_low:
                 return entry

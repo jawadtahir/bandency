@@ -284,8 +284,8 @@ class EventProcessor:
 
         event_ts = event["timestamp"]
 
-        if event_ts.year == self.max_date_last:
-            event_ts = event_ts + timedelta(days=-365)
+        if event_ts.year == self.max_date_last.year:
+            event_ts = event_ts + timedelta(days=365)
 
         if self.last_updated is datetime.min:
             self.last_updated = event_ts
