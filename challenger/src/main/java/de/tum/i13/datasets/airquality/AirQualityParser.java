@@ -137,8 +137,14 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
         LocalDateTime parsed = this.dataFiles.peek().getDateConfigForDate().parse(splitted[5]);
 
         //continue only if fields are not empty
+        //if(splitted[0].equalsIgnoreCase("20409"))
+        //    return null;
+
         if(splitted[3].length() == 0 || splitted[4].length() == 0 || splitted[6].length() == 0 || splitted[9].length() == 0)
             return null;
+
+        if(splitted[6].equals("1999.90") || splitted[9].equals("999.90"))
+            return  null;
 
         com.google.protobuf.Timestamp ts = com.google.protobuf.Timestamp.newBuilder()
                 .setSeconds(parsed.toEpochSecond(ZoneOffset.UTC))
@@ -153,8 +159,9 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
                 .setP2(Float.parseFloat(splitted[9]))
                 .build();
 
+
         //validate that a value is set
-        if(pl.getLatitude() == 0.0 || pl.getLongitude() == 0.0 || pl.getP1() == 0.0 || pl.getP2() == 0.0)
+        if(pl.getLatitude() == 0.0 || pl.getLongitude() == 0.0 || pl.getP1() == 0.0 || pl.getP1() == 1999.90 || pl.getP2() == 0.0 || pl.getP2() == 999.90)
             return null;
 
         return pl;

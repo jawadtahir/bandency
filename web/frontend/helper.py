@@ -14,6 +14,5 @@ def menu(profile=False,
         ["System status", "layers", "/systemstatus", system_status],
         ["Leaderboard", "layers", "/leaderboard", leaderboard],
         ["Test runs", "layers", "/testruns", testruns],
-        #["Scheduled Benchmarks", "layers", "/scheduledbenchmarks", scheduled_benchmarks],
         ["Datasets", "rawdata", "/rawdata", rawdata],
         ["Feedback", "layers", "/feedback", feedback]]

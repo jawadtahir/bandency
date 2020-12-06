@@ -1,3 +1,4 @@
+import os
 import logging
 from datetime import datetime
 
@@ -16,7 +17,6 @@ import challenger_pb2_grpc as api
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
 with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
-#with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
     #Step 1 - get all locations
@@ -24,7 +24,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
     print("Fetched %s locations" % (len(loc.locations)))
 
     #Step 2 - Create a new Benchmark
-    benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
+    benchmarkconfiguration = ch.BenchmarkConfiguration(token=os.environ['API_TOKEN'].strip(),
                                                        batch_size=3_000,
                                                        benchmark_name="this name shows_up_in_dashboard",
                                                        benchmark_type="test",
@@ -47,7 +47,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
     batch = stub.nextMessage(benchmark)
     while batch:
         cnt_current += len(batch.current)
-        cnt_historic += len(batch.lastyear)
+        cnt_historic += len(batch.id_lastyear)
 
         if(cnt % 100) == 0:
             ts_str = ""

@@ -132,7 +132,7 @@ class QueryOneAlternative:
 
     def process(self, batch):
         dtmax_current_batch = self.maxDate(batch.current)
-        dtmax_lastyear_batch = self.maxDate(batch.lastyear)
+        dtmax_lastyear_batch = self.maxDate(batch.id_lastyear)
         if dtmax_current_batch is None:
             dtmax_current_batch = dtmax_lastyear_batch.replace(year=dtmax_lastyear_batch.year + 1)
         if dtmax_lastyear_batch is None:
@@ -142,7 +142,7 @@ class QueryOneAlternative:
         dtmax_lastyear = dtmax_curr.replace(year=dtmax_curr.year - 1)
 
         self.process_payloads(dtmax_curr.year, batch.current)
-        self.process_payloads(dtmax_lastyear.year, batch.lastyear)
+        self.process_payloads(dtmax_lastyear.year, batch.id_lastyear)
 
         self.truncate_old_values(dtmax_curr)
         self.truncate_old_values(dtmax_lastyear)
@@ -207,7 +207,7 @@ class QueryOneAlternative:
                 break
 
             num_current += len(batch.current)
-            num_historic += len(batch.lastyear)
+            num_historic += len(batch.id_lastyear)
 
             (dtmax_curr, payload) = self.process(batch)
 
