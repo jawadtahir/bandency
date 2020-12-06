@@ -4,14 +4,14 @@ Created on 13.10.2020
 @author: ga53wuq
 '''
 from datetime import datetime
-from pathlib import Path
-import os
-
-
-from zipfile import ZipFile
 from getpass import getuser
+import os
+from pathlib import Path
+from zipfile import ZipFile
+
 import numpy
-from epa import EPATable
+
+from epa import EPATableP1, EPATableP2
 
 
 EARTH_RADIUS = 6371
@@ -26,25 +26,38 @@ DATA_DIR = "/media/{}/debs2021/luftdaten".format(getuser())
 
 # cities_lat_long_df = pandas.read_csv(
 #     open(os.path.join(ROOT_DIR, "worldcities.csv")))
-epa_table = EPATable()
+epa_tableP2 = EPATableP2()
+epa_tableP1 = EPATableP1()
 
 
 def ensure_dir(dir):
     os.makedirs(dir, exist_ok=True)
-    
-    
-def EPATableCalc(C):
-        try:
-            epa_entry = epa_table[C]
-            fraction = (epa_entry.I_high - epa_entry.I_low) / \
-                (epa_entry.C_high - epa_entry.C_low)
-            return (fraction * (C - epa_entry.C_low)) + epa_entry.I_low
-        except IndexError:
-            return numpy.nan    
-    
-def epaDescription(meanv):
+
+
+def EPATableCalc(C, pollutant="P2"):
+    if pollutant is "P1":
+        epa_table = epa_tableP1
+    else:
+        epa_table = epa_tableP2
+
+    try:
+        epa_entry = epa_table[C]
+        fraction = (epa_entry.I_high - epa_entry.I_low) / \
+            (epa_entry.C_high - epa_entry.C_low)
+        return (fraction * (C - epa_entry.C_low)) + epa_entry.I_low
+    except IndexError:
+        return numpy.nan
+
+
+def epaDescription(meanv, pollutant="P2"):
+    if pollutant is "P1":
+        epa_table = epa_tableP1
+    else:
+        epa_table = epa_tableP2
+
     return epa_table[meanv].description
-    
+
+
 def it_fd_from_zipfiles(sensors: list, months: list):
     """
     sensor: list of sensor name
@@ -63,9 +76,10 @@ def it_fd_from_zipfiles(sensors: list, months: list):
                             uncom_csv = zip_fd.extract(compressed_csv)
                             yield uncom_csv
                             os.remove(uncom_csv)
-    
+
                 else:
                     print("File {} couldn't be found".format(filename))
+
 
 def get_fd_from_zipfiles(sensors: list, months) -> list:
     """
@@ -85,7 +99,7 @@ def get_fd_from_zipfiles(sensors: list, months) -> list:
                             uncom_csv = zip_fd.extract(compressed_csv)
                             yield uncom_csv
                             os.remove(uncom_csv)
-    
+
                 else:
                     print("File {} couldn't be found".format(filename))
 
@@ -94,24 +108,26 @@ def get_fd_from_zipfiles(sensors: list, months) -> list:
             for sensor in sensors:
                 filename = "{}_{}.zip".format(month, sensor)
                 joined_filename = "{}_{}.zip".format(months[month], sensor)
-                
+
                 filepath = os.path.join(DATA_DIR, filename)
                 joined_filepath = os.path.join(DATA_DIR, joined_filename)
-                
+
                 is_filename = os.path.isfile(filepath)
                 is_joined_filename = os.path.isfile(joined_filepath)
-                
+
                 if is_filename and is_joined_filename:
                     with (ZipFile(filepath), ZipFile(joined_filepath)) as (zip_fd, zip_jfd):
-                        print("Processing {} and {}".format(filename, joined_filename))
+                        print("Processing {} and {}".format(
+                            filename, joined_filename))
                         for compressed_csv in zip_fd.infolist():
                             for compressed_jcsv in zip_jfd.infolist():
-                                
+
                                 uncom_csv = zip_fd.extract(compressed_csv)
                                 uncom_jcsv = zip_jfd.extract(compressed_jcsv)
                                 yield uncom_csv, uncom_jcsv
                                 os.remove(uncom_csv)
                                 os.remove(uncom_jcsv)
-    
+
                 else:
-                    print("File {} and {} couldn't be found".format(filename, joined_filename))
+                    print("File {} and {} couldn't be found".format(
+                        filename, joined_filename))
