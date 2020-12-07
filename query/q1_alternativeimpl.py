@@ -312,7 +312,7 @@ class QueryOneAlternative:
             if len(payload) == 0:
                 emptycount = emptycount + 1
 
-            result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topk=payload)
+            result = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topkimproved=payload)
             self.challengerstub.resultQ1(result)
 
             cnt = cnt + 1
@@ -326,7 +326,7 @@ class QueryOneAlternative:
                 print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
                 for topk in payload:
-                    print("pos: %2s, city: %25.25s, avg imp.: %7.3f, curr-AQI: %7.3f, curr-P1: %7.3f , curr-P2: %7.3f " % (
+                    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f , curr-P2: %8.3f " % (
                         topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
                         topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
 
