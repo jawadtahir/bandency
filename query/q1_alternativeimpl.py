@@ -110,14 +110,19 @@ class QueryOneEventProcessor:
         if year not in self.avg_aqi:
             self.avg_aqi[year] = {}
         for (city, window) in self.data[year].items():
-            window.resize(ts - timedelta(hours=24))
+            window[1].resize(ts - timedelta(hours=24))
+            window[2].resize(ts - timedelta(hours=24))
             if city not in self.avg_aqi[year]:
                 self.avg_aqi[year][city] = MeanSlidingWindow()
 
-            if window.has_elements():
-                mean_per_city = utils.EPATableCalc(window.getMean())
-                if mean_per_city is not np.nan:
-                    self.avg_aqi[year][city].add(ts, mean_per_city)
+            if window[1].has_elements() and window[2].has_elements():
+                mean_p1 = utils.EPATableCalc(window[1].getMean(), "P1")
+                mean_p2 = utils.EPATableCalc(window[2].getMean(), "P2")
+
+                if mean_p1 is not np.nan and mean_p2 is not np.nan:
+                    self.avg_aqi[year][city].add(ts, max(mean_p1, mean_p2))
+
+                #TODO: check if this line is needed?
                 self.avg_aqi[year][city].resize(ts - timedelta(days=5))
 
     def next_aqi_snapshot(self, ts):
@@ -132,18 +137,20 @@ class QueryOneEventProcessor:
                 continue
 
             if city not in per_city:
-                per_city[city] = MeanSlidingWindow()
+                per_city[city] = {}
+                per_city[city][1] = MeanSlidingWindow()
+                per_city[city][2] = MeanSlidingWindow()
 
             ts = payload.timestamp
             dt = datetime.fromtimestamp(ts.seconds) + timedelta(microseconds=ts.nanos / 1000.0)
 
             if (year == self.id_curr) and dt > self.next_snapshot:
                 self.snapshot_aqi(self.id_curr, dt)
-                self.next_snapshot = self.next_aqi_snapshot(self.next_snapshot)
-                self.snapshot_aqi(self.id_curr, dt)
                 self.snapshot_aqi(self.id_lastyear, dt - timedelta(days=365))
+                self.next_snapshot = self.next_aqi_snapshot(self.next_snapshot)
 
-            per_city[city].add(dt, payload.p2)
+            per_city[city][1].add(dt, payload.p1)
+            per_city[city][2].add(dt, payload.p2)
 
         self.data[year] = per_city
 
@@ -192,20 +199,24 @@ class QueryOneEventProcessor:
                         last_year_avg_aqi = window_aqi_curr.getMean()
                         curr_year_avg_aqi = window_aqi_last.getMean()
 
-                        curr_year_window = self.data[self.id_curr][city]
-                        last_year_window = self.data[self.id_lastyear][city]
+                        curr_year_window_p1 = self.data[self.id_curr][city][1]
+                        curr_year_window_p2 = self.data[self.id_curr][city][2]
+                        last_year_window_p1 = self.data[self.id_lastyear][city][1]
+                        last_year_window_p2 = self.data[self.id_lastyear][city][2]
 
-                        curr_year_window.resize(dtmax_curr - timedelta(hours=24))
-                        last_year_window.resize(dtmax_curr - timedelta(days=365, hours=24))
+                        curr_year_window_p1.resize(dtmax_curr - timedelta(hours=24))
+                        curr_year_window_p2.resize(dtmax_curr - timedelta(hours=24))
+                        last_year_window_p1.resize(dtmax_curr - timedelta(days=365, hours=24))
+                        last_year_window_p2.resize(dtmax_curr - timedelta(days=365, hours=24))
 
-                        if curr_year_window.active(dtmax_curr - activity_timeout) and (last_year_window.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
-                            mtemp = curr_year_window.getMean()
+                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and (last_year_window_p1.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
+                            mtemp = curr_year_window_p1.getMean()
                             if not mtemp:
                                 print("city: %s dtmax_curr: %s valvs: %s window_aqi_curr: %s window_aqi_last: %s" %
-                                      (city, dtmax_curr, curr_year_window.has_elements(), window_aqi_curr.size(), window_aqi_last.size()))
+                                      (city, dtmax_curr, curr_year_window_p1.has_elements(), window_aqi_curr.size(), window_aqi_last.size()))
                                 exit(0)
                             curr_year_aqi = utils.EPATableCalc(mtemp)
-                            last_year_aqi = utils.EPATableCalc(last_year_window.getMean())
+                            last_year_aqi = utils.EPATableCalc(last_year_window_p1.getMean())
 
                             res.append((city, round(last_year_avg_aqi - curr_year_avg_aqi, 3), round(last_year_aqi, 3),
                                         round(curr_year_aqi, 3)))
