@@ -42,7 +42,7 @@ message TopKCities {
 message ResultQ1 {
   int64 benchmark_id = 1;
   int64 payload_seq_id = 2;
-  repeated TopKCities topk = 3;
+  repeated TopKCities topkimproved = 3;
 }
 
 message ResultQ2Payload {
