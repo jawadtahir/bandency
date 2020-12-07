@@ -131,9 +131,6 @@ class QueryOneEventProcessor:
             if not city:  # outside
                 continue
 
-            #if "Beetzsee" in city:
-            #    print("Beetsee")
-
             if city not in per_city:
                 per_city[city] = MeanSlidingWindow()
 
