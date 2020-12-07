@@ -18,7 +18,6 @@ import challenger_pb2_grpc as api
 import numpy as np
 import utils
 
-
 class MeanSlidingWindow:
     def __init__(self):
         self.timed_window = list()
@@ -218,8 +217,11 @@ class QueryOneEventProcessor:
                             curr_year_aqi = utils.EPATableCalc(mtemp)
                             last_year_aqi = utils.EPATableCalc(last_year_window_p1.getMean())
 
-                            res.append((city, round(last_year_avg_aqi - curr_year_avg_aqi, 3), round(last_year_aqi, 3),
-                                        round(curr_year_aqi, 3)))
+                            res.append((city,
+                                        round(last_year_avg_aqi - curr_year_avg_aqi, 3),
+                                        round(curr_year_aqi, 3),
+                                        round(curr_year_window_p1.getMean(), 3),
+                                        round(curr_year_window_p2.getMean(), 3)))
                             cnt = cnt + 1
                         else:
                             not_active_cnt = not_active_cnt + 1
@@ -238,7 +240,8 @@ class QueryOneEventProcessor:
                                               city=res[0],
                                               averageAQIImprovement=int(res[1] * 1000.0),
                                               currentAQI=int(res[2] * 1000.0),
-                                              previousAQI=int(res[3] * 1000.0)))
+                                              currentP1=int(res[3] * 1000.0),
+                                              currentP2=int(res[4] * 1000.0)))
 
         return not_active_cnt, dtmax_curr, topklist
 
@@ -323,9 +326,9 @@ class QueryOneAlternative:
                 print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
                 for topk in payload:
-                    print("pos: %2s, city: %25.25s, avg imp.: %7.3f, curr: %7.3f, prev: %7.3f " % (
+                    print("pos: %2s, city: %25.25s, avg imp.: %7.3f, curr-AQI: %7.3f, curr-P1: %7.3f , curr-P2: %7.3f " % (
                         topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
-                        topk.previousAQI / 1000.0))
+                        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
 
                 lastdisplay = duration_so_far
 

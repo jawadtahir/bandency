@@ -33,9 +33,10 @@ message Benchmark {
 message TopKCities {
   int32 position = 1;
   string city = 2;
-  float averageAQIImprovement = 3;
-  float currentAQI = 4;
-  float previousAQI = 5;
+  int32 averageAQIImprovement = 3;
+  int32 currentAQI = 4;
+  int32 currentP1 = 5;
+  int32 currentP2 = 6;
 }
 
 message ResultQ1 {
