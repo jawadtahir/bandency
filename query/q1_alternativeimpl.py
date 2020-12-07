@@ -208,7 +208,7 @@ class QueryOneEventProcessor:
                         last_year_window_p1.resize(dtmax_curr - timedelta(days=365, hours=24))
                         last_year_window_p2.resize(dtmax_curr - timedelta(days=365, hours=24))
 
-                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and (last_year_window_p1.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
+                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and last_year_window_p1.has_elements():
                             mtemp = curr_year_window_p1.getMean()
                             if not mtemp:
                                 print("city: %s dtmax_curr: %s valvs: %s window_aqi_curr: %s window_aqi_last: %s" %
@@ -326,7 +326,7 @@ class QueryOneAlternative:
                 print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
                 for topk in payload:
-                    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f , curr-P2: %8.3f " % (
+                    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f, curr-P2: %8.3f " % (
                         topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
                         topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
 
