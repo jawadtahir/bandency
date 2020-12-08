@@ -116,7 +116,7 @@ class QueryOneEventProcessor:
             if city not in self.avg_aqi[year]:
                 self.avg_aqi[year][city] = MeanSlidingWindow()
             if city not in self.streak:
-                self.streak[city] = (None, None, None)
+                self.streak[city] = ["bad", 0, None]
 
             if window[1].has_elements() and window[2].has_elements():
                 mean_p1 = utils.EPATableCalc(window[1].getMean(), "P1")
@@ -136,24 +136,15 @@ class QueryOneEventProcessor:
 
                         state, dtlongest, dtfrom = self.streak[city]
 
-                        if state == "good" and c_state == "good":
-                            if dtlongest:
-                                self.streak[city][1] = max(dtlongest, ts - dtfrom)
-                            else:
-                                self.streak[city][1] = ts - dtfrom
+                        if state == "bad" and c_state == "good": #initialized with bad
+                            self.streak[city][0] = "good"
+                            self.streak[city][2] = ts
+                        #if state == "good" and c_state == "good":
+                            #span_seconds = max(dtlongest, )
+                            #self.streak[city][1] = (ts - dtfrom).seconds
                         if state == "good" and c_state == "bad":
-                            if dtlongest:
-                                self.streak[city][1] = max(dtlongest, ts - dtfrom)
-                            else:
-                                self.streak[city][1] = ts - dtfrom
-                        if state == "bad" and c_state == "good":
-
-
-
-                        if self.streak[city] is None:
-                                self.streak[city] = ts
-                            else:
-                                self.streak[city] = max(self.streak[city], ts)
+                            self.streak[city][0] = "bad"
+                            self.streak[city][1] = 0 #max(dtlongest, (ts - dtfrom).seconds)
 
                 #TODO: check if this line is needed?
                 self.avg_aqi[year][city].resize(ts - timedelta(days=5))
@@ -277,7 +268,25 @@ class QueryOneEventProcessor:
                                               currentP1=int(res[3] * 1000.0),
                                               currentP2=int(res[4] * 1000.0)))
 
-        return not_active_cnt, dtmax_curr, topklist
+        streak_res = list()
+        for (city, tup) in self.streak.items():
+            if city in self.avg_aqi[self.id_curr]:
+                window_aqi_last = self.avg_aqi[self.id_curr][city]
+                if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
+                    if tup[0] == "good":
+                        streak_res.append([city, (dtmax_curr - tup[2]).total_seconds()])
+
+        sorted_streak = sorted(streak_res, key=lambda s: s[1], reverse=True)
+        topk_streaks = list()
+        for i in range(1, topk + 1):
+            if len(sorted_streak) >= i:
+                st = sorted_streak[i-1]
+                streak = ch.TopKStreaks(position=i,
+                                        city=st[0],
+                                        streakdays=int(st[1]))
+                topk_streaks.append(streak)
+
+        return not_active_cnt, dtmax_curr, topklist, topk_streaks
 
 
 class QueryOneAlternative:
@@ -341,7 +350,7 @@ class QueryOneAlternative:
             num_current += len(batch.current)
             num_historic += len(batch.lastyear)
 
-            (not_active, dtmax_curr, payload) = self.event_processor.process(batch)
+            (not_active, dtmax_curr, payload, streaks) = self.event_processor.process(batch)
 
             if len(payload) == 0:
                 emptycount = emptycount + 1
@@ -359,10 +368,15 @@ class QueryOneAlternative:
                 print("Top %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
                 print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
-                for topk in payload:
-                    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f , curr-P2: %8.3f " % (
-                        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
-                        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
+                #for topk in payload:
+                #    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f , curr-P2: %8.3f " % (
+                #        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
+                #        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
+
+                for topk_streaks in streaks:
+                    print("pos: %2s, city: %25.25s, streakdays: %s" % (
+                        topk_streaks.position, topk_streaks.city, topk_streaks.streakdays))
+
 
                 lastdisplay = duration_so_far
 
