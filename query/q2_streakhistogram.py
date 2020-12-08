@@ -269,36 +269,39 @@ class QueryOneEventProcessor:
                                               currentP2=int(res[4] * 1000.0)))
 
 
+        curr_bad = 0
         streak_res = list()
         for (city, tup) in self.streak.items():
             if city in self.avg_aqi[self.id_curr]:
                 window_aqi_last = self.avg_aqi[self.id_curr][city]
                 if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
                     if tup[0] == "good":
-                        streak_res.append((dtmax_curr - tup[2]).total_seconds())
+                        streak_res.append(int((dtmax_curr - tup[2]).total_seconds()))
+                    else:
+                        curr_bad = curr_bad + 1
 
         topk_streaks = list()
 
+        topk = 20
         if(len(streak_res) > 10):
-            streak_min = int(np.min(streak_res))
-            streak_max = int(np.max(streak_res))
+            streak_min = 0
+            streak_max = min(int(np.max(streak_res)), int(timedelta(days=7).total_seconds()))
             steps = int((streak_max - streak_min) / topk) + 1
-            hist, bin_edges = np.histogram(streak_res, bins=range(streak_min, streak_max, steps))
+            hist, bin_edges = np.histogram(streak_res, bins=range(streak_min, streak_max+1, steps))
 
             s = np.sum(hist)
 
             #for topk_streaks in streaks:
-            #    print("bucket-from: %2s, bucket-to: %s, bucket-cnt: %s, bucket-percent: %8.3" % topk_streaks)
+            #    print("bucket-from: %2s, bucket-to: %s, bucket-cnt: %s, bucket-percent: %4.2" % topk_streaks)
             for i in range(len(hist)):
                 bucket_from = i*steps
                 bucket_to = (i*steps) + steps
-                bucket_cnt = hist[i]
                 bucket_percent = 100.0/s*hist[i]
 
-                topk_streaks.append([bucket_from, bucket_to, bucket_cnt, bucket_percent])
+                topk_streaks.append([bucket_from, bucket_to, bucket_percent])
 
 
-        return not_active_cnt, dtmax_curr, topklist, topk_streaks
+        return not_active_cnt, dtmax_curr, topklist, curr_bad, topk_streaks
 
 
 class QueryOneAlternative:
@@ -362,7 +365,7 @@ class QueryOneAlternative:
             num_current += len(batch.current)
             num_historic += len(batch.lastyear)
 
-            (not_active, dtmax_curr, payload, streaks) = self.event_processor.process(batch)
+            (not_active, dtmax_curr, payload, curr_bad, streaks) = self.event_processor.process(batch)
 
             if len(payload) == 0:
                 emptycount = emptycount + 1
@@ -377,7 +380,7 @@ class QueryOneAlternative:
                     pickle.dump(self.event_processor.location_to_city, f)
 
                 os.system('clear')
-                print("Top %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
+                print("Streak histogram %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
                 print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
                 #for topk in payload:
@@ -385,9 +388,10 @@ class QueryOneAlternative:
                 #        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
                 #        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
 
+                print("curr_bad: %s" % (curr_bad))
                 for topk_streaks in streaks:
-                    bucket_from, bucket_to, bucket_cnt, bucket_percent = topk_streaks
-                    print("bucket-from: %s, bucket-to: %s, bucket-cnt: %s, bucket-percent: %s" % (bucket_from, bucket_to, bucket_cnt, bucket_percent))
+                    bucket_from, bucket_to, bucket_percent = topk_streaks
+                    print("bucket-from: %s, bucket-to: %s, bucket-percent: %2.2f" % (bucket_from, bucket_to, bucket_percent))
 
 
                 lastdisplay = duration_so_far

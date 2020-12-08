@@ -283,7 +283,7 @@ class QueryOneEventProcessor:
                 st = sorted_streak[i-1]
                 streak = ch.TopKStreaks(position=i,
                                         city=st[0],
-                                        streakdays=int(st[1]))
+                                        streakdays=st[2])
                 topk_streaks.append(streak)
 
         return not_active_cnt, dtmax_curr, topklist, topk_streaks

@@ -195,8 +195,8 @@ class QueryOneEventProcessor:
                     window_aqi_last.resize(dtmax_curr - timedelta(days=365 + 5))
 
                     if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
-                        last_year_avg_aqi = window_aqi_curr.getMean()
-                        curr_year_avg_aqi = window_aqi_last.getMean()
+                        last_year_avg_aqi = window_aqi_last.getMean()
+                        curr_year_avg_aqi = window_aqi_curr.getMean()
 
                         curr_year_window_p1 = self.data[self.id_curr][city][1]
                         curr_year_window_p2 = self.data[self.id_curr][city][2]
