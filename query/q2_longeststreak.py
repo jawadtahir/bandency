@@ -66,6 +66,8 @@ class QueryOneEventProcessor:
         self.data = {self.id_curr: {}, self.id_lastyear: {}}
         self.avg_aqi = {self.id_curr: {}, self.id_lastyear: {}}
 
+        self.streak = {}
+
         self.cachemiss = 0
         self.cachehit = 0
         self.movingaqi = {}
@@ -113,13 +115,36 @@ class QueryOneEventProcessor:
             window[2].resize(ts - timedelta(hours=24))
             if city not in self.avg_aqi[year]:
                 self.avg_aqi[year][city] = MeanSlidingWindow()
+            if city not in self.streak:
+                self.streak[city] = ["bad", 0, None]
 
             if window[1].has_elements() and window[2].has_elements():
                 mean_p1 = utils.EPATableCalc(window[1].getMean(), "P1")
                 mean_p2 = utils.EPATableCalc(window[2].getMean(), "P2")
 
                 if mean_p1 is not np.nan and mean_p2 is not np.nan:
-                    self.avg_aqi[year][city].add(ts, max(mean_p1, mean_p2))
+                    avg = max(mean_p1, mean_p2)
+                    self.avg_aqi[year][city].add(ts, avg) # this for Q1
+
+                    if year is self.id_curr:
+                        desc_p1 = utils.epaDescription(mean_p1, "P1")
+                        desc_p2 = utils.epaDescription(mean_p2, "P2")
+
+                        c_state = "bad"
+                        if "good" in desc_p1 and "good" in desc_p2:
+                            c_state = "good"
+
+                        state, dtlongest, dtfrom = self.streak[city]
+
+                        if state == "bad" and c_state == "good": #initialized with bad
+                            self.streak[city][0] = "good"
+                            self.streak[city][2] = ts
+                        #if state == "good" and c_state == "good":
+                            #span_seconds = max(dtlongest, )
+                            #self.streak[city][1] = (ts - dtfrom).seconds
+                        if state == "good" and c_state == "bad":
+                            self.streak[city][0] = "bad"
+                            self.streak[city][1] = 0 #max(dtlongest, (ts - dtfrom).seconds)
 
                 #TODO: check if this line is needed?
                 self.avg_aqi[year][city].resize(ts - timedelta(days=5))
@@ -195,8 +220,8 @@ class QueryOneEventProcessor:
                     window_aqi_last.resize(dtmax_curr - timedelta(days=365 + 5))
 
                     if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
-                        last_year_avg_aqi = window_aqi_last.getMean()
-                        curr_year_avg_aqi = window_aqi_curr.getMean()
+                        last_year_avg_aqi = window_aqi_curr.getMean()
+                        curr_year_avg_aqi = window_aqi_last.getMean()
 
                         curr_year_window_p1 = self.data[self.id_curr][city][1]
                         curr_year_window_p2 = self.data[self.id_curr][city][2]
@@ -208,7 +233,7 @@ class QueryOneEventProcessor:
                         last_year_window_p1.resize(dtmax_curr - timedelta(days=365, hours=24))
                         last_year_window_p2.resize(dtmax_curr - timedelta(days=365, hours=24))
 
-                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and last_year_window_p1.has_elements():
+                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and (last_year_window_p1.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
                             mtemp = curr_year_window_p1.getMean()
                             if not mtemp:
                                 print("city: %s dtmax_curr: %s valvs: %s window_aqi_curr: %s window_aqi_last: %s" %
@@ -243,7 +268,25 @@ class QueryOneEventProcessor:
                                               currentP1=int(res[3] * 1000.0),
                                               currentP2=int(res[4] * 1000.0)))
 
-        return not_active_cnt, dtmax_curr, topklist
+        streak_res = list()
+        for (city, tup) in self.streak.items():
+            if city in self.avg_aqi[self.id_curr]:
+                window_aqi_last = self.avg_aqi[self.id_curr][city]
+                if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
+                    if tup[0] == "good":
+                        streak_res.append([city, (dtmax_curr - tup[2]).total_seconds()])
+
+        sorted_streak = sorted(streak_res, key=lambda s: s[1], reverse=True)
+        topk_streaks = list()
+        for i in range(1, topk + 1):
+            if len(sorted_streak) >= i:
+                st = sorted_streak[i-1]
+                streak = ch.TopKStreaks(position=i,
+                                        city=st[0],
+                                        streakdays=st[2])
+                topk_streaks.append(streak)
+
+        return not_active_cnt, dtmax_curr, topklist, topk_streaks
 
 
 class QueryOneAlternative:
@@ -307,7 +350,7 @@ class QueryOneAlternative:
             num_current += len(batch.current)
             num_historic += len(batch.lastyear)
 
-            (not_active, dtmax_curr, payload) = self.event_processor.process(batch)
+            (not_active, dtmax_curr, payload, streaks) = self.event_processor.process(batch)
 
             if len(payload) == 0:
                 emptycount = emptycount + 1
@@ -325,10 +368,15 @@ class QueryOneAlternative:
                 print("Top %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
                 print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
-                for topk in payload:
-                    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f, curr-P2: %8.3f " % (
-                        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
-                        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
+                #for topk in payload:
+                #    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f , curr-P2: %8.3f " % (
+                #        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
+                #        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
+
+                for topk_streaks in streaks:
+                    print("pos: %2s, city: %25.25s, streakdays: %s" % (
+                        topk_streaks.position, topk_streaks.city, topk_streaks.streakdays))
+
 
                 lastdisplay = duration_so_far
 
@@ -342,7 +390,7 @@ def main():
     op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
           ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
     with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
-    #with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
+        #with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
         stub = api.ChallengerStub(channel)
         q1 = QueryOneAlternative(stub)
         q1.run()
