@@ -42,7 +42,7 @@ class EventProcessor:
         self.max_date_current = datetime.min
         self.max_date_last = datetime.min
         self.last_updated = datetime.min
-        self.update_interval_mins = 2
+        self.update_interval_mins = 5
         self.emitable = False
 
         self.location_year_pm_window_map = {}
@@ -171,23 +171,30 @@ class EventProcessor:
 
     def _calculate_AQI(self):
 
-        for city_year, window in self.location_year_pm_window_map.items():
+        for city_year, window_arr in self.location_year_pm_window_map.items():
             # Slide window in case of a offline location
 
-            last_event_ts = list(window.timed_window.keys())[-1]
+            last_event_ts = list(window_arr[0].timed_window.keys())[-1]
             last_updated = self.last_updated
 
             if last_event_ts.year == self.max_date_last.year:
                 last_updated = last_updated + timedelta(days=-365)
 
             if (last_event_ts + timedelta(minutes=self.update_interval_mins)) < last_updated:
-                window.slide(last_updated, np.nan)
+                window_arr[0].slide(last_updated, np.nan)
+                window_arr[1].slide(last_updated, np.nan)
 
-            window.resize()
+            window_arr[0].resize()
+            window_arr[1].resize()
 
             # AQI calculation
-            polutant_concentration = np.nanmean(list(window.get_array()))
-            aqi = utils.EPATableCalc(polutant_concentration)
+            p2_concentration = np.nanmean(window_arr[0].get_array())
+            p1_concentration = np.nanmean(window_arr[1].get_array())
+
+            p2_aqi = utils.EPATableCalc(p2_concentration)
+            p1_aqi = utils.EPATableCalc(p1_concentration, "P1")
+
+            aqi = max(p2_aqi, p1_aqi)
 
             aqi_map_index = city_year
 
@@ -200,11 +207,12 @@ class EventProcessor:
 
     def emit(self):
 
-        if not self.emitable:
+        if len(self.location_improvement_map) == 0:
             return
 
         loc_improv = OrderedDict(sorted(self.location_improvement_map.items(
-        ), key=lambda item: item[1][3], reverse=True))
+        ), key=lambda item: item[1][0], reverse=True))
+
         loc_improv_iter = iter(loc_improv.items())
 
         os.system('clear')
@@ -213,51 +221,73 @@ class EventProcessor:
         topklist = list()
         print("Top %s most improved zipcodes, last 24h - date: %s :" %
               (topk, self.max_date_current))
+
         for i in range(1, topk + 1):
+
             res = next(loc_improv_iter)
+
+            current_index = "{}_{}".format(res[0], self.max_date_current.year)
+            last_index = "{}_{}".format(res[0], self.max_date_last.year)
+
+            current_p2 = np.nanmean(
+                self.location_year_pm_window_map[current_index][0].get_array())
+            current_p1 = np.nanmean(
+                self.location_year_pm_window_map[current_index][1].get_array())
+
+            last_p2 = np.nanmean(
+                self.location_year_pm_window_map[last_index][0].get_array())
+            last_p1 = np.nanmean(
+                self.location_year_pm_window_map[last_index][1].get_array())
+
+            current_aqi = round(max(utils.EPATableCalc(current_p2),
+                                    utils.EPATableCalc(current_p1, "P1")), 3)
+            last_aqi = round(max(utils.EPATableCalc(last_p2),
+                                 utils.EPATableCalc(last_p1, "P1")), 3)
+
             print("pos: %s, city: %s, avg improvement: %s, previous: %s, current: %s " % (
-                i, res[0], res[1][3], res[1][1], res[1][2]))
+                i, res[0], res[1][3], last_aqi, current_aqi))
             topklist.append(ch.TopKCities(
-                position=1, city=res[0], averageAQIImprovement=res[1][3], currentAQI=res[1][1], previousAQI=res[1][2]))
+                position=1, city=res[0], averageAQIImprovement=res[1][3], currentAQI=current_aqi, previousAQI=last_aqi))
 
         self.location_improvement_map = {}
-        self.emitable = False
 
         return topklist
 
     def update(self, event):
         self._calculate_AQI()
 
-        for (location_year, window) in self.location_year_aqi_map.items():
+        for (location_year, aqi_window) in self.location_year_aqi_map.items():
 
             location, year = location_year.split("_")
 
             if year == str(self.max_date_current.year):
 
-                previous_aqi = self.location_year_aqi_map.get(
+                previous_aqi_window = self.location_year_aqi_map.get(
                     "{}_{}".format(location, int(year) - 1))
 
-                if previous_aqi:
+                if previous_aqi_window:
 
-                    current_aqi = window
-                    current_aqi = np.nanmean(list(current_aqi.get_array()))
+                    current_aqi = np.nanmean(
+                        aqi_window.get_array())
+
                     previous_aqi = np.nanmean(
-                        list(previous_aqi.get_array()))
+                        previous_aqi_window.get_array())
+
                     aqi_improvment = previous_aqi - current_aqi
 
                     if self.location_improvement_map.get(location):
-                        acc_aqi_improvement = self.location_improvement_map[location][0] + \
+                        acc_aqi_improvement = self.location_improvement_map[location][1] + \
                             aqi_improvment
-                        no_of_events = self.location_improvement_map[location][4] + 1
+                        no_of_events = self.location_improvement_map[location][2] + 1
                         avg_aqi_improvement = float(
                             acc_aqi_improvement) / float(no_of_events)
 
                         self.location_improvement_map[location] = [
-                            acc_aqi_improvement, previous_aqi, current_aqi, avg_aqi_improvement, no_of_events]
+                            avg_aqi_improvement, acc_aqi_improvement, no_of_events]
                     else:
-                        #[AQI improvement, Previous AQI, Current AQI, Averaged improvement, # of events]
+                        #[Averaged improvement, accumalated improvement per batch, # of events]
                         self.location_improvement_map[location] = [
-                            aqi_improvment, previous_aqi, current_aqi, aqi_improvment, 1]
+                            aqi_improvment, aqi_improvment, 1]
 
     def fill_p_windows(self, event):
 
@@ -268,11 +298,22 @@ class EventProcessor:
             index = "{}_{}".format(event["zipcode"], event["timestamp"].year)
             if self.location_year_pm_window_map.get(index):
                 pm_window = self.location_year_pm_window_map[index]
-                pm_window.append(event["timestamp"], event["p2"])
+
+                p2_window = pm_window[0]
+                p1_window = pm_window[1]
+
+                p2_window.append(event["timestamp"],
+                                 event["p2"] if event["p2"] else np.nan)
+                p1_window.append(event["timestamp"],
+                                 event["p1"] if event["p1"] else np.nan)
 
             else:
-                pm_window = TemporalSlidingWindow(
-                    event["timestamp"], event["p2"])
+                p2_window = TemporalSlidingWindow(
+                    event["timestamp"], event["p2"] if event["p2"] else np.nan)
+                p1_window = TemporalSlidingWindow(
+                    event["timestamp"], event["p1"] if event["p1"] else np.nan)
+
+                pm_window = [p2_window, p1_window]
                 self.location_year_pm_window_map[index] = pm_window
 
         fill(self, event[0])
@@ -293,7 +334,6 @@ class EventProcessor:
 
         if event_ts > self.last_updated + timedelta(minutes=self.update_interval_mins):
             self.last_updated = event_ts
-            self.emitable = True
             return True
         else:
             return False
@@ -306,13 +346,13 @@ class EventProcessor:
         events = self.pre_proc(batch)
         count = 0
         for event in events:
+
             if count % 1000 == 0:
                 print("Event pairs processed: {}".format(count))
             if event:
                 event = self.enrich(event)
                 event = self.filter(event)
                 self.fill_p_windows(event)
-#                 self.execute(event)
                 count += 1
                 if self.is_update_time(event):
 
@@ -341,4 +381,4 @@ class TemporalSlidingWindow:
         ) if item[0] > (self.maxdatetime + timedelta(hours=self.window))}
 
     def get_array(self):
-        return self.timed_window.values()
+        return list(self.timed_window.values())
