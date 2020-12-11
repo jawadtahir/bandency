@@ -37,19 +37,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         benchmark = new ConcurrentHashMap<>();
     }
 
-    static final Counter getLocationsCounter = Counter.build()
-            .name("getLocations")
-            .help("calls to getLocations methods")
-            .register();
-
-    @Override
-    public void getLocations(Benchmark request, StreamObserver<Locations> responseObserver) {
-        responseObserver.onNext(ld.getAllLocations());
-        responseObserver.onCompleted();
-
-        getLocationsCounter.inc();
-    }
-
     static final Counter createNewBenchmarkCounter = Counter.build()
             .name("createNewBenchmark")
             .help("calls to createNewBenchmark methods")
@@ -141,6 +128,51 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         responseObserver.onCompleted();
 
         createNewBenchmarkCounter.inc();
+    }
+
+    static final Counter getLocationsCounter = Counter.build()
+            .name("getLocations")
+            .help("calls to getLocations methods")
+            .register();
+
+    @Override
+    public void getLocations(Benchmark request, StreamObserver<Locations> responseObserver) {
+
+        if(!this.benchmark.containsKey(request.getId())) {
+            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
+
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        BenchmarkType benchmarkType = this.benchmark.get(request.getId()).getBenchmarkType();
+
+        switch (benchmarkType) {
+            case Verification -> {
+                System.out.println("TODO");
+                Status status = Status.FAILED_PRECONDITION.withDescription("Verifcation currently not available");
+
+                responseObserver.onError(status.asException());
+                responseObserver.onCompleted();
+                return;
+            }
+            case Test -> {
+                responseObserver.onNext(ld.getAllLocations());
+                responseObserver.onCompleted();
+
+                getLocationsCounter.inc();
+                return;
+            }
+            case Evaluation -> {
+                Status status = Status.FAILED_PRECONDITION.withDescription("Evaluation currently not available");
+
+                responseObserver.onError(status.asException());
+                responseObserver.onCompleted();
+                return;
+            }
+        }
+
     }
 
     static final Counter initializeLatencyMeasuringCounter = Counter.build()
