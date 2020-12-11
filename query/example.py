@@ -44,7 +44,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
     cnt_historic = 0
     cnt = 0
 
-    batch = stub.nextMessage(benchmark)
+    batch = stub.nextBatch(benchmark)
     while batch:
         cnt_current += len(batch.current)
         cnt_historic += len(batch.id_lastyear)
@@ -69,7 +69,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
             break
 
         cnt = cnt + 1
-        batch = stub.nextMessage(benchmark)
+        batch = stub.nextBatch(benchmark)
 
     stub.endMeasurement(benchmark)
 

@@ -229,8 +229,8 @@ class QueryOneEventProcessor:
                                         round(last_year_avg_aqi -
                                               curr_year_avg_aqi, 3),
                                         round(curr_year_aqi, 3),
-                                        round(curr_year_window_p1.getMean(), 3),
-                                        round(curr_year_window_p2.getMean(), 3)))
+                                        round(utils.EPATableCalc(curr_year_window_p1.getMean(), pollutant="P1"), 3),
+                                        round(utils.EPATableCalc(curr_year_window_p2.getMean(), pollutant="P2"), 3)))
                             cnt = cnt + 1
                         else:
                             not_active_cnt = not_active_cnt + 1
@@ -247,14 +247,11 @@ class QueryOneEventProcessor:
                 res = sort_res[i - 1]
                 topklist.append(ch.TopKCities(position=i,
                                               city=res[0],
-                                              averageAQIImprovement=int(
-                                                  res[1] * 1000.0),
-                                              currentAQI=int(res[2] * 1000.0),
-                                              currentP1=int(res[3] * 1000.0),
-                                              currentP2=int(res[4] * 1000.0)))
+                                              averageAQIImprovement=int(res[1] * 1000.0),
+                                              currentAQIP1=int(res[3] * 1000.0),
+                                              currentAQIP2=int(res[4] * 1000.0)))
 
         return not_active_cnt, dtmax_curr, topklist
-
 
 class QueryOneAlternative:
     def __init__(self, challengerstub):
@@ -275,12 +272,18 @@ class QueryOneAlternative:
         locationcache = "locationlookupcache1.pickle"
 
         self.proc_start_time = datetime.now()
+        benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
+                                                           batch_size=20000,
+                                                           benchmark_name="test benchmark",
+                                                           benchmark_type="test",
+                                                           queries=[ch.BenchmarkConfiguration.Query.Q1])
+        bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
 
         if os.path.exists(locationfile):
             with open(locationfile, "rb") as f:
                 self.event_processor.zipcode_polygons = pickle.load(f)
         else:
-            loc = self.challengerstub.getLocations(empty_pb2.Empty())
+            loc = self.challengerstub.getLocations(bench)
             print('got location data: %s' % len(loc.locations))
             self.event_processor.setup_locations(loc)
             with open(locationfile, "wb") as f:
@@ -290,12 +293,6 @@ class QueryOneAlternative:
             with open(locationcache, "rb") as f:
                 self.event_processor.location_to_city = pickle.load(f)
 
-        benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
-                                                           batch_size=20000,
-                                                           benchmark_name="test benchmark",
-                                                           benchmark_type="test",
-                                                           queries=[ch.BenchmarkConfiguration.Query.Q1])
-        bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
 
         # First, we measure the latency.
         # This is only for the testing dashboard to substract the communication
@@ -306,7 +303,7 @@ class QueryOneAlternative:
         print("start processing batch")
         start_time = datetime.now()
         self.challengerstub.startBenchmark(bench)
-        batch = self.challengerstub.nextMessage(bench)
+        batch = self.challengerstub.nextBatch(bench)
 
         num_current = 0
         num_historic = 0
@@ -335,7 +332,7 @@ class QueryOneAlternative:
             avg_time_per_batch = (
                 datetime.now() - self.proc_start_time) / self.batch_count
 
-            print("Average time per batch: {}".format(avg_time_per_batch))
+            #print("Average time per batch: {}".format(avg_time_per_batch))
             self.challengerstub.resultQ1(result)
 
             cnt = cnt + 1
@@ -350,18 +347,17 @@ class QueryOneAlternative:
                 print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
                 for topk in payload:
-                    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f, curr-P2: %8.3f " % (
+                    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI-P1: %8.3f, curr-AQI-P2: %8.3f " % (
                         topk.position, topk.city, topk.averageAQIImprovement /
-                        1000.0, topk.currentAQI / 1000.0,
-                        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
+                        1000.0, topk.currentAQIP1 / 1000.0,
+                        topk.currentAQIP2 / 1000.00))
 
                 lastdisplay = duration_so_far
 
-            batch = self.challengerstub.nextMessage(bench)
+            batch = self.challengerstub.nextBatch(bench)
 
     def process_current(self, batch):
         return
-
 
 def main():
     op = [('grpc.max_send_message_length', 10 * 1024 * 1024),

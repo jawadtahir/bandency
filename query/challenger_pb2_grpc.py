@@ -15,15 +15,15 @@ class ChallengerStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.getLocations = channel.unary_unary(
-                '/Challenger.Challenger/getLocations',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=challenger__pb2.Locations.FromString,
-                )
         self.createNewBenchmark = channel.unary_unary(
                 '/Challenger.Challenger/createNewBenchmark',
                 request_serializer=challenger__pb2.BenchmarkConfiguration.SerializeToString,
                 response_deserializer=challenger__pb2.Benchmark.FromString,
+                )
+        self.getLocations = channel.unary_unary(
+                '/Challenger.Challenger/getLocations',
+                request_serializer=challenger__pb2.Benchmark.SerializeToString,
+                response_deserializer=challenger__pb2.Locations.FromString,
                 )
         self.initializeLatencyMeasuring = channel.unary_unary(
                 '/Challenger.Challenger/initializeLatencyMeasuring',
@@ -45,8 +45,8 @@ class ChallengerStub(object):
                 request_serializer=challenger__pb2.Benchmark.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.nextMessage = channel.unary_unary(
-                '/Challenger.Challenger/nextMessage',
+        self.nextBatch = channel.unary_unary(
+                '/Challenger.Challenger/nextBatch',
                 request_serializer=challenger__pb2.Benchmark.SerializeToString,
                 response_deserializer=challenger__pb2.Batch.FromString,
                 )
@@ -70,15 +70,15 @@ class ChallengerStub(object):
 class ChallengerServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def getLocations(self, request, context):
-        """Get the polygons of all zip areas in germany
+    def createNewBenchmark(self, request, context):
+        """Create a new Benchmark based on the configuration
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def createNewBenchmark(self, request, context):
-        """Create a new Benchmark based on the configuration
+    def getLocations(self, request, context):
+        """Get the polygons of all zip areas in germany based on the benchmarktype
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -114,7 +114,7 @@ class ChallengerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def nextMessage(self, request, context):
+    def nextBatch(self, request, context):
         """get the next Batch
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -144,15 +144,15 @@ class ChallengerServicer(object):
 
 def add_ChallengerServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'getLocations': grpc.unary_unary_rpc_method_handler(
-                    servicer.getLocations,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=challenger__pb2.Locations.SerializeToString,
-            ),
             'createNewBenchmark': grpc.unary_unary_rpc_method_handler(
                     servicer.createNewBenchmark,
                     request_deserializer=challenger__pb2.BenchmarkConfiguration.FromString,
                     response_serializer=challenger__pb2.Benchmark.SerializeToString,
+            ),
+            'getLocations': grpc.unary_unary_rpc_method_handler(
+                    servicer.getLocations,
+                    request_deserializer=challenger__pb2.Benchmark.FromString,
+                    response_serializer=challenger__pb2.Locations.SerializeToString,
             ),
             'initializeLatencyMeasuring': grpc.unary_unary_rpc_method_handler(
                     servicer.initializeLatencyMeasuring,
@@ -174,8 +174,8 @@ def add_ChallengerServicer_to_server(servicer, server):
                     request_deserializer=challenger__pb2.Benchmark.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'nextMessage': grpc.unary_unary_rpc_method_handler(
-                    servicer.nextMessage,
+            'nextBatch': grpc.unary_unary_rpc_method_handler(
+                    servicer.nextBatch,
                     request_deserializer=challenger__pb2.Benchmark.FromString,
                     response_serializer=challenger__pb2.Batch.SerializeToString,
             ),
@@ -205,23 +205,6 @@ class Challenger(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def getLocations(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/getLocations',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            challenger__pb2.Locations.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
     def createNewBenchmark(request,
             target,
             options=(),
@@ -235,6 +218,23 @@ class Challenger(object):
         return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/createNewBenchmark',
             challenger__pb2.BenchmarkConfiguration.SerializeToString,
             challenger__pb2.Benchmark.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getLocations(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/getLocations',
+            challenger__pb2.Benchmark.SerializeToString,
+            challenger__pb2.Locations.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -307,7 +307,7 @@ class Challenger(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def nextMessage(request,
+    def nextBatch(request,
             target,
             options=(),
             channel_credentials=None,
@@ -317,7 +317,7 @@ class Challenger(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/nextMessage',
+        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/nextBatch',
             challenger__pb2.Benchmark.SerializeToString,
             challenger__pb2.Batch.FromString,
             options, channel_credentials,

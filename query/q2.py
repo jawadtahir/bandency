@@ -155,15 +155,16 @@ class Q2:
     def run(self):
         event_proc = EventProcessor()
 
-        loc = self.challengerstub.getLocations(empty_pb2.Empty())
-        print('got location data: %s' % len(loc.locations))
-        self.setup_locations(loc)
 
         benchmarkconfiguration = ch.BenchmarkConfiguration(token="abc",
                                                            batch_size=5000,
                                                            benchmark_name="test benchmark",
                                                            queries=[ch.BenchmarkConfiguration.Query.Q1])
         bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
+
+        loc = self.challengerstub.getLocations(bench)
+        print('got location data: %s' % len(loc.locations))
+        self.setup_locations(loc)
 
         # First, we measure the latency.
         # This is only for the testing dashboard to substract the communication
@@ -174,7 +175,7 @@ class Q2:
         print("start processing batch")
         start_time = datetime.now()
         self.challengerstub.startBenchmark(bench)
-        batch = self.challengerstub.nextMessage(bench)
+        batch = self.challengerstub.nextBatch(bench)
 
         num_current = 0
         num_historic = 0
@@ -209,7 +210,7 @@ class Q2:
 
                 lastdisplay = duration_so_far
 
-            batch = self.challengerstub.nextMessage(bench)
+            batch = self.challengerstub.nextBatch(bench)
 
     def process_current(self, batch):
         return

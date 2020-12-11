@@ -305,11 +305,18 @@ class QueryOneAlternative:
         locationfile = "locationcache5.pickle"
         locationcache = "locationlookupcache1.pickle"
 
+        benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
+                                                           batch_size=20000,
+                                                           benchmark_name="test benchmark",
+                                                           benchmark_type="test",
+                                                           queries=[ch.BenchmarkConfiguration.Query.Q1])
+        bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
+
         if os.path.exists(locationfile):
             with open(locationfile, "rb") as f:
                 self.event_processor.zipcode_polygons = pickle.load(f)
         else:
-            loc = self.challengerstub.getLocations(empty_pb2.Empty())
+            loc = self.challengerstub.getLocations(bench)
             print('got location data: %s' % len(loc.locations))
             self.event_processor.setup_locations(loc)
             with open(locationfile, "wb") as f:
@@ -319,12 +326,6 @@ class QueryOneAlternative:
             with open(locationcache, "rb") as f:
                 self.event_processor.location_to_city = pickle.load(f)
 
-        benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
-                                                           batch_size=20000,
-                                                           benchmark_name="test benchmark",
-                                                           benchmark_type="test",
-                                                           queries=[ch.BenchmarkConfiguration.Query.Q1])
-        bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
 
         # First, we measure the latency.
         # This is only for the testing dashboard to substract the communication latency
@@ -334,7 +335,7 @@ class QueryOneAlternative:
         print("start processing batch")
         start_time = datetime.now()
         self.challengerstub.startBenchmark(bench)
-        batch = self.challengerstub.nextMessage(bench)
+        batch = self.challengerstub.nextBatch(bench)
 
         num_current = 0
         num_historic = 0
@@ -380,7 +381,7 @@ class QueryOneAlternative:
 
                 lastdisplay = duration_so_far
 
-            batch = self.challengerstub.nextMessage(bench)
+            batch = self.challengerstub.nextBatch(bench)
 
     def process_current(self, batch):
         return

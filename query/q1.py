@@ -64,7 +64,7 @@ class QueryOne:
         # start the benchmark
         start_time = datetime.now()
         self.challengerstub.startBenchmark(bench)
-        batch = self.challengerstub.nextMessage(bench)
+        batch = self.challengerstub.nextBatch(bench)
 
         num_current = 0
         num_historic = 0
@@ -90,7 +90,7 @@ class QueryOne:
             if batch.last:
                 break
 
-            batch = self.challengerstub.nextMessage(bench)
+            batch = self.challengerstub.nextBatch(bench)
 
 
 def main():
