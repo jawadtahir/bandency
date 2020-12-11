@@ -45,15 +45,15 @@ message ResultQ1 {
 }
 
 message TopKStreaks {
-  int32 position = 1;
-  string city = 2;
-  int32 streakseconds = 3;
+  int32 bucket_from = 1; //begin of the bucket
+  int32 bucket_to = 2;  //end of the bucket
+  int32 bucket_percent = 3; //float * 1000 as integer
 }
 
 message ResultQ2 {
   int64 benchmark_id = 1;
   int64 payload_seq_id = 2;
-  TopKStreaks topkstreaks = 3;
+  repeated TopKStreaks histogram = 3;
 }
 
 message Ping {
