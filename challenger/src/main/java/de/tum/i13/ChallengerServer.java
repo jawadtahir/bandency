@@ -43,7 +43,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             .register();
 
     @Override
-    public void getLocations(Empty request, StreamObserver<Locations> responseObserver) {
+    public void getLocations(Benchmark request, StreamObserver<Locations> responseObserver) {
         responseObserver.onNext(ld.getAllLocations());
         responseObserver.onCompleted();
 
@@ -300,8 +300,9 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             .create()
             .register();
 
+
     @Override
-    public void nextMessage(Benchmark request, StreamObserver<Batch> responseObserver) {
+    public void nextBatch(Benchmark request, StreamObserver<Batch> responseObserver) {
         if(!this.benchmark.containsKey(request.getId())) {
             Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
 

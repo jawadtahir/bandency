@@ -9,21 +9,21 @@ import "google/protobuf/timestamp.proto";
 
 package Challenger;
 
-message Payload {
+message Measurement {
   google.protobuf.Timestamp timestamp = 1;
 
   float latitude = 2;
   float longitude = 3;
 
-  float p1 = 4;
-  float p2 = 5;
+  float p1 = 4; //Particles < 10µm (particulate matter)
+  float p2 = 5; //Particles < 2.5µm (ultrafine particles)
 }
 
 message Batch {
   int64 seq_id = 1;
   bool last = 2; //Set to true when it is the last batch
-  repeated Payload current = 3;
-  repeated Payload lastyear = 4;
+  repeated Measurement current = 3;
+  repeated Measurement lastyear = 4;
 }
 
 message Benchmark {
@@ -34,9 +34,8 @@ message TopKCities {
   int32 position = 1;
   string city = 2;
   int32 averageAQIImprovement = 3;
-  int32 currentAQI = 4;
-  int32 currentP1 = 5;
-  int32 currentP2 = 6;
+  int32 currentAQIP1 = 5;
+  int32 currentAQIP2 = 6;
 }
 
 message ResultQ1 {
@@ -45,15 +44,16 @@ message ResultQ1 {
   repeated TopKCities topkimproved = 3;
 }
 
-message ResultQ2Payload {
-  int32 resultData = 1;
-  //TODO add here the actual fields
+message TopKStreaks {
+  int32 position = 1;
+  string city = 2;
+  int32 streakseconds = 3;
 }
 
 message ResultQ2 {
   int64 benchmark_id = 1;
   int64 payload_seq_id = 2;
-  ResultQ2Payload result = 3;
+  TopKStreaks topkstreaks = 3;
 }
 
 message Ping {
@@ -96,11 +96,12 @@ message Locations{
 }
 
 service Challenger {
-  //Get the polygons of all zip areas in germany
-  rpc getLocations(google.protobuf.Empty) returns (Locations);
 
   //Create a new Benchmark based on the configuration
   rpc createNewBenchmark(BenchmarkConfiguration) returns (Benchmark);
+
+  //Get the polygons of all zip areas in germany based on the benchmarktype
+  rpc getLocations(Benchmark) returns (Locations);
 
   // Depending on your connectivity you have a latency and throughput.
   // Optionally, we try to account for this by first measuring it.
@@ -115,7 +116,7 @@ service Challenger {
   rpc startBenchmark(Benchmark) returns (google.protobuf.Empty);
 
   //get the next Batch
-  rpc nextMessage(Benchmark) returns (Batch);
+  rpc nextBatch(Benchmark) returns (Batch);
 
   //post the result
   rpc resultQ1(ResultQ1) returns (google.protobuf.Empty);

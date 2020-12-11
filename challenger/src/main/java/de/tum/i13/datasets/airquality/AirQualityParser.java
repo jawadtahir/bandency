@@ -1,17 +1,17 @@
 package de.tum.i13.datasets.airquality;
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Timestamp;
-import de.tum.i13.bandency.Payload;
+import de.tum.i13.bandency.Measurement;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AirQualityParser implements Enumeration<Payload>, Closeable {
+public class AirQualityParser implements Enumeration<Measurement>, Closeable {
 
     private final LocalDateTime from;
     private final Timestamp from_ts;
@@ -25,7 +25,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
     private final long skippedInFile = 0;
 
     private boolean firstCall;
-    private Payload curr;
+    private Measurement curr;
     private StringZipFileIterator szfi;
 
     public AirQualityParser(LocalDateTime from, LocalDateTime to, AirqualityFileAccess afa) {
@@ -104,7 +104,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
                     nextElement = szfi.nextElement();
                 }
 
-                Payload p = parseFromString(nextElement);
+                Measurement p = parseFromString(nextElement);
                 if(p == null) {
                     ++parseerror;
                     continue;
@@ -129,7 +129,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
         }
     }
 
-    private Payload parseFromString(String line) {
+    private Measurement parseFromString(String line) {
         if(line == null)
             return null;
 
@@ -151,7 +151,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
                 .setNanos(parsed.getNano())
                 .build();
 
-        Payload pl = Payload.newBuilder()
+        Measurement pl = Measurement.newBuilder()
                 .setTimestamp(ts)
                 .setLatitude(Float.parseFloat(splitted[3]))
                 .setLongitude(Float.parseFloat(splitted[4]))
@@ -184,7 +184,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
     }
 
     @Override
-    public Payload nextElement() {
+    public Measurement nextElement() {
         if(this.firstCall) {
             try {
                 setupNewFile();
@@ -193,7 +193,7 @@ public class AirQualityParser implements Enumeration<Payload>, Closeable {
             } catch (IOException e) {
             }
         }
-        Payload forReturn = curr;
+        Measurement forReturn = curr;
         curr = null;
         parseNext();
 

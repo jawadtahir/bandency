@@ -1,7 +1,7 @@
 package de.tum.i13.datasets.airquality;
 
 import de.tum.i13.bandency.Batch;
-import de.tum.i13.bandency.Payload;
+import de.tum.i13.bandency.Measurement;
 import org.tinylog.Logger;
 
 import java.time.LocalDateTime;
@@ -47,15 +47,16 @@ public class AirqualityToBatch implements AirQualityDataSource {
         needsInit = false;
     }
 
-    private long muFrom(Payload a) {
+    private long muFrom(Measurement a) {
         return (a.getTimestamp().getSeconds() * 1000L) + a.getTimestamp().getNanos();
     }
 
     private Batch readNextBatch() {
 
         Batch.Builder b = Batch.newBuilder();
-        Payload curr = currentParser.nextElement();
-        Payload last = lastParser.nextElement();
+
+        Measurement curr = currentParser.nextElement();
+        Measurement last = lastParser.nextElement();
         long cnt = 0;
         while (cnt < this.batchSize && (curr != null) && (last != null)) {
             long diff = muFrom(curr) - (muFrom(last) + diffmu);
