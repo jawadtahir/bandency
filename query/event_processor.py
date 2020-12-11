@@ -54,6 +54,9 @@ class EventProcessor:
         self.location_zip_cache = {}
         self.zipcode_polygons = []
 
+        self.start_time = datetime.min
+        self.batch_count = 0
+
     def configure(self, location_info_list):
 
         print("Processing locations...")
@@ -219,6 +222,7 @@ class EventProcessor:
         topk = 50
 
         topklist = list()
+
         print("Top %s most improved zipcodes, last 24h - date: %s :" %
               (topk, self.max_date_current))
 
@@ -342,23 +346,28 @@ class EventProcessor:
         return self._determine(event[1]) if event[1] else self._determine(event[0])
 
     def process(self, batch):
+        if self.batch_count == 0:
+            self.start_time = datetime.now()
 
+        self.batch_count += 1
         events = self.pre_proc(batch)
-        count = 0
+
         for event in events:
 
-            if count % 1000 == 0:
-                print("Event pairs processed: {}".format(count))
             if event:
                 event = self.enrich(event)
                 event = self.filter(event)
                 self.fill_p_windows(event)
-                count += 1
                 if self.is_update_time(event):
 
                     self.update(event)
 
-        return self.emit()
+        topk = self.emit()
+        time_now = datetime.now()
+        avg_time_per_batch = (time_now - self.start_time) / self.batch_count
+        print("Average time per batch: {}".format(avg_time_per_batch))
+
+        return topk
 
 
 class TemporalSlidingWindow:
