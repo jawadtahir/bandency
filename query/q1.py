@@ -81,7 +81,7 @@ class QueryOne:
             cnt = cnt + 1
             payload = event_proc.process(batch)
             result = ch.ResultQ1(benchmark_id=bench.id,
-                                 payload_seq_id=batch.seq_id, topk=payload)
+                                 payload_seq_id=batch.seq_id, topkimproved=payload)
             self.challengerstub.resultQ1(result)
 
             with open(locationcache, "wb") as f:

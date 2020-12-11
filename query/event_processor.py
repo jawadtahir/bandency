@@ -72,8 +72,8 @@ class EventProcessor:
                     obj_points.append(Point(point.longitude, point.latitude))
 
                 polygon = Polygon(obj_points)
-                polygon.zipcode = location_info.zipcode
-                self.zipcode_polygons.append(polygon)
+#                 polygon.zipcode = location_info.zipcode
+                self.zipcode_polygons.append([polygon, location_info.zipcode])
 
             count += 1
 
@@ -85,8 +85,8 @@ class EventProcessor:
 
         point = Point(float(event["longitude"]), float(event["latitude"]))
         for polygon in self.zipcode_polygons:
-            if polygon.contains(point):
-                event["zipcode"] = polygon.zipcode
+            if polygon[0].contains(point):
+                event["zipcode"] = polygon[1]
                 self.location_zip_cache[event["location"]] = event["zipcode"]
                 return
 
@@ -229,14 +229,15 @@ class EventProcessor:
         for i in range(1, topk + 1):
 
             res = next(loc_improv_iter)
+            res[1][0] = round(res[1][0], 3)
 
             current_index = "{}_{}".format(res[0], self.max_date_current.year)
             last_index = "{}_{}".format(res[0], self.max_date_last.year)
 
-            current_p2 = np.nanmean(
-                self.location_year_pm_window_map[current_index][0].get_array())
-            current_p1 = np.nanmean(
-                self.location_year_pm_window_map[current_index][1].get_array())
+            current_p2 = round(np.nanmean(
+                self.location_year_pm_window_map[current_index][0].get_array()), 3)
+            current_p1 = round(np.nanmean(
+                self.location_year_pm_window_map[current_index][1].get_array()), 3)
 
             last_p2 = np.nanmean(
                 self.location_year_pm_window_map[last_index][0].get_array())
@@ -249,9 +250,9 @@ class EventProcessor:
                                  utils.EPATableCalc(last_p1, "P1")), 3)
 
             print("pos: %s, city: %s, avg improvement: %s, previous: %s, current: %s " % (
-                i, res[0], res[1][3], last_aqi, current_aqi))
+                i, res[0], res[1][0], last_aqi, current_aqi))
             topklist.append(ch.TopKCities(
-                position=1, city=res[0], averageAQIImprovement=res[1][3], currentAQI=current_aqi, previousAQI=last_aqi))
+                position=1, city=res[0], averageAQIImprovement=int(res[1][0] * 1000.0), currentAQI=int(current_aqi * 1000.0), currentP1=int(current_p1 * 1000.0), currentP2=int(current_p2 * 1000.0)))
 
         self.location_improvement_map = {}
 
