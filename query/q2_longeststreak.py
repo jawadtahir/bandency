@@ -195,13 +195,15 @@ class QueryOneEventProcessor:
 
         dtmax_curr = self.max_timestamp(batch.current)
         if not dtmax_curr:
-            dtmax_curr = self.max_timestamp(batch.lastyear) + timedelta(days=365)
+            dtmax_curr = self.max_timestamp(
+                batch.lastyear) + timedelta(days=365)
 
         dtmax_lastyear = dtmax_curr - timedelta(days=365)
 
         if not self.next_snapshot:
             startminute = dtmax_curr.minute - (dtmax_curr.minute % 5)
-            self.next_snapshot = dtmax_curr.replace(minute=startminute, second=0, microsecond=0) + timedelta(minutes=5)
+            self.next_snapshot = dtmax_curr.replace(
+                minute=startminute, second=0, microsecond=0) + timedelta(minutes=5)
 
         self.process_payloads(self.id_curr, batch.current)
         self.process_payloads(self.id_lastyear, batch.lastyear)
@@ -217,36 +219,43 @@ class QueryOneEventProcessor:
                     window_aqi_last = self.avg_aqi[self.id_lastyear][city]
 
                     window_aqi_curr.resize(dtmax_curr - timedelta(days=5))
-                    window_aqi_last.resize(dtmax_curr - timedelta(days=365 + 5))
+                    window_aqi_last.resize(
+                        dtmax_curr - timedelta(days=365 + 5))
 
                     if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
-                        last_year_avg_aqi = window_aqi_curr.getMean()
-                        curr_year_avg_aqi = window_aqi_last.getMean()
+                        last_year_avg_aqi = window_aqi_last.getMean()
+                        curr_year_avg_aqi = window_aqi_curr.getMean()
 
                         curr_year_window_p1 = self.data[self.id_curr][city][1]
                         curr_year_window_p2 = self.data[self.id_curr][city][2]
                         last_year_window_p1 = self.data[self.id_lastyear][city][1]
                         last_year_window_p2 = self.data[self.id_lastyear][city][2]
 
-                        curr_year_window_p1.resize(dtmax_curr - timedelta(hours=24))
-                        curr_year_window_p2.resize(dtmax_curr - timedelta(hours=24))
-                        last_year_window_p1.resize(dtmax_curr - timedelta(days=365, hours=24))
-                        last_year_window_p2.resize(dtmax_curr - timedelta(days=365, hours=24))
+                        curr_year_window_p1.resize(
+                            dtmax_curr - timedelta(hours=24))
+                        curr_year_window_p2.resize(
+                            dtmax_curr - timedelta(hours=24))
+                        last_year_window_p1.resize(
+                            dtmax_curr - timedelta(days=365, hours=24))
+                        last_year_window_p2.resize(
+                            dtmax_curr - timedelta(days=365, hours=24))
 
-                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and (last_year_window_p1.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
+                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and last_year_window_p1.has_elements():
                             mtemp = curr_year_window_p1.getMean()
                             if not mtemp:
                                 print("city: %s dtmax_curr: %s valvs: %s window_aqi_curr: %s window_aqi_last: %s" %
                                       (city, dtmax_curr, curr_year_window_p1.has_elements(), window_aqi_curr.size(), window_aqi_last.size()))
                                 exit(0)
                             curr_year_aqi = utils.EPATableCalc(mtemp)
-                            last_year_aqi = utils.EPATableCalc(last_year_window_p1.getMean())
+                            last_year_aqi = utils.EPATableCalc(
+                                last_year_window_p1.getMean())
 
                             res.append((city,
-                                        round(last_year_avg_aqi - curr_year_avg_aqi, 3),
+                                        round(last_year_avg_aqi -
+                                              curr_year_avg_aqi, 3),
                                         round(curr_year_aqi, 3),
-                                        round(curr_year_window_p1.getMean(), 3),
-                                        round(curr_year_window_p2.getMean(), 3)))
+                                        round(utils.EPATableCalc(curr_year_window_p1.getMean(), pollutant="P1"), 3),
+                                        round(utils.EPATableCalc(curr_year_window_p2.getMean(), pollutant="P2"), 3)))
                             cnt = cnt + 1
                         else:
                             not_active_cnt = not_active_cnt + 1
@@ -264,9 +273,8 @@ class QueryOneEventProcessor:
                 topklist.append(ch.TopKCities(position=i,
                                               city=res[0],
                                               averageAQIImprovement=int(res[1] * 1000.0),
-                                              currentAQI=int(res[2] * 1000.0),
-                                              currentP1=int(res[3] * 1000.0),
-                                              currentP2=int(res[4] * 1000.0)))
+                                              currentAQIP1=int(res[3] * 1000.0),
+                                              currentAQIP2=int(res[4] * 1000.0)))
 
         streak_res = list()
         for (city, tup) in self.streak.items():
@@ -283,7 +291,7 @@ class QueryOneEventProcessor:
                 st = sorted_streak[i-1]
                 streak = ch.TopKStreaks(position=i,
                                         city=st[0],
-                                        streakdays=st[2])
+                                        streakseconds=int(st[1]))
                 topk_streaks.append(streak)
 
         return not_active_cnt, dtmax_curr, topklist, topk_streaks
@@ -366,17 +374,20 @@ class QueryOneAlternative:
                     pickle.dump(self.event_processor.location_to_city, f)
 
                 os.system('clear')
-                print("Top %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
+                print("Top %s most improved zipcodes, last 24h - date: %s " %
+                      (len(payload), dtmax_curr))
                 print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                     cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
-                #for topk in payload:
-                #    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f , curr-P2: %8.3f " % (
-                #        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
-                #        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
+                for topk in payload:
+                    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI-P1: %8.3f, curr-AQI-P2: %8.3f " % (
+                        topk.position, topk.city, topk.averageAQIImprovement /
+                        1000.0, topk.currentAQIP1 / 1000.0,
+                        topk.currentAQIP2 / 1000.00))
 
+                print("Longest streaks " % (len(payload), dtmax_curr))
                 for topk_streaks in streaks:
-                    print("pos: %2s, city: %25.25s, streakdays: %s" % (
-                        topk_streaks.position, topk_streaks.city, topk_streaks.streakdays))
+                    print("pos: %2s, city: %25.25s, streakseconds: %s" % (
+                        topk_streaks.position, topk_streaks.city, topk_streaks.streakseconds))
 
 
                 lastdisplay = duration_so_far
