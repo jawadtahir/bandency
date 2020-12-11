@@ -1,6 +1,8 @@
 
 from datetime import datetime
 import logging
+import os
+import pickle
 
 from google.protobuf import empty_pb2
 import grpc
@@ -24,10 +26,27 @@ class QueryOne:
     def run(self):
         event_proc = EventProcessor()
 
-        loc = self.challengerstub.getLocations(empty_pb2.Empty())
-        print('got location data: %s' % len(loc.locations))
+        locationfile = "q1locationcache5.pickle"
+        locationcache = "q1locationlookupcache1.pickle"
 
-        event_proc.configure(loc)
+        if os.path.exists(locationfile):
+            with open(locationfile, "rb") as f:
+                event_proc.zipcode_polygons = pickle.load(f)
+        else:
+            loc = self.challengerstub.getLocations(empty_pb2.Empty())
+            print('got location data: %s' % len(loc.locations))
+            event_proc.configure(loc)
+            with open(locationfile, "wb") as f:
+                pickle.dump(event_proc.zipcode_polygons, f)
+
+        if os.path.exists(locationcache):
+            with open(locationcache, "rb") as f:
+                event_proc.location_zip_cache = pickle.load(f)
+
+#         loc = self.challengerstub.getLocations(empty_pb2.Empty())
+#         print('got location data: %s' % len(loc.locations))
+#
+#         event_proc.configure(loc)
 
         benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
                                                            batch_size=20000,
@@ -62,8 +81,11 @@ class QueryOne:
             cnt = cnt + 1
             payload = event_proc.process(batch)
             result = ch.ResultQ1(benchmark_id=bench.id,
-                                 payload_seq_id=batch.seq_id, topk=payload)
+                                 payload_seq_id=batch.seq_id, topkimproved=payload)
             self.challengerstub.resultQ1(result)
+
+            with open(locationcache, "wb") as f:
+                pickle.dump(event_proc.location_zip_cache, f)
 
             if batch.last:
                 break
