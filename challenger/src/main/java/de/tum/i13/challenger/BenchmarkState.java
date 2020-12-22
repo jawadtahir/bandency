@@ -157,23 +157,23 @@ public class BenchmarkState {
     }
 
     public void resultsQ1(ResultQ1 request, long nanoTime) {
-        if(latencyCorrelation.containsKey(request.getPayloadSeqId())) {
-            LatencyMeasurement lm = latencyCorrelation.get(request.getPayloadSeqId());
+        if(latencyCorrelation.containsKey(request.getBatchSeqId())) {
+            LatencyMeasurement lm = latencyCorrelation.get(request.getBatchSeqId());
             lm.setQ1Results(nanoTime, request);
             if(isfinished(lm)) {
                 this.dbInserter.add(new ToVerify(lm));
-                latencyCorrelation.remove(request.getPayloadSeqId());
+                latencyCorrelation.remove(request.getBatchSeqId());
             }
         }
     }
 
     public void resultsQ2(ResultQ2 request, long nanoTime) {
-        if(latencyCorrelation.containsKey(request.getPayloadSeqId())) {
-            LatencyMeasurement lm = latencyCorrelation.get(request.getPayloadSeqId());
+        if(latencyCorrelation.containsKey(request.getBatchSeqId())) {
+            LatencyMeasurement lm = latencyCorrelation.get(request.getBatchSeqId());
             lm.setQ2Results(nanoTime, request);
             if(isfinished(lm)) {
                 this.dbInserter.add(new ToVerify(lm));
-                latencyCorrelation.remove(request.getPayloadSeqId());
+                latencyCorrelation.remove(request.getBatchSeqId());
             }
         }
     }
