@@ -8,12 +8,14 @@ import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.location.LocationDataset;
+import de.tum.i13.datasets.location.PrepareLocationDataset;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
 import org.tinylog.Logger;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -21,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
-    final private LocationDataset ld;
+    final private PrepareLocationDataset pld;
     private final AirqualityDataset ad;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
@@ -29,8 +31,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(LocationDataset ld, AirqualityDataset ad, ArrayBlockingQueue<ToVerify> dbInserter, Queries q) {
-        this.ld = ld;
+    public ChallengerServer(PrepareLocationDataset pld, AirqualityDataset ad, ArrayBlockingQueue<ToVerify> dbInserter, Queries q) {
+        this.pld = pld;
         this.ad = ad;
         this.dbInserter = dbInserter;
         this.q = q;
@@ -85,7 +87,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             return;
         }
 
-        if(!request.getBenchmarkType().equalsIgnoreCase("test")) {
+        if(!isValid(request.getBenchmarkType())) {
             Logger.info("different BenchmarkType set: " + request.getBenchmarkType());
 
             Status status = Status.FAILED_PRECONDITION.withDescription("unsupported benchmarkType");
@@ -98,6 +100,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         if(request.getBenchmarkType().equalsIgnoreCase("test")) {
             bt = BenchmarkType.Test;
+        }else if (request.getBenchmarkType().equalsIgnoreCase("verification")) {
+            bt = BenchmarkType.Verification;
+        } else if (request.getBenchmarkType().equalsIgnoreCase("eval")){
+            bt = BenchmarkType.Evaluation;
         }
 
         //Save this benchmarkname to database
@@ -130,6 +136,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         createNewBenchmarkCounter.inc();
     }
 
+    static boolean isValid (String bmType){
+        return true;
+    }
+
     static final Counter getLocationsCounter = Counter.build()
             .name("getLocations")
             .help("calls to getLocations methods")
@@ -148,30 +158,40 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         BenchmarkType benchmarkType = this.benchmark.get(request.getId()).getBenchmarkType();
 
-        switch (benchmarkType) {
-            case Verification -> {
-                System.out.println("TODO");
-                Status status = Status.FAILED_PRECONDITION.withDescription("Verifcation currently not available");
-
-                responseObserver.onError(status.asException());
-                responseObserver.onCompleted();
-                return;
+        try {
+            
+            switch (benchmarkType) {
+                case Verification -> {
+    
+                    responseObserver.onNext(pld.loadData(benchmarkType).getAllLocations());
+                    responseObserver.onCompleted();
+                    return;
+                }
+                case Test -> {
+                    responseObserver.onNext(pld.loadData(benchmarkType).getAllLocations());
+                    responseObserver.onCompleted();
+    
+                    getLocationsCounter.inc();
+                    return;
+                }
+                case Evaluation -> {
+                    Status status = Status.FAILED_PRECONDITION.withDescription("Evaluation currently not available");
+    
+                    responseObserver.onError(status.asException());
+                    responseObserver.onCompleted();
+                    return;
+                }
             }
-            case Test -> {
-                responseObserver.onNext(ld.getAllLocations());
-                responseObserver.onCompleted();
 
-                getLocationsCounter.inc();
-                return;
-            }
-            case Evaluation -> {
-                Status status = Status.FAILED_PRECONDITION.withDescription("Evaluation currently not available");
 
-                responseObserver.onError(status.asException());
-                responseObserver.onCompleted();
-                return;
-            }
+        } catch (IOException e) {
+            Status status = Status.FAILED_PRECONDITION.withDescription("Invalid location set");
+
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
         }
+        
 
     }
 

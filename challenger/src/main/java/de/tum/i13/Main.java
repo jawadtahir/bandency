@@ -42,7 +42,6 @@ public class Main {
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
             PrepareLocationDataset pld = new PrepareLocationDataset(Path.of(dataset));
-            LocationDataset ld = pld.loadData();
 
             AirqualityFileAccess afa = new AirqualityFileAccess(Path.of(dataset));
             AirqualityDataset ad = new AirqualityDataset(afa, AccessType.FromDisk);
@@ -51,7 +50,7 @@ public class Main {
 
             Logger.info("Initializing Challenger Service");
             Queries q = new Queries(db.getConnection());
-            ChallengerServer cs = new ChallengerServer(ld, ad, verificationQueue, q);
+            ChallengerServer cs = new ChallengerServer(pld, ad, verificationQueue, q);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder

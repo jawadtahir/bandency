@@ -2,3 +2,6 @@
 *.pydevproject
 /bin/
 *.pickle
+.vscode/settings.json
+challenger/.classpath
+challenger/bin/main/tinylog.properties

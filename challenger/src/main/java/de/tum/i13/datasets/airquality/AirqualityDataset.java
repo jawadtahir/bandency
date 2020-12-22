@@ -28,6 +28,9 @@ public class AirqualityDataset {
         if(benchmarkType == BenchmarkType.Test) {
             AirqualityToBatch atb = new AirqualityToBatch(batchsize, LocalDateTime.of(2020, 3, 1, 0, 0), LocalDateTime.of(2020, 8, 1, 0,0), afa);
             return atb;
+        } else if(benchmarkType == BenchmarkType.Verification) {
+            AirqualityToBatch atb = new TestAirqualityToBatch();
+            return atb;
         } else if(benchmarkType == BenchmarkType.Evaluation) {
             AirqualityToBatch atb = new AirqualityToBatch(batchsize, LocalDateTime.of(2020, 8, 1, 0, 0), LocalDateTime.of(2021, 1, 1, 0,0), afa);
             return atb;

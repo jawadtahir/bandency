@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 
 public class AirqualityToBatch implements AirQualityDataSource {
 
-    private final long batchSize;
+    protected final long batchSize;
     private final LocalDateTime from;
     private final LocalDateTime to;
     private final AirqualityFileAccess afa;
