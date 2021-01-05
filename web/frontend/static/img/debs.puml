@@ -1,16 +1,17 @@
 @startuml
 activate Participant
 
-group 1) Get Location Data
-Challenger <- Participant: getLocations()
-Challenger --> Participant: (Locations)
-end
 
-group 2) Create a new Benchmark
+group 1) Create a new Benchmark
 Challenger <- Participant: createNewBenchmark(BenchmarkConfiguration)
 activate Challenger
 Challenger --> Participant: (Benchmark)
 deactivate Challenger
+end
+
+group 2) Get Location Data
+Challenger <- Participant: getLocations(Benchmark)
+Challenger --> Participant: (Locations)
 end
 
 group 3) Calibrate Latency (optional)
@@ -57,6 +58,7 @@ Challenger <- Participant: endBenchmark(Benchmark)
 Challenger --> Participant:
 
 deactivate Challenger
+deactivate Participant
 end
 
 

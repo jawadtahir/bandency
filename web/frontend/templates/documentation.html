@@ -26,8 +26,8 @@ python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. challenger.p
     </code>
     </pre>
 
-    <h4>Step 1</h4>
-    <p>First, get the location data. This returns a message which contains a list of locations. The message is bigger then what the default configuration allows. Hence increase the max_receive_message_length.</p>
+    <h4>Step 0</h4>
+    <p>Initilize the client stub from the generated code</p>
     <pre>
         <code>
 import challenger_pb2 as ch
@@ -37,14 +37,13 @@ op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
 with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
-    loc = stub.getLocations(empty_pb2.Empty()) #get all the locations
         </code>
     </pre>
 
-    <h4>Step 2</h4>
+    <h4>Step 1</h4>
     <p>Create a new Benchmark. You have set your token (see profile), set a benchmark name (this is only shown in your statistics) and the batchsize.
-        The benchmark_type should be set to "test" if you experiment. If you choose "test", only your team will see the statistics.
-        Also add the the list of which queries you want to run, either just one, [Q1] or [Q2] or both at the same time [Q1, Q2].
+        The benchmark_type should be set to "test" if you experiment.
+        Also add the list of which queries you want to run, either just one, [Q1] or [Q2] or both at the same time [Q1, Q2].
         The real event rate of the source stream is around 4000 messages/second. The maximum batch size allowed is 20k.</p>
     <p>For the final evaluation we will post the specific benchmark configuration.</p>
     <pre>
@@ -53,10 +52,19 @@ benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
                                                    batch_size=5000,
                                                    benchmark_name="shows_up_in_dashboard",
                                                    benchmark_type="test",
-                                                   queries=[ch.BenchmarkConfiguration.Query.Q1])
+                                                   queries=[ch.BenchmarkConfiguration.Query.Q1, ch.BenchmarkConfiguration.Query.Q2])
 bench = stub.createNewBenchmark(benchmarkconfiguration)
         </code>
     </pre>
+
+    <h4>Step 2</h4>
+    <p>Then, get the location data. The location data depends on the benchmark_type. The message can be bigger then the gRPC default configuration allows. Hence increase the max_receive_message_length.</p>
+    <pre>
+        <code>
+    loc = stub.getLocations(empty_pb2.Empty()) #get all the locations
+        </code>
+    </pre>
+
 
     <h4>Step 3 (optional)</h4>
     <p>Depending on your connectivity you might experience different latency and throughput. Optionally, we try to account for this by first measuring it.
@@ -67,21 +75,21 @@ bench = stub.createNewBenchmark(benchmarkconfiguration)
     <pre>
         <code>
 ping = stub.initializeLatencyMeasuring(benchmark)
-for i in range(10):
+for i in range(10): #to get a reasonable average
     ping = stub.measure(ping)
 stub.endMeasurement(ping)
         </code>
     </pre>
 
     <h4>Step 4</h4>
-    <p>First start the Benchmark. This sets the timstamp server side for the throughput measurments. Then process all the batches. The batches are correlated for the latency measurements.</p>
-    <p>Once you called the endBenchmark RPC, we calculate the results.</p>
+    <p>First start the Benchmark. This sets the timestamp server side for the throughput measurments. Then process all the batches. The batches are correlated for the latency measurements.</p>
+    <p>Once you called the endBenchmark RPC, we calculate the results. For testing, you can call endBenchmark early.</p>
 
     <pre>
         <code>
 stub.startBenchmark(benchmark)
 
-batch = stub.nextMessage(benchmark)
+batch = stub.nextBatch(benchmark)
 while batch:
     result_payload_q1 = processTheBatchQ1(batch) #here is your implementation ;)
     result_payload_q1 = ch.ResultQ1Payload(resultData=1)
@@ -89,7 +97,11 @@ while batch:
                          payload_seq_id=batch.seq_id,
                          result=result_payload_q1)
 
-    stub.resultQ1(result) #send the result of query 1, also send the result of Q2 in case you calculate both
+    stub.resultQ1(result)  # send the result of query 1, also send the result of Q2 in case you calculate both
+
+    # do the same for Q2
+    stub.resultQ2(result of query2)
+
     if batch.last:
         break
 
