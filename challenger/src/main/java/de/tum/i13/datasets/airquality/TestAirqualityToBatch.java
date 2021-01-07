@@ -51,6 +51,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
         for (long i = 0; i < batchSize; i++) {
             Instant event_ts = start.plus(intervalPerRec, ChronoUnit.SECONDS);
             Instant last_event_ts = event_ts.plus(-365L, ChronoUnit.DAYS);
+            start = event_ts;
             Timestamp proto_ts = Timestamp.newBuilder().setSeconds(event_ts.getEpochSecond()).build();
             Timestamp last_proto_ts = Timestamp.newBuilder().setSeconds(last_event_ts.getEpochSecond()).build();
 
@@ -69,8 +70,8 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
             p1 = getRandomFloat(p1enum.getC_low(), p1enum.getC_high());
             p2 = getRandomFloat(p2enum.getC_low(), p2enum.getC_high());
 
-            Measurement lastMeasurement = Measurement.newBuilder().setTimestamp(last_proto_ts).setLatitude((float) 1)
-                    .setLongitude((float) 1).setP1((float) 1).setP2((float) 1).build();
+            Measurement lastMeasurement = Measurement.newBuilder().setTimestamp(last_proto_ts).setLatitude(lat)
+                    .setLongitude(lng).setP1(p1).setP2(p2).build();
 
             builder.addCurrent(measurement);
             builder.addLastyear(lastMeasurement);

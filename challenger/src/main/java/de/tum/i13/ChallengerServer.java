@@ -121,6 +121,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
         bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
 
+        bms.setDatasource(ad.newDataSource(bt, batchSize));
+
 
         Logger.info("Ready for benchmark: " + bms.toString());
 
@@ -326,7 +328,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
             b.startBenchmark(System.nanoTime());
-            b.setDatasource(ad.newDataSource(b.getBenchmarkType(), b.getBatchSize()));
+            // b.setDatasource(ad.newDataSource(b.getBenchmarkType(), b.getBatchSize()));
             return b;
         });
 
