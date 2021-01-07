@@ -190,4 +190,9 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
 
     }
 
+    @Override
+    public void close() throws Exception {
+    }
+
 }
+
