@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.ArrayList;
 import java.util.Random;
 
 import com.google.protobuf.Timestamp;
@@ -28,7 +29,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
     Instant startTime = Instant.MIN;
 
     public TestAirqualityToBatch() {
-        super(10, null, null, null);
+        super(300, null, null, null);
         Instant now = Instant.now();
         this.snapshotTime = now;
         this.batchTime = now;
@@ -55,20 +56,20 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
             Timestamp proto_ts = Timestamp.newBuilder().setSeconds(event_ts.getEpochSecond()).build();
             Timestamp last_proto_ts = Timestamp.newBuilder().setSeconds(last_event_ts.getEpochSecond()).build();
 
-            Float lat = getRandomFloat(0, latLimit);
-            Float lng = getRandomFloat(0, lngLimit);
-            Float p1 = getRandomFloat(p1enum.getC_low(), p1enum.getC_high());
-            Float p2 = getRandomFloat(p2enum.getC_low(), p2enum.getC_high());
+            Long latLmt = i%(latLimit.longValue());
+            // Long lngLmt = 1L;
+
+            Float lat = (float)latLmt - (float)0.5;
+            Float lng = (float)0.5;
+            Float p1 = p1enum.getC_low();
+            Float p2 = p2enum.getC_low();
 
             
-            Measurement measurement = null;
-            if (!is_no_current){
-                measurement = Measurement.newBuilder().setTimestamp(proto_ts).setLatitude(lat)
-                    .setLongitude(lng).setP1(p1).setP2(p2).build();
-            }
+            Measurement measurement = Measurement.newBuilder().setTimestamp(proto_ts).setLatitude(lat)
+                .setLongitude(lng).setP1(p1).setP2(p2).build();
 
-            p1 = getRandomFloat(p1enum.getC_low(), p1enum.getC_high());
-            p2 = getRandomFloat(p2enum.getC_low(), p2enum.getC_high());
+            p1 = p1enum.getC_high();
+            p2 = p2enum.getC_high();
 
             Measurement lastMeasurement = Measurement.newBuilder().setTimestamp(last_proto_ts).setLatitude(lat)
                     .setLongitude(lng).setP1(p1).setP2(p2).build();
@@ -76,19 +77,19 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
             builder.addCurrent(measurement);
             builder.addLastyear(lastMeasurement);
 
+            if (!is_no_current){
+                builder.addAllCurrent(new ArrayList<Measurement>());
+            }
+
         }
         return builder;
 
     }
 
 
-    protected static Float getRandomFloat(float min, float max){
-        return min + new Random().nextFloat() * (max - min);
-    }
-
     private Batch test1 (Builder builder){
 
-        Instant new_batch_ts = this.batchTime.plus(3, ChronoUnit.MINUTES);
+        Instant new_batch_ts = this.batchTime.plus(4, ChronoUnit.MINUTES);
         Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.GOOD, EPAP2Table.GOOD);
         this.batchTime = new_batch_ts;
 
@@ -162,7 +163,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
             case T4:
 
                 batch = test4(builder);
-                this.test = T6;
+                this.test = T5;
                 break;
             case T5:
 
