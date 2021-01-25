@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 @app.route('/')
 async def index():
-    if current_user.is_authenticated:
+    if await current_user.is_authenticated:
         return redirect(url_for('profile'))
     else:
         return await render_template('index.html', name="Welcome!")
