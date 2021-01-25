@@ -91,11 +91,11 @@ stub.startBenchmark(benchmark)
 
 batch = stub.nextBatch(benchmark)
 while batch:
-    result_payload_q1 = processTheBatchQ1(batch) #here is your implementation ;)
+    topkimproved = processTheBatchQ1(batch) #here is your implementation ;)
     result_payload_q1 = ch.ResultQ1Payload(resultData=1)
     result = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
-                         payload_seq_id=batch.seq_id,
-                         result=result_payload_q1)
+                         batch_seq_id=batch.seq_id,
+                         topkimproved=topkimproved)
 
     stub.resultQ1(result)  # send the result of query 1, also send the result of Q2 in case you calculate both
 
