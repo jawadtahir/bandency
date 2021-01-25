@@ -92,7 +92,6 @@ stub.startBenchmark(benchmark)
 batch = stub.nextBatch(benchmark)
 while batch:
     topkimproved = processTheBatchQ1(batch) #here is your implementation ;)
-    result_payload_q1 = ch.ResultQ1Payload(resultData=1)
     result = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
                          batch_seq_id=batch.seq_id,
                          topkimproved=topkimproved)
