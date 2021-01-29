@@ -29,6 +29,7 @@ public class BenchmarkState {
     private long benchmarkId;
     private long endNanoTime;
     private BenchmarkType benchmarkType;
+    private String benchmarkName;
 
     public BenchmarkState(ArrayBlockingQueue<ToVerify> dbInserter) {
         this.dbInserter = dbInserter;
@@ -208,6 +209,11 @@ public class BenchmarkState {
                 ", benchmarkId=" + benchmarkId +
                 ", endNanoTime=" + endNanoTime +
                 ", benchmarkType=" + benchmarkType +
+                ", benchmarkName=" + benchmarkName +
                 '}';
+    }
+
+    public void setBenchmarkName(String benchmarkName) {
+        this.benchmarkName = benchmarkName;
     }
 }

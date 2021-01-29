@@ -377,10 +377,10 @@ class QueryOneAlternative:
             if len(payload) == 0:
                 emptycount = emptycount + 1
 
-            resultQ1 = ch.ResultQ1(benchmark_id=bench.id, payload_seq_id=batch.seq_id, topkimproved=payload)
+            resultQ1 = ch.ResultQ1(benchmark_id=bench.id, batch_seq_id=batch.seq_id, topkimproved=payload)
             self.challengerstub.resultQ1(resultQ1)
 
-            resultQ2 = ch.ResultQ2(benchmark_id=bench.id, payload_seq_id=batch.seq_id, histogram=streaks)
+            resultQ2 = ch.ResultQ2(benchmark_id=bench.id, batch_seq_id=batch.seq_id, histogram=streaks)
             self.challengerstub.resultQ2(resultQ2)
 
             cnt = cnt + 1
@@ -415,8 +415,8 @@ class QueryOneAlternative:
 def main():
     op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
           ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-    with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
-        #with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
+    #with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+    with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
         stub = api.ChallengerStub(channel)
         q1 = QueryOneAlternative(stub)
         q1.run()

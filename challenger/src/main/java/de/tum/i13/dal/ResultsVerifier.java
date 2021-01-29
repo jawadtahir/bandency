@@ -51,6 +51,7 @@ public class ResultsVerifier implements Runnable{
                 if(poll != null) {
                     if(poll.getType() == VerificationType.Measurement) {
                         LatencyMeasurement lm = poll.getLatencyMeasurement();
+                        //lm.getQ1ResultTime();
 
                         verifyMeasurementCounter.inc();
                     } else if(poll.getType() == VerificationType.Duration) {

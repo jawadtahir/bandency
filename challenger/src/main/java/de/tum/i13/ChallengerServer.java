@@ -6,6 +6,7 @@ import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
+import de.tum.i13.dal.dto.NewBenchmarkStarted;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.location.LocationDataset;
 import de.tum.i13.datasets.location.PrepareLocationDataset;
@@ -18,6 +19,7 @@ import org.tinylog.Logger;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +29,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     private final AirqualityDataset ad;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
+    private final Random random;
 
 
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
@@ -37,7 +40,12 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         this.dbInserter = dbInserter;
         this.q = q;
         benchmark = new ConcurrentHashMap<>();
+        random = new Random(System.nanoTime());
     }
+    static final Counter errorCounter = Counter.build()
+            .name("errors")
+            .help("unforseen errors")
+            .register();
 
     static final Counter createNewBenchmarkCounter = Counter.build()
             .name("createNewBenchmark")
@@ -62,6 +70,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             return;
         }
 
+
         try {
             if(!q.checkIfGroupExists(token)) {
                 Status status = Status.FAILED_PRECONDITION.withDescription("token invalid");
@@ -70,6 +79,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                 return;
             }
         } catch (SQLException throwables) {
+            errorCounter.inc();
+
             Status status = Status.INTERNAL.withDescription("database offline - plz. inform the challenge organizers");
             responseObserver.onError(status.asException());
             responseObserver.onCompleted();
@@ -106,10 +117,24 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             bt = BenchmarkType.Evaluation;
         }
 
+
         //Save this benchmarkname to database
-        //TODO:
         String benchmarkName = request.getBenchmarkName();
-        long benchmarkId = new Random().nextLong();
+        long benchmarkId = random.nextLong();
+
+        try {
+            UUID groupId = q.getGroupIdFromToken(token);
+            q.insertBenchmarkStarted(benchmarkId, groupId, benchmarkName, batchSize, bt);
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            errorCounter.inc();
+
+            Status status = Status.FAILED_PRECONDITION.withDescription("plz. inform the challenge organisers - database not reachable");
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
+        }
 
         BenchmarkState bms = new BenchmarkState(this.dbInserter);
         bms.setToken(token);
@@ -117,6 +142,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setToken(token);
         bms.setBatchSize(batchSize);
         bms.setBenchmarkType(bt);
+        bms.setBenchmarkName(benchmarkName);
 
         bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
         bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
@@ -159,12 +185,12 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
 
         BenchmarkType benchmarkType = this.benchmark.get(request.getId()).getBenchmarkType();
+        getLocationsCounter.inc();
 
         try {
             
             switch (benchmarkType) {
                 case Verification -> {
-    
                     responseObserver.onNext(pld.loadData(benchmarkType).getAllLocations());
                     responseObserver.onCompleted();
                     return;
@@ -172,8 +198,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                 case Test -> {
                     responseObserver.onNext(pld.loadData(benchmarkType).getAllLocations());
                     responseObserver.onCompleted();
-    
-                    getLocationsCounter.inc();
                     return;
                 }
                 case Evaluation -> {
@@ -262,7 +286,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         Ping acquiredPing = ping.getAcquire();
         if(acquiredPing == null) {
-            responseObserver.onError(new Exception(""));
+            responseObserver.onError(new Exception("Initialize first latency measurements"));
         }
         responseObserver.onNext(ping.get());
         responseObserver.onCompleted();
@@ -299,6 +323,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                 v /= 1_000_000;
                 measurementHistogram.observe(v);
             }
+
+            q.insertLatencyMeasurementStats(request.getBenchmarkId(), v);
+
+
 
             Logger.debug("average latency: " + v + "ms");
             return b;

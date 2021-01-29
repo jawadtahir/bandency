@@ -156,9 +156,10 @@ class Q2:
         event_proc = EventProcessor()
 
 
-        benchmarkconfiguration = ch.BenchmarkConfiguration(token="abc",
+        benchmarkconfiguration = ch.BenchmarkConfiguration(token=os.environ['API_TOKEN'].strip(), #here should be your API token
                                                            batch_size=5000,
                                                            benchmark_name="test benchmark",
+                                                           benchmark_type="test",
                                                            queries=[ch.BenchmarkConfiguration.Query.Q1])
         bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
 
