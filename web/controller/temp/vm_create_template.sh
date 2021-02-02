@@ -1,0 +1,13 @@
+#! /bin/sh
+
+echo changing directory...
+cd {team}
+
+echo creating disk image...
+qemu-img create -f qcow2 -b {os_img_path} -F qcow2 snapshot-focal-server_{team}.qcow2 5G
+
+echo creating seed image...
+cloud-localds --network-config=./network_config.cfg seed.iso cloud_init.cfg
+
+echo installing VM...
+sudo virt-install --name vm_{team} --vcpus 1 --memory 1024 --disk snapshot-focal-server_{team}.qcow2,device=disk,bus=virtio --disk seed.iso,device=cdrom --os-type linux --os-variant ubuntu20.04 --virt-type kvm --graphics none --network network=default,model=virtio --import
