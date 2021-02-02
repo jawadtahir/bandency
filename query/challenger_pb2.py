@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\023de.tum.i13.bandencyB\017ChallengerProtoP\001',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"y\n\x0bMeasurement\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08latitude\x18\x02 \x01(\x02\x12\x11\n\tlongitude\x18\x03 \x01(\x02\x12\n\n\x02p1\x18\x04 \x01(\x02\x12\n\n\x02p2\x18\x05 \x01(\x02\"z\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12\x0c\n\x04last\x18\x02 \x01(\x08\x12(\n\x07\x63urrent\x18\x03 \x03(\x0b\x32\x17.Challenger.Measurement\x12)\n\x08lastyear\x18\x04 \x03(\x0b\x32\x17.Challenger.Measurement\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\"w\n\nTopKCities\x12\x10\n\x08position\x18\x01 \x01(\x05\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x1d\n\x15\x61verageAQIImprovement\x18\x03 \x01(\x05\x12\x14\n\x0c\x63urrentAQIP1\x18\x05 \x01(\x05\x12\x14\n\x0c\x63urrentAQIP2\x18\x06 \x01(\x05\"f\n\x08ResultQ1\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12,\n\x0ctopkimproved\x18\x03 \x03(\x0b\x32\x16.Challenger.TopKCities\"M\n\x0bTopKStreaks\x12\x13\n\x0b\x62ucket_from\x18\x01 \x01(\x05\x12\x11\n\tbucket_to\x18\x02 \x01(\x05\x12\x16\n\x0e\x62ucket_percent\x18\x03 \x01(\x05\"d\n\x08ResultQ2\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0epayload_seq_id\x18\x02 \x01(\x03\x12*\n\thistogram\x18\x03 \x03(\x0b\x32\x17.Challenger.TopKStreaks\"4\n\x04Ping\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\x03\"\xbf\x01\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x16\n\x0e\x62\x65nchmark_name\x18\x03 \x01(\t\x12\x16\n\x0e\x62\x65nchmark_type\x18\x04 \x01(\t\x12\x39\n\x07queries\x18\x05 \x03(\x0e\x32(.Challenger.BenchmarkConfiguration.Query\"\x17\n\x05Query\x12\x06\n\x02Q1\x10\x00\x12\x06\n\x02Q2\x10\x01\",\n\x05Point\x12\x11\n\tlongitude\x18\x01 \x01(\x01\x12\x10\n\x08latitude\x18\x02 \x01(\x01\",\n\x07Polygon\x12!\n\x06points\x18\x01 \x03(\x0b\x32\x11.Challenger.Point\"q\n\x08Location\x12\x0f\n\x07zipcode\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x0b\n\x03qkm\x18\x03 \x01(\x01\x12\x12\n\npopulation\x18\x04 \x01(\x05\x12%\n\x08polygons\x18\x05 \x03(\x0b\x32\x13.Challenger.Polygon\"4\n\tLocations\x12\'\n\tlocations\x18\x01 \x03(\x0b\x32\x14.Challenger.Location2\xf8\x04\n\nChallenger\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12<\n\x0cgetLocations\x12\x15.Challenger.Benchmark\x1a\x15.Challenger.Locations\x12\x45\n\x1ainitializeLatencyMeasuring\x12\x15.Challenger.Benchmark\x1a\x10.Challenger.Ping\x12-\n\x07measure\x12\x10.Challenger.Ping\x1a\x10.Challenger.Ping\x12:\n\x0e\x65ndMeasurement\x12\x10.Challenger.Ping\x1a\x16.google.protobuf.Empty\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x35\n\tnextBatch\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x38\n\x08resultQ1\x12\x14.Challenger.ResultQ1\x1a\x16.google.protobuf.Empty\x12\x38\n\x08resultQ2\x12\x14.Challenger.ResultQ2\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB(\n\x13\x64\x65.tum.i13.bandencyB\x0f\x43hallengerProtoP\x01\x62\x06proto3'
+  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"y\n\x0bMeasurement\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08latitude\x18\x02 \x01(\x02\x12\x11\n\tlongitude\x18\x03 \x01(\x02\x12\n\n\x02p1\x18\x04 \x01(\x02\x12\n\n\x02p2\x18\x05 \x01(\x02\"z\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12\x0c\n\x04last\x18\x02 \x01(\x08\x12(\n\x07\x63urrent\x18\x03 \x03(\x0b\x32\x17.Challenger.Measurement\x12)\n\x08lastyear\x18\x04 \x03(\x0b\x32\x17.Challenger.Measurement\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\"w\n\nTopKCities\x12\x10\n\x08position\x18\x01 \x01(\x05\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x1d\n\x15\x61verageAQIImprovement\x18\x03 \x01(\x05\x12\x14\n\x0c\x63urrentAQIP1\x18\x05 \x01(\x05\x12\x14\n\x0c\x63urrentAQIP2\x18\x06 \x01(\x05\"d\n\x08ResultQ1\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x14\n\x0c\x62\x61tch_seq_id\x18\x02 \x01(\x03\x12,\n\x0ctopkimproved\x18\x03 \x03(\x0b\x32\x16.Challenger.TopKCities\"M\n\x0bTopKStreaks\x12\x13\n\x0b\x62ucket_from\x18\x01 \x01(\x05\x12\x11\n\tbucket_to\x18\x02 \x01(\x05\x12\x16\n\x0e\x62ucket_percent\x18\x03 \x01(\x05\"b\n\x08ResultQ2\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x14\n\x0c\x62\x61tch_seq_id\x18\x02 \x01(\x03\x12*\n\thistogram\x18\x03 \x03(\x0b\x32\x17.Challenger.TopKStreaks\"4\n\x04Ping\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\x03\"\xbf\x01\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x16\n\x0e\x62\x65nchmark_name\x18\x03 \x01(\t\x12\x16\n\x0e\x62\x65nchmark_type\x18\x04 \x01(\t\x12\x39\n\x07queries\x18\x05 \x03(\x0e\x32(.Challenger.BenchmarkConfiguration.Query\"\x17\n\x05Query\x12\x06\n\x02Q1\x10\x00\x12\x06\n\x02Q2\x10\x01\",\n\x05Point\x12\x11\n\tlongitude\x18\x01 \x01(\x01\x12\x10\n\x08latitude\x18\x02 \x01(\x01\",\n\x07Polygon\x12!\n\x06points\x18\x01 \x03(\x0b\x32\x11.Challenger.Point\"q\n\x08Location\x12\x0f\n\x07zipcode\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\x0b\n\x03qkm\x18\x03 \x01(\x01\x12\x12\n\npopulation\x18\x04 \x01(\x05\x12%\n\x08polygons\x18\x05 \x03(\x0b\x32\x13.Challenger.Polygon\"4\n\tLocations\x12\'\n\tlocations\x18\x01 \x03(\x0b\x32\x14.Challenger.Location2\xf8\x04\n\nChallenger\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12<\n\x0cgetLocations\x12\x15.Challenger.Benchmark\x1a\x15.Challenger.Locations\x12\x45\n\x1ainitializeLatencyMeasuring\x12\x15.Challenger.Benchmark\x1a\x10.Challenger.Ping\x12-\n\x07measure\x12\x10.Challenger.Ping\x1a\x10.Challenger.Ping\x12:\n\x0e\x65ndMeasurement\x12\x10.Challenger.Ping\x1a\x16.google.protobuf.Empty\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x35\n\tnextBatch\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x38\n\x08resultQ1\x12\x14.Challenger.ResultQ1\x1a\x16.google.protobuf.Empty\x12\x38\n\x08resultQ2\x12\x14.Challenger.ResultQ2\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB(\n\x13\x64\x65.tum.i13.bandencyB\x0f\x43hallengerProtoP\x01\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -47,8 +47,8 @@ _BENCHMARKCONFIGURATION_QUERY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=995,
-  serialized_end=1018,
+  serialized_start=991,
+  serialized_end=1014,
 )
 _sym_db.RegisterEnumDescriptor(_BENCHMARKCONFIGURATION_QUERY)
 
@@ -274,7 +274,7 @@ _RESULTQ1 = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='payload_seq_id', full_name='Challenger.ResultQ1.payload_seq_id', index=1,
+      name='batch_seq_id', full_name='Challenger.ResultQ1.batch_seq_id', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -300,7 +300,7 @@ _RESULTQ1 = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=487,
-  serialized_end=589,
+  serialized_end=587,
 )
 
 
@@ -345,8 +345,8 @@ _TOPKSTREAKS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=591,
-  serialized_end=668,
+  serialized_start=589,
+  serialized_end=666,
 )
 
 
@@ -366,7 +366,7 @@ _RESULTQ2 = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='payload_seq_id', full_name='Challenger.ResultQ2.payload_seq_id', index=1,
+      name='batch_seq_id', full_name='Challenger.ResultQ2.batch_seq_id', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -391,8 +391,8 @@ _RESULTQ2 = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=670,
-  serialized_end=770,
+  serialized_start=668,
+  serialized_end=766,
 )
 
 
@@ -430,8 +430,8 @@ _PING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=772,
-  serialized_end=824,
+  serialized_start=768,
+  serialized_end=820,
 )
 
 
@@ -491,8 +491,8 @@ _BENCHMARKCONFIGURATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=827,
-  serialized_end=1018,
+  serialized_start=823,
+  serialized_end=1014,
 )
 
 
@@ -530,8 +530,8 @@ _POINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1020,
-  serialized_end=1064,
+  serialized_start=1016,
+  serialized_end=1060,
 )
 
 
@@ -562,8 +562,8 @@ _POLYGON = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1066,
-  serialized_end=1110,
+  serialized_start=1062,
+  serialized_end=1106,
 )
 
 
@@ -622,8 +622,8 @@ _LOCATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1112,
-  serialized_end=1225,
+  serialized_start=1108,
+  serialized_end=1221,
 )
 
 
@@ -654,8 +654,8 @@ _LOCATIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1227,
-  serialized_end=1279,
+  serialized_start=1223,
+  serialized_end=1275,
 )
 
 _MEASUREMENT.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
@@ -784,8 +784,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1282,
-  serialized_end=1914,
+  serialized_start=1278,
+  serialized_end=1910,
   methods=[
   _descriptor.MethodDescriptor(
     name='createNewBenchmark',

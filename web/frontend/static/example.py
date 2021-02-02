@@ -65,13 +65,13 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
 
         # result_payload_q1 = processTheBatchQ1(batch) #here is your implementation ;)
         resultQ1 = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
-                               payload_seq_id=batch.seq_id,
+                               batch_seq_id=batch.seq_id,
                                topkimproved=[])
 
         stub.resultQ1(resultQ1) #send the result of query 1, also send the result of Q2 in case you calculate both
 
         # processTheBatchQ1(batch) # here should be the implementation of Q2
-        resultQ2 = ch.ResultQ2(benchmark_id=benchmark.id, payload_seq_id=batch.seq_id, histogram=[])
+        resultQ2 = ch.ResultQ2(benchmark_id=benchmark.id, batch_seq_id=batch.seq_id, histogram=[])
         stub.resultQ2(resultQ2)
 
         if batch.last or cnt > 1_000: #here we just stop after 1000 so we see a result, this is allowed only for testing

@@ -26,7 +26,7 @@ python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. challenger.p
     </code>
     </pre>
 
-    <h4>Step 0</h4>
+    <h4>Step 1</h4>
     <p>Initilize the client stub from the generated code</p>
     <pre>
         <code>
@@ -40,7 +40,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
         </code>
     </pre>
 
-    <h4>Step 1</h4>
+    <h4>Step 2</h4>
     <p>Create a new Benchmark. You have set your token (see profile), set a benchmark name (this is only shown in your statistics) and the batchsize.
         The benchmark_type should be set to "test" if you experiment.
         Also add the list of which queries you want to run, either just one, [Q1] or [Q2] or both at the same time [Q1, Q2].
@@ -57,7 +57,7 @@ bench = stub.createNewBenchmark(benchmarkconfiguration)
         </code>
     </pre>
 
-    <h4>Step 2</h4>
+    <h4>Step 3</h4>
     <p>Then, get the location data. The location data depends on the benchmark_type. The message can be bigger then the gRPC default configuration allows. Hence increase the max_receive_message_length.</p>
     <pre>
         <code>
@@ -66,7 +66,7 @@ bench = stub.createNewBenchmark(benchmarkconfiguration)
     </pre>
 
 
-    <h4>Step 3 (optional)</h4>
+    <h4>Step 4 (optional)</h4>
     <p>Depending on your connectivity you might experience different latency and throughput. Optionally, we try to account for this by first measuring it.
         The payload of a Ping corresponds roughly to the payload of a batch and the returning Pong roughly the payload of a Result
         This kind of measurement is just for development and experimentation (since, well, it could be easily cheated ;-), how is a thought exercise for the participant).
@@ -81,7 +81,7 @@ stub.endMeasurement(ping)
         </code>
     </pre>
 
-    <h4>Step 4</h4>
+    <h4>Step 5</h4>
     <p>First start the Benchmark. This sets the timestamp server side for the throughput measurments. Then process all the batches. The batches are correlated for the latency measurements.</p>
     <p>Once you called the endBenchmark RPC, we calculate the results. For testing, you can call endBenchmark early.</p>
 
@@ -91,11 +91,10 @@ stub.startBenchmark(benchmark)
 
 batch = stub.nextBatch(benchmark)
 while batch:
-    result_payload_q1 = processTheBatchQ1(batch) #here is your implementation ;)
-    result_payload_q1 = ch.ResultQ1Payload(resultData=1)
+    topkimproved = processTheBatchQ1(batch) #here is your implementation ;)
     result = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
-                         payload_seq_id=batch.seq_id,
-                         result=result_payload_q1)
+                         batch_seq_id=batch.seq_id,
+                         topkimproved=topkimproved)
 
     stub.resultQ1(result)  # send the result of query 1, also send the result of Q2 in case you calculate both
 
