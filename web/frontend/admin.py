@@ -10,8 +10,10 @@ import uuid
 
 import smtplib
 from email.mime.text import MIMEText
+from aio_pika import connect, Message
+from aio_pika.robust_connection import connect_robust
 
-from frontend.models import db, Group, ChallengeGroup
+from models import db, Group, ChallengeGroup
 
 salt = 'qakLgEdhryvVyFHfR4vwQw'
 
@@ -57,12 +59,11 @@ def generate_random_string(length):
     return ''.join(random.choice(letters) for i in range(length))
 
 
-async def create_group(email, skipmail):
-    group_cnt = await db.func.count(ChallengeGroup.id).gino.scalar()
-    print("counted groups {}".format(group_cnt))
+async def create_group(group_name, email, skipmail):
+    
+    
     default_pw = generate_random_string(8)
     apikey = generate_random_string(32)
-    group_name = "group-{}".format(group_cnt)
     await admin_create_group(group_name, hash_password(default_pw), email, apikey)
 
     if "true" in skipmail:
@@ -88,6 +89,18 @@ async def create_group(email, skipmail):
         send_mail_gmail(email, "DEBS2021 - Challenge: Group registration", message)
     return
 
+async def send_vm_request(group_name):
+    con_str = os.environ["RABBIT_CONNECTION"]
+    con = await connect_robust(con_str)
+
+    channel = await con.channel()
+
+    await channel.default_exchange.publish(Message(group_name.encode("utf8")), routing_key="vm_requests")
+
+    print("sent request for VM for {}".format(group_name))
+
+    await con.close()
+
 
 async def main(parse_arguments):
     connection = os.environ['DB_CONNECTION']
@@ -96,7 +109,14 @@ async def main(parse_arguments):
     await db.gino.create_all()
 
     if parse_arguments.command == 'newgroup':
-        await create_group(args.email, args.skipmail)
+        group_cnt = await db.func.count(ChallengeGroup.id).gino.scalar()
+        print("counted groups {}".format(group_cnt))
+        group_name = "group-{}".format(group_cnt)
+        await create_group(group_name, args.email, args.skipmail)
+
+        if args.makevm == "true":
+            await send_vm_request(group_name)
+
 
 
 if __name__ == "__main__":
@@ -108,6 +128,7 @@ if __name__ == "__main__":
     group_parser = subparsers.add_parser("newgroup", help='Creates a new group with e-mail')
     group_parser.add_argument('--email', type=str, action='store', help='email help', required=True)
     group_parser.add_argument('--skipmail', type=str, action='store', help='true false', required=True)
+    group_parser.add_argument('--makevm', type=str, action='store', help='true false', default="true")
 
     args = parser.parse_args()
     logging.info(args)

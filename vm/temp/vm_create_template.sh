@@ -1,7 +1,7 @@
 #! /bin/sh
 
-echo changing directory...
-cd {team}
+echo current directory...
+pwd
 
 echo creating disk image...
 qemu-img create -f qcow2 -b {os_img_path} -F qcow2 snapshot-focal-server_{team}.qcow2 5G
