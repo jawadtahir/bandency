@@ -7,6 +7,8 @@ import de.tum.i13.dal.BenchmarkDuration;
 import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.AirQualityDataSource;
 
+import org.HdrHistogram.Histogram;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -20,6 +22,9 @@ public class BenchmarkState {
 
     private HashMap<Long, LatencyMeasurement> latencyCorrelation;
     private ArrayList<Long> q1measurements;
+
+    private Histogram q1Histogram;
+    private Histogram q2Histogram;
 
     private double averageLatency;
     private long startNanoTime;
@@ -49,6 +54,9 @@ public class BenchmarkState {
 
         this.q1Active = false;
         this.q2Active = false;
+
+        this.q1Histogram = new Histogram(3600000000L, 3);
+        this.q2Histogram = new Histogram(3600000000L, 3);
 
         this.benchmarkId = -1;
 
@@ -161,6 +169,7 @@ public class BenchmarkState {
         if(latencyCorrelation.containsKey(request.getBatchSeqId())) {
             LatencyMeasurement lm = latencyCorrelation.get(request.getBatchSeqId());
             lm.setQ1Results(nanoTime, request);
+            q1Histogram.recordValue(nanoTime - lm.getStartTime());
             if(isfinished(lm)) {
                 this.dbInserter.add(new ToVerify(lm));
                 latencyCorrelation.remove(request.getBatchSeqId());
@@ -172,6 +181,7 @@ public class BenchmarkState {
         if(latencyCorrelation.containsKey(request.getBatchSeqId())) {
             LatencyMeasurement lm = latencyCorrelation.get(request.getBatchSeqId());
             lm.setQ2Results(nanoTime, request);
+            q2Histogram.recordValue(nanoTime - lm.getStartTime());
             if(isfinished(lm)) {
                 this.dbInserter.add(new ToVerify(lm));
                 latencyCorrelation.remove(request.getBatchSeqId());
@@ -188,7 +198,16 @@ public class BenchmarkState {
 
     public void endBenchmark(long benchmarkId, long endTime) {
         this.endNanoTime = endTime;
-        BenchmarkDuration bd = new BenchmarkDuration(benchmarkId, this.startNanoTime, endTime, this.averageLatency);
+
+        BenchmarkDuration bd = new BenchmarkDuration(
+                benchmarkId,
+                this.startNanoTime,
+                endTime,
+                this.averageLatency,
+                q1Histogram,
+                q2Histogram,
+                this.q1Active,
+                this.q2Active);
         this.dbInserter.add(new ToVerify(bd));
     }
 

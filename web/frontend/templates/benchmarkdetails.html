@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th scope="col">Property</th>
+                <th scope="col">Value</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Timestamp</td>
+                    <td class="humantimestamp" title="{{ benchmark.timestamp }}"></td>
+                </tr>
+                <tr>
+                    <td>Type</td>
+                    <td>{{ benchmark.benchmark_type }}</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>{{ benchmark.benchmark_name }}</td>
+                </tr>
+                <tr>
+                    <td>Batchsize</td>
+                    <td>{{ benchmark.batchsize }}</td>
+                </tr>
+                {% if not benchmarkresults %}
+                    <tr>
+                        <td>No results</td>
+                        <td>Not finished? Not called endBenchmark(Benchmark)?</td>
+                    </tr>
+                {% endif %}
+
+                {% if benchmarkresults %}
+                    <tr>
+                        <td>Duration</td>
+                        <td>{{ benchmarkresults.duration_sec }}</td>
+                    </tr>
+                    <tr>
+                        <td>q1_count</td>
+                        <td>{{ benchmarkresults.q1_count }}</td>
+                    </tr>
+                    <tr>
+                        <td>q1_throughput</td>
+                        <td>{{ benchmarkresults.q1_throughput }}</td>
+                    </tr>
+                    <tr>
+                        <td>q1_90percentile</td>
+                        <td>{{ benchmarkresults.q1_90percentile }}</td>
+                    </tr>
+                    <tr>
+                        <td>q1_count</td>
+                        <td>{{ benchmarkresults.q2_count }}</td>
+                    </tr>
+                    <tr>
+                        <td>q1_throughput</td>
+                        <td>{{ benchmarkresults.q2_throughput }}</td>
+                    </tr>
+                    <tr>
+                        <td>q1_90percentile</td>
+                        <td>{{ benchmarkresults.q2_90percentile }}</td>
+                    </tr>
+                    <tr>
+                        <td>summary</td>
+                        <td><textarea rows="8" style="min-width: 100%;resize:none">{{ benchmarkresults.summary }}</textarea></td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

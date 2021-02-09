@@ -12,7 +12,8 @@ from quart_auth import AuthManager, login_required, Unauthorized, login_user, Au
 import frontend.helper as helper
 import frontend.worker as worker
 from frontend.admin import hash_password
-from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes
+from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes, \
+    get_benchmarks_by_group, get_benchmark, get_benchmarkresults
 from shared.util import raise_shutdown, Shutdown
 
 app = Quart(__name__)
@@ -99,6 +100,35 @@ async def documentation():
     return await render_template('documentation.html', name="Documentation", group=group,
                                  menu=helper.menu(documentation=True))
 
+@app.route('/benchmarks/')
+@login_required
+async def benchmarks():
+    group = await get_group_information(current_user.auth_id)
+    benchmarks = await get_benchmarks_by_group(group.id)
+    return await render_template('benchmarks.html',
+                                 name="Benchmarks",
+                                 group=group,
+                                 benchmarks=benchmarks,
+                                 menu=helper.menu(benchmarks=True))
+
+
+@app.route('/benchmarkdetails/<int:benchmarkid>/')
+@login_required
+async def benchmarkdetails(benchmarkid):
+    benchmark = await get_benchmark(benchmarkid)
+    benchmarkresults = await get_benchmarkresults(benchmarkid)
+    if benchmark:
+        group = await get_group_information(current_user.auth_id)
+        if group.id == benchmark.group_id:
+            return await render_template('benchmarkdetails.html',
+                                         name="Benchmark",
+                                         group=group,
+                                         benchmark=benchmark,
+                                         benchmarkresults=benchmarkresults,
+                                         menu=helper.menu(benchmarks=True))
+
+    return redirect_to_login()
+
 
 @app.route('/rawdata/')
 @login_required
@@ -171,7 +201,7 @@ def prepare_interactive_get_event_loop():
 async def mainloop(debug, loop):
     print("Run Debug Version of webserver")
     tasks = []
-    monitor_task = worker.process_server_monitor_metrics(loop, shutdown_event, os.environ['RABBIT_CONNECTION'])
+    #monitor_task = worker.process_server_monitor_metrics(loop, shutdown_event, os.environ['RABBIT_CONNECTION'])
 
     if debug:
         cfg = Config()
@@ -184,7 +214,7 @@ async def mainloop(debug, loop):
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
 
     tasks.append(webserver_task)
-    tasks.append(monitor_task)
+    #tasks.append(monitor_task)
 
     # create the database connect, without starting doesn't make sense
     await db_connection()

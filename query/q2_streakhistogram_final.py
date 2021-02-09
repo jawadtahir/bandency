@@ -18,6 +18,7 @@ import challenger_pb2_grpc as api
 import numpy as np
 import utils
 
+
 class MeanSlidingWindow:
     def __init__(self):
         self.timed_window = list()
@@ -124,7 +125,7 @@ class QueryOneEventProcessor:
 
                 if mean_p1 is not np.nan and mean_p2 is not np.nan:
                     avg = max(mean_p1, mean_p2)
-                    self.avg_aqi[year][city].add(ts, avg) # this for Q1
+                    self.avg_aqi[year][city].add(ts, avg)  # this for Q1
 
                     if year is self.id_curr:
                         desc_p1 = utils.epaDescription(mean_p1, "P1")
@@ -136,17 +137,17 @@ class QueryOneEventProcessor:
 
                         state, dtlongest, dtfrom = self.streak[city]
 
-                        if state == "bad" and c_state == "good": #initialized with bad
+                        if state == "bad" and c_state == "good":  # initialized with bad
                             self.streak[city][0] = "good"
                             self.streak[city][2] = ts
-                        #if state == "good" and c_state == "good":
-                            #span_seconds = max(dtlongest, )
-                            #self.streak[city][1] = (ts - dtfrom).seconds
+                        # if state == "good" and c_state == "good":
+                        # span_seconds = max(dtlongest, )
+                        # self.streak[city][1] = (ts - dtfrom).seconds
                         if state == "good" and c_state == "bad":
                             self.streak[city][0] = "bad"
-                            self.streak[city][1] = 0 #max(dtlongest, (ts - dtfrom).seconds)
+                            self.streak[city][1] = 0  # max(dtlongest, (ts - dtfrom).seconds)
 
-                #TODO: check if this line is needed?
+                # TODO: check if this line is needed?
                 self.avg_aqi[year][city].resize(ts - timedelta(days=5))
 
     def next_aqi_snapshot(self, ts):
@@ -219,7 +220,8 @@ class QueryOneEventProcessor:
                     window_aqi_curr.resize(dtmax_curr - timedelta(days=5))
                     window_aqi_last.resize(dtmax_curr - timedelta(days=365 + 5))
 
-                    if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
+                    if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (
+                    window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
                         last_year_avg_aqi = window_aqi_curr.getMean()
                         curr_year_avg_aqi = window_aqi_last.getMean()
 
@@ -233,11 +235,13 @@ class QueryOneEventProcessor:
                         last_year_window_p1.resize(dtmax_curr - timedelta(days=365, hours=24))
                         last_year_window_p2.resize(dtmax_curr - timedelta(days=365, hours=24))
 
-                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and (last_year_window_p1.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
+                        if curr_year_window_p1.active(dtmax_curr - activity_timeout) and (
+                        last_year_window_p1.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
                             mtemp = curr_year_window_p1.getMean()
                             if not mtemp:
                                 print("city: %s dtmax_curr: %s valvs: %s window_aqi_curr: %s window_aqi_last: %s" %
-                                      (city, dtmax_curr, curr_year_window_p1.has_elements(), window_aqi_curr.size(), window_aqi_last.size()))
+                                      (city, dtmax_curr, curr_year_window_p1.has_elements(), window_aqi_curr.size(),
+                                       window_aqi_last.size()))
                                 exit(0)
                             curr_year_aqi = utils.EPATableCalc(mtemp)
                             last_year_aqi = utils.EPATableCalc(last_year_window_p1.getMean())
@@ -267,13 +271,13 @@ class QueryOneEventProcessor:
                                               currentAQIP1=int(res[3] * 1000.0),
                                               currentAQIP2=int(res[4] * 1000.0)))
 
-
         curr_bad = 0
         streak_res = list()
         for (city, tup) in self.streak.items():
             if city in self.avg_aqi[self.id_curr]:
                 window_aqi_last = self.avg_aqi[self.id_curr][city]
-                if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
+                if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (
+                window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
                     if tup[0] == "good":
                         streak_res.append(int((dtmax_curr - tup[2]).total_seconds()))
                     else:
@@ -284,27 +288,26 @@ class QueryOneEventProcessor:
         topk = 20
 
         topk_streaks = list()
-        if(len(streak_res) > 10):
+        if (len(streak_res) > 10):
             streak_min = 0
             streak_max = min(int(np.max(streak_res)), int(timedelta(days=7).total_seconds()))
             steps = int((streak_max - streak_min) / topk) + 1
-            hist, bin_edges = np.histogram(streak_res, bins=range(streak_min, streak_max+1, steps))
+            hist, bin_edges = np.histogram(streak_res, bins=range(streak_min, streak_max + 1, steps))
 
             s = np.sum(hist)
 
-            #for topk_streaks in streaks:
+            # for topk_streaks in streaks:
             #    print("bucket-from: %2s, bucket-to: %s, bucket-cnt: %s, bucket-percent: %4.2" % topk_streaks)
             for i in range(len(hist)):
-                bucket_from = i*steps
-                bucket_to = (i*steps) + steps
-                bucket_percent = int(100.0/s*hist[i]*1000.0)
+                bucket_from = i * steps
+                bucket_to = (i * steps) + steps
+                bucket_percent = int(100.0 / s * hist[i] * 1000.0)
 
-                #topk_streaks.append([bucket_from, bucket_to, bucket_percent])
+                # topk_streaks.append([bucket_from, bucket_to, bucket_percent])
                 streak = ch.TopKStreaks(bucket_from=bucket_from,
                                         bucket_to=bucket_to,
                                         bucket_percent=bucket_percent)
                 topk_streaks.append(streak)
-
 
         return not_active_cnt, dtmax_curr, topklist, curr_bad, topk_streaks
 
@@ -327,9 +330,9 @@ class QueryOneAlternative:
 
         benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
                                                            batch_size=20000,
-                                                           benchmark_name="test benchmark",
+                                                           benchmark_name="test 2",
                                                            benchmark_type="test",
-                                                           queries=[ch.BenchmarkConfiguration.Query.Q1])
+                                                           queries=[ch.BenchmarkConfiguration.Query.Q1, ch.BenchmarkConfiguration.Query.Q2])
         bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
 
         if os.path.exists(locationfile):
@@ -345,8 +348,6 @@ class QueryOneAlternative:
         if os.path.exists(locationcache):
             with open(locationcache, "rb") as f:
                 self.event_processor.location_to_city = pickle.load(f)
-
-
 
         # First, we measure the latency.
         # This is only for the testing dashboard to substract the communication latency
@@ -384,6 +385,12 @@ class QueryOneAlternative:
             self.challengerstub.resultQ2(resultQ2)
 
             cnt = cnt + 1
+
+            if cnt > 1000:
+                self.challengerstub.endBenchmark(bench)
+                break
+
+
             duration_so_far = (datetime.now() - start_time).total_seconds()
             if (duration_so_far - lastdisplay) >= 2:  # limit output every 2 seconds
                 with open(locationcache, "wb") as f:
@@ -391,9 +398,11 @@ class QueryOneAlternative:
 
                 os.system('clear')
                 print("Streak histogram %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
-                print("processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
-                    cnt, duration_so_far, emptycount, not_active, num_current, num_historic, (num_current + num_historic)))
-                #for topk in payload:
+                print(
+                    "processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
+                        cnt, duration_so_far, emptycount, not_active, num_current, num_historic,
+                        (num_current + num_historic)))
+                # for topk in payload:
                 #    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f , curr-P2: %8.3f " % (
                 #        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
                 #        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
@@ -401,8 +410,8 @@ class QueryOneAlternative:
                 print("Streak histogram %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
                 print("Q2, output curr_bad: %s" % (curr_bad))
                 for topk_streaks in streaks:
-                    print("bucket-from: %s, bucket-to: %s, bucket-percent: %2.2f" % (topk_streaks.bucket_from, topk_streaks.bucket_to, topk_streaks.bucket_percent/1000.0))
-
+                    print("bucket-from: %s, bucket-to: %s, bucket-percent: %2.2f" % (
+                    topk_streaks.bucket_from, topk_streaks.bucket_to, topk_streaks.bucket_percent / 1000.0))
 
                 lastdisplay = duration_so_far
 
@@ -415,7 +424,7 @@ class QueryOneAlternative:
 def main():
     op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
           ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-    #with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+    # with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
     with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
         stub = api.ChallengerStub(channel)
         q1 = QueryOneAlternative(stub)

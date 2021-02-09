@@ -13,6 +13,7 @@ public class DB {
     public static DB createDBConnection(String url) throws ClassNotFoundException, SQLException {
         Class.forName("org.postgresql.Driver");
         Connection connection = DriverManager.getConnection(url);
+        System.out.println("createDBConnection: " + url);
 
         return new DB(connection);
     }

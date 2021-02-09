@@ -6,9 +6,7 @@ import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.dal.dto.NewBenchmarkStarted;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
-import de.tum.i13.datasets.location.LocationDataset;
 import de.tum.i13.datasets.location.PrepareLocationDataset;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -22,6 +20,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
@@ -120,7 +119,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         //Save this benchmarkname to database
         String benchmarkName = request.getBenchmarkName();
-        long benchmarkId = random.nextLong();
+        long benchmarkId = Math.abs(random.nextLong());
 
         try {
             UUID groupId = q.getGroupIdFromToken(token);
@@ -324,8 +323,11 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                 measurementHistogram.observe(v);
             }
 
-            q.insertLatencyMeasurementStats(request.getBenchmarkId(), v);
-
+            try {
+                q.insertLatencyMeasurementStats(request.getBenchmarkId(), v);
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
 
 
             Logger.debug("average latency: " + v + "ms");
@@ -495,12 +497,19 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             return;
         }
 
+        AtomicBoolean found = new AtomicBoolean(false);
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
             b.endBenchmark(request.getId(), nanoTime);
+            found.set(true);
 
             Logger.info("Ended benchmark: " + b.toString());
             return b;
         });
+
+        if(found.get()) {
+            this.benchmark.remove(request.getId());
+        }
+
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();

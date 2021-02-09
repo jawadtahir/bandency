@@ -1,18 +1,14 @@
 package de.tum.i13.datasets.airquality;
 
+import com.google.protobuf.Timestamp;
+import de.tum.i13.bandency.Batch;
+import de.tum.i13.bandency.Batch.Builder;
+import de.tum.i13.bandency.Measurement;
+
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
-import java.util.Random;
-
-import com.google.protobuf.Timestamp;
-
-import de.tum.i13.bandency.Batch;
-import de.tum.i13.bandency.Measurement;
-import de.tum.i13.bandency.Batch.Builder;
 
 public class TestAirqualityToBatch extends AirqualityToBatch {
 

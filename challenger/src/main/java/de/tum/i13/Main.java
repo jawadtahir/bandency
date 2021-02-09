@@ -4,21 +4,19 @@ import de.tum.i13.dal.DB;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ResultsVerifier;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.airquality.*;
-import de.tum.i13.datasets.location.LocationDataset;
+import de.tum.i13.datasets.airquality.AccessType;
+import de.tum.i13.datasets.airquality.AirqualityDataset;
+import de.tum.i13.datasets.airquality.AirqualityFileAccess;
 import de.tum.i13.datasets.location.PrepareLocationDataset;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.prometheus.client.exporter.HTTPServer;
 import org.tinylog.Logger;
 
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
-
-import io.prometheus.client.exporter.HTTPServer;
-
-import javax.management.remote.JMXConnector;
 
 public class Main {
 
@@ -46,7 +44,7 @@ public class Main {
             AirqualityFileAccess afa = new AirqualityFileAccess(Path.of(dataset));
             AirqualityDataset ad = new AirqualityDataset(afa, AccessType.FromDisk);
 
-            ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<ToVerify>(1_000_000, false);
+            ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
 
             Logger.info("Initializing Challenger Service");
             Queries q = new Queries(db.getConnection());

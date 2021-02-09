@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="alert alert-secondary">
+        Last 100 Benchmark runs
+    </div>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Details</th>
+                <th>Timestamp</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Batchsize</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for benchmark in benchmarks %}
+                <tr>
+                    <td><a class="btn btn-primary" href="/benchmarkdetails/{{ benchmark.id }}/">Show details</a></td>
+                    <td class="humantimestamp" title="{{ benchmark.timestamp }}"></td>
+                    <td>{{ benchmark.benchmark_type }}</td>
+                    <td>{{ benchmark.benchmark_name }}</td>
+                    <td>{{ benchmark.batchsize }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -6,13 +6,18 @@ import de.tum.i13.bandency.ResultQ2;
 public class LatencyMeasurement {
     private final Long benchmarkId;
     private final Long batchId;
+
+    public Long getStartTime() {
+        return startTime;
+    }
+
     private final Long startTime;
 
     private long q1ResultTime;
     private ResultQ1 q1Payload;
     private boolean hasQ1Results;
     private boolean hasQ2Results;
-    private long q2Resulttime;
+    private long q2ResultTime;
     private ResultQ2 q2Payload;
 
     public LatencyMeasurement(Long benchmarkId, Long batchId, Long startTime) {
@@ -49,10 +54,22 @@ public class LatencyMeasurement {
 
     public void setQ2Results(long q2Resulttime, ResultQ2 payload) {
 
-        this.q2Resulttime = q2Resulttime;
+        this.q2ResultTime = q2Resulttime;
         this.q2Payload = payload;
 
         this.hasQ2Results = true;
+    }
+
+    public long getQ2ResultTime() {
+        return q2ResultTime;
+    }
+
+    public Long getBenchmarkId() {
+        return benchmarkId;
+    }
+
+    public Long getBatchId() {
+        return batchId;
     }
 }
 

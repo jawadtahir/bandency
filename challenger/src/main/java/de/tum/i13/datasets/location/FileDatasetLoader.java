@@ -1,22 +1,13 @@
 package de.tum.i13.datasets.location;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.Point;
-
 import com.google.common.base.Stopwatch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.mapbox.geojson.*;
 import com.mapbox.geojson.gson.GeoJsonAdapterFactory;
-
+import de.tum.i13.bandency.Location;
+import de.tum.i13.bandency.Locations;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -24,8 +15,12 @@ import okio.BufferedSink;
 import okio.Okio;
 import org.tinylog.Logger;
 
-import de.tum.i13.bandency.Location;
-import de.tum.i13.bandency.Locations;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 class FileDatasetLoader implements IDatasetLoader {
 
