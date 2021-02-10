@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import paramiko
 import os
 from signal import SIGTERM, SIGINT
 from typing import Any, Callable, Awaitable
@@ -20,6 +21,8 @@ app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
 AuthManager(app)
 
 shutdown_event = asyncio.Event()
+
+PRIVATE_KEY_PATH = os.environ.get("PRIVATE_KEY_PATH", "cochairs")
 
 
 def signal_handler(*_: Any) -> None:
@@ -68,6 +71,16 @@ async def redirect_to_login(*_):
     return redirect(url_for("login"))
 
 
+def upload_pub_key(pubkey: str, vm_adrs:str, username, port:int=22):
+    pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
+    with paramiko.SSHClient() as client:
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(vm_adrs, port, username, pkey=pkey)
+        client.exec_command('echo "%s" > ~/.ssh/authorized_keys' % pubkey)
+        client.exec_command('chmod 644 ~/.ssh/authorized_keys')
+        client.exec_command('chmod 700 ~/.ssh/')
+
+
 @app.route('/profile/', methods=['GET', 'POST'])
 @login_required
 async def profile():
@@ -78,12 +91,33 @@ async def profile():
         groupnick = form['groupnick'].strip()
         sshkey = form['sshpubkey'].strip()
         groupemail = form['groupemail'].strip()
+        vmadrs = form['vmadrs'].strip()
+        groupname = group.groupname
+        vmadrs = vmadrs.split(":")
+        port = 22
+        if len(vmadrs) > 1:
+            try:
+
+                port = int(vmadrs[1])
+            except ValueError:
+                await flash("Please give VM address in \'dnsname[:port]\' format")
+                return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+        vmadrs = vmadrs[0]
+
+        try:
+            upload_pub_key(sshkey, vmadrs, groupname, port)
+        except Exception:
+            await flash("Error connecting to VM. Please check the address of VM")
+            return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
 
         if len(groupnick) > 32:
             await flash('Nickname should be below 32 chars')
             return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
 
+        
+
         await group.update(groupnick=groupnick, groupemail=groupemail).apply()
+
         await flash('Profile saved')
 
         return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))

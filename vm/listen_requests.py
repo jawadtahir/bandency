@@ -12,7 +12,6 @@ def make_vm(mesg: IncomingMessage):
     ip_prefix = os.environ.get("IP_PREFIX", "10.21")
     vm_ip = "{}.{}.{}".format(ip_prefix, group_number, 1)
     createVM(group_name, vm_ip)
-    mesg.ack()
 
 
 async def listen_vm_reqs(loop):
@@ -20,7 +19,7 @@ async def listen_vm_reqs(loop):
     con = await connect_robust(con_str)
     channel = await con.channel()
     q = await channel.declare_queue("vm_requests")
-    await q.consume(make_vm)
+    await q.consume(make_vm,no_ack=True)
 
 
 

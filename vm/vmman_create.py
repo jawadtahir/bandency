@@ -111,4 +111,4 @@ def createVM(team_name: str, ip_adrs: str) -> None:
 
 
 if __name__ == "__main__":
-    createVM("group1", "192.168.122.28")
+    createVM("group-0", "192.168.122.28")

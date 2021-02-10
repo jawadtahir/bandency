@@ -6,3 +6,4 @@
 challenger/.classpath
 challenger/bin/main/tinylog.properties
 group*/
+*.pyc
