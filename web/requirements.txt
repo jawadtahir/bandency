@@ -17,3 +17,4 @@ psycopg2
 hypercorn
 aio-pika
 psutil
+paramiko

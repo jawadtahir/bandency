@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import paramiko
 import os
 from signal import SIGTERM, SIGINT
 from typing import Any, Callable, Awaitable
@@ -13,7 +14,7 @@ import frontend.helper as helper
 import frontend.worker as worker
 from frontend.admin import hash_password
 from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes, \
-    get_benchmarks_by_group, get_benchmark, get_benchmarkresults
+    get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines
 from shared.util import raise_shutdown, Shutdown
 
 app = Quart(__name__)
@@ -21,6 +22,8 @@ app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
 AuthManager(app)
 
 shutdown_event = asyncio.Event()
+
+PRIVATE_KEY_PATH = os.environ.get("PRIVATE_KEY_PATH", "cochairs")
 
 
 def signal_handler(*_: Any) -> None:
@@ -69,6 +72,21 @@ async def redirect_to_login(*_):
     return redirect(url_for("login"))
 
 
+async def upload_pub_key(pubkey: str, vm_adrs:str, username, groupid, port:int=22):
+    pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
+    with paramiko.SSHClient() as client:
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(vm_adrs, port, username, pkey=pkey)
+        client.exec_command('echo "%s" >> ~/.ssh/authorized_keys' % pubkey)
+        client.exec_command('chmod 644 ~/.ssh/authorized_keys')
+        client.exec_command('chmod 700 ~/.ssh/')
+
+    vms = await VirtualMachines.query.where(VirtualMachines.group_id == groupid).gino.all()
+    for vm in vms:
+        if vm.internaladrs == vm_adrs or (vm_adrs in vm.forwardingadrs):
+            await vm.update(sshpubkey=pubkey).apply()
+
+
 @app.route('/profile/', methods=['GET', 'POST'])
 @login_required
 async def profile():
@@ -79,18 +97,42 @@ async def profile():
         groupnick = form['groupnick'].strip()
         sshkey = form['sshpubkey'].strip()
         groupemail = form['groupemail'].strip()
+        vmadrs = form['VMAdrs'].strip()
+        groupname = group.groupname
+        vmadrs=vmadrs.split("/")[0] if len(vmadrs.split("/")[0]) > 0 else vmadrs.split("/")[1]
+        vmadrs = vmadrs.split(":")
+        port = 22
+        if len(sshkey) > 30:
+            if len(vmadrs) > 1:
+                try:
+
+                    port = int(vmadrs[1])
+                except ValueError:
+                    await flash("Please give VM address in \'dnsname[:port]\' format")
+                    return redirect(url_for('profile'))
+            vmadrs = vmadrs[0]
+
+            try:
+                await upload_pub_key(sshkey, vmadrs, groupname, group.id, port)
+            except Exception as e:
+                await flash("Error connecting to VM. Please check the address of VM")
+                return redirect(url_for('profile'))
 
         if len(groupnick) > 32:
             await flash('Nickname should be below 32 chars')
-            return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+            return redirect(url_for('profile'))
+
+        
 
         await group.update(groupnick=groupnick, groupemail=groupemail).apply()
+
         await flash('Profile saved')
 
-        return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+        return redirect(url_for('profile'))
     else:
         group = await get_group_information(current_user.auth_id)
-        return await render_template('profile.html', name="Profile", group=group, menu=helper.menu(profile=True))
+        vms = await VirtualMachines.query.where(VirtualMachines.group_id == group.id).gino.all()
+        return await render_template('profile.html', name="Profile", group=group, vms=vms, menu=helper.menu(profile=True))
 
 
 @app.route('/documentation/')

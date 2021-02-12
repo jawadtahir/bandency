@@ -27,12 +27,25 @@
                 <input type="text" name="groupemail" class="form-control" id="staticGroupEMailId" value="{{ group.groupemail }}">
             </div>
         </div>
+        <h5>Add public key</h5>
         <div class="form-group row">
-            <label for="inputSSHKeyId" class="col-sm-3 col-form-label">SSH-Key Public Key</label>
+            <label for="VMAdrs" class="col-sm-3 col-form-label">VM Address</label>
             <div class="col-sm-7">
-                <input type="text" name="sshpubkey" class="form-control" id="inputSSHKeyId" value="{{ group.sshkey }}">
+                <select name="VMAdrs">
+                    {% for vm in vms %}
+                    <option value="{{vm.forwardingadrs}}/{{vm.internaladrs}}">{{vm.forwardingadrs}}/{{vm.internaladrs}}</option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
+
+        <div class="form-group row">
+            <label for="inputSSHKeyId" class="col-sm-3 col-form-label">Add SSH-Key Public Key</label>
+            <div class="col-sm-7">
+                <input type="text" name="sshpubkey" class="form-control" id="inputSSHKeyId" value="">
+            </div>
+        </div>
+        
         <div class="form-group row">
             <div class="col-sm-3"></div>
             <div class="col-sm-2">
