@@ -22,6 +22,14 @@ class Group(AuthUser):
         await self._resolve()
         return self._email
 
+class VirtualMachines(db.Model):
+    __tablename__ = "virtualmachines"
+
+    id = db.Column(UUID, primary_key=True)
+    group_id = db.Column(UUID, db.ForeignKey("groups.id")) 
+    internaladrs = db.Column(db.Unicode())
+    forwardingadrs = db.Column(db.Unicode())
+    sshpubkey = db.Column(db.Unicode())
 
 class RecentChanges(db.Model):
     __tablename__ = 'recentchanges'

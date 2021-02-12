@@ -1,9 +1,14 @@
-
+import os
+import asyncio
+import sys
 from paramiko.rsakey import RSAKey
 from paramiko.pkey import PKey
 from paramiko.pkey import PKey
-import os
+print(os.environ["PYTHONPATH"])
+from frontend.models import db, ChallengeGroup, VirtualMachines
+
 import subprocess
+import uuid
 
 OS_IMG_PATH = os.environ.get("OS_IMG_PATH", "focal-server-cloudimg-amd64.img")
 TEMPLATE_DIR = os.environ.get("TEMPLATE_DIR", "temp")
@@ -67,7 +72,8 @@ def make_config_files(team_name: str, ip_adrs: str, pub_key) -> None:
     with open(NETWORK_CONFIG_TEMPLATE_FILE) as net_cfg_temp_file:
         net_cfg_text = "".join(net_cfg_temp_file.readlines())
 
-    cloud_cfg_text = cloud_cfg_text.format(name=team_name, pub_key=pub_key)
+    vm_no = ip_adrs.split(".")[-1]
+    cloud_cfg_text = cloud_cfg_text.format(name=team_name, pub_key=pub_key, vm_number=vm_no)
 
     net_cfg_text = net_cfg_text.format(ip_adrs)
 
@@ -80,13 +86,15 @@ def make_config_files(team_name: str, ip_adrs: str, pub_key) -> None:
         file.write(net_cfg_text)
 
 
-def run_cloud_init_cmds(team_name):
+def run_cloud_init_cmds(team_name, ip_adrs):
     sh_script_text = ""
     with open(CREATE_SCRIPT_TEMPLATE_FILE) as sh_script_temp_file:
         sh_script_text = "".join(sh_script_temp_file.readlines())
 
+    vm_no = ip_adrs.split(".")[-1]
+
     sh_script_text = sh_script_text.format(
-        os_img_path=os.path.abspath(OS_IMG_PATH), team=team_name)
+        os_img_path=os.path.abspath(OS_IMG_PATH), team=team_name, vm_number=vm_no)
 
     script_path = os.path.join(team_name, CREATE_SCRIPT_FILE)
     with open(script_path, "w") as file:
@@ -101,14 +109,30 @@ def run_cloud_init_cmds(team_name):
 
 
 
+async def insert_in_db(team_name, ip_adrs, forwardingadrs):
+    connection = os.environ['DB_CONNECTION']
+    await db.set_bind(connection)
+    await db.gino.create_all()
+    group = await ChallengeGroup.query.where(ChallengeGroup.groupname == team_name).gino.first()
+    await VirtualMachines.create(id=uuid.uuid4(),
+                            group_id=group.id,
+                            internaladrs=ip_adrs,
+                            forwardingadrs=forwardingadrs)
+    print ("value inserted")
 
-def createVM(team_name: str, ip_adrs: str) -> None:
+
+
+
+
+async def createVM(team_name: str, ip_adrs: str, forwardingadrs:str) -> None:
     make_dir(team_name)
     # key = create_key_pair(team_name=team_name)
     pubkey = read_public_key()
     make_config_files(team_name, ip_adrs, pubkey)
-    run_cloud_init_cmds(team_name)
+    run_cloud_init_cmds(team_name, ip_adrs)
+    await insert_in_db(team_name, ip_adrs,forwardingadrs)
 
 
 if __name__ == "__main__":
-    createVM("group-0", "192.168.122.28")
+    asyncio.run(createVM(sys.argv[1], sys.argv[2], sys.argv[3]))
+    #asyncio.run(createVM("group-0", "192.168.122.28", ""))

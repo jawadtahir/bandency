@@ -89,13 +89,15 @@ async def create_group(group_name, email, skipmail):
         send_mail_gmail(email, "DEBS2021 - Challenge: Group registration", message)
     return
 
-async def send_vm_request(group_name):
+async def send_vm_request(group_name, forwarding_adrs):
     con_str = os.environ["RABBIT_CONNECTION"]
     con = await connect_robust(con_str)
 
     channel = await con.channel()
 
-    await channel.default_exchange.publish(Message(group_name.encode("utf8")), routing_key="vm_requests")
+    msg = {"groupname":group_name, "forwardingadrs":forwarding_adrs}
+
+    await channel.default_exchange.publish(Message(str(msg).encode("utf8")), routing_key="vm_requests")
 
     print("sent request for VM for {}".format(group_name))
 
@@ -115,7 +117,7 @@ async def main(parse_arguments):
         await create_group(group_name, args.email, args.skipmail)
 
         if args.makevm == "true":
-            await send_vm_request(group_name)
+            await send_vm_request(group_name, args.forwardingadrs)
 
 
 
@@ -129,6 +131,7 @@ if __name__ == "__main__":
     group_parser.add_argument('--email', type=str, action='store', help='email help', required=True)
     group_parser.add_argument('--skipmail', type=str, action='store', help='true false', required=True)
     group_parser.add_argument('--makevm', type=str, action='store', help='true false', default="true")
+    group_parser.add_argument('--forwardingadrs', type=str, action='store', help='forwarding address of VM', default="")
 
     args = parser.parse_args()
     logging.info(args)
