@@ -22,15 +22,6 @@ class Group(AuthUser):
         await self._resolve()
         return self._email
 
-class VirtualMachines(db.Model):
-    __tablename__ = "virtualmachines"
-
-    id = db.Column(UUID, primary_key=True)
-    group_id = db.Column(UUID, db.ForeignKey("groups.id")) 
-    internaladrs = db.Column(db.Unicode())
-    forwardingadrs = db.Column(db.Unicode())
-    sshpubkey = db.Column(db.Unicode())
-
 class RecentChanges(db.Model):
     __tablename__ = 'recentchanges'
 
@@ -58,6 +49,21 @@ class ChallengeGroup(db.Model):
 async def get_group_information(group_id):
     return await ChallengeGroup.get(group_id)
 
+
+class VirtualMachines(db.Model):
+    __tablename__ = "virtualmachines"
+
+    id = db.Column(UUID, primary_key=True)
+    group_id = db.Column(UUID, db.ForeignKey("groups.id"))
+    internaladrs = db.Column(db.Unicode())
+    forwardingadrs = db.Column(db.Unicode())
+    sshpubkey = db.Column(db.Unicode())
+
+async def get_vms_of_group(groupid):
+    return await VirtualMachines.query\
+        .where(VirtualMachines.group_id == groupid)\
+        .order_by(VirtualMachines.internaladrs)\
+        .gino.all()
 
 class ServerMonitorMetrics(db.Model):
     __tablename__ = 'servermonitormetrics'

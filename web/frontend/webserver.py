@@ -14,7 +14,7 @@ import frontend.helper as helper
 import frontend.worker as worker
 from frontend.admin import hash_password
 from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes, \
-    get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines
+    get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines, get_vms_of_group
 from shared.util import raise_shutdown, Shutdown
 
 app = Quart(__name__)
@@ -131,7 +131,7 @@ async def profile():
         return redirect(url_for('profile'))
     else:
         group = await get_group_information(current_user.auth_id)
-        vms = await VirtualMachines.query.where(VirtualMachines.group_id == group.id).gino.all()
+        vms = await get_vms_of_group(group.id)
         return await render_template('profile.html', name="Profile", group=group, vms=vms, menu=helper.menu(profile=True))
 
 
