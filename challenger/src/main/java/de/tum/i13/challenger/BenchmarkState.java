@@ -55,8 +55,8 @@ public class BenchmarkState {
         this.q1Active = false;
         this.q2Active = false;
 
-        this.q1Histogram = new Histogram(3600000000L, 3);
-        this.q2Histogram = new Histogram(3600000000L, 3);
+        this.q1Histogram = new Histogram( 3);
+        this.q2Histogram = new Histogram( 3);
 
         this.benchmarkId = -1;
 
