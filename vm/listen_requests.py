@@ -13,13 +13,12 @@ async def make_vm(mesg: IncomingMessage):
     forwardingadrs = msg["forwardingadrs"]
     group_name = msg["groupname"]
     group_number = group_name.split("-")[1]
-    ip_prefix = os.environ.get("IP_PREFIX", "10.21")
+    ip_prefix = os.environ.get("IP_PREFIX", "192.168.1")
     group = await ChallengeGroup.query.where(ChallengeGroup.groupname == group_name).gino.first()
-    db.func.count(ChallengeGroup.id).gino.scalar()
 
     
     vm_count = await (db.select([db.func.count()]).where(and_(VirtualMachines.group_id == group.id)).gino.scalar())
-    vm_ip = "{}.{}.{}".format(ip_prefix, group_number, vm_count+1)
+    vm_ip = "{}.{}".format(ip_prefix, vm_count+1)
     await createVM(group_name, vm_ip, forwardingadrs)
 
 
