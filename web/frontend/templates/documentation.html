@@ -10,8 +10,9 @@
 
     <h2>Usage</h2>
     <p>The illustration below shows the API interactions. Next we give more details to the steps and examples in Python code.</p>
-    <img src="/static/img/debs.png" class="img-fluid" alt="Api usage">
     <p>You can download the example code shown below here: <a href="/static/example.py">example.py</a></p>
+    <p>Here we provide a java client stub: <a href="/static/javaexample.zip">example.py</a></p>
+    <img src="/static/img/debs.png" class="img-fluid" alt="Api usage">
 
     <h4>Step 0</h4>
     <p>Generate the client code, as example, we use Python. For other languages check the documentation</p>
@@ -20,6 +21,7 @@
     <code>
 # Install dependencies
 pip install grpcio
+pip install grpcio-tools
 
 # Generate client code
 python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. challenger.proto
@@ -45,7 +47,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
         The benchmark_type should be set to "test" if you experiment.
         Also add the list of which queries you want to run, either just one, [Q1] or [Q2] or both at the same time [Q1, Q2].
         The real event rate of the source stream is around 4000 messages/second. The maximum batch size allowed is 20k.</p>
-    <p>For the final evaluation we will post the specific benchmark configuration.</p>
+    <p>The final evaluation should be done using batch size 10000.</p>
     <pre>
         <code>
 benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
