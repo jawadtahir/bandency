@@ -1,6 +1,7 @@
 import os
 import asyncio
 import sys
+from shutil import copy
 from paramiko.rsakey import RSAKey
 from paramiko.pkey import PKey
 from paramiko.pkey import PKey
@@ -85,14 +86,20 @@ def make_config_files(team_name: str, ip_adrs: str, pub_key) -> None:
 
 
 def run_cloud_init_cmds(team_name, ip_adrs):
+
+    # Copy the base image to the directory
+    new_os_img_path = copy(OS_IMG_PATH, team_name)
+
+
     sh_script_text = ""
     with open(CREATE_SCRIPT_TEMPLATE_FILE) as sh_script_temp_file:
         sh_script_text = "".join(sh_script_temp_file.readlines())
 
+    # last block of IP adrs is the VM number (in case of multiple VMs by one group)
     vm_no = ip_adrs.split(".")[-1]
 
     sh_script_text = sh_script_text.format(
-        os_img_path=os.path.abspath(OS_IMG_PATH), team=team_name, vm_number=vm_no)
+        os_img_path=os.path.abspath(new_os_img_path), team=team_name, vm_number=vm_no)
 
     script_path = os.path.join(team_name, CREATE_SCRIPT_FILE)
     with open(script_path, "w") as file:
