@@ -1,5 +1,5 @@
-
-
+import argparse
+import logging
 import asyncio
 import os
 from aio_pika import connect_robust, Message
@@ -7,36 +7,60 @@ from aio_pika.message import IncomingMessage
 from sqlalchemy import and_
 from vmman_create import createVM
 from frontend.models import db, ChallengeGroup, VirtualMachines
+from vmenvsetup import setup_directories
 
-async def make_vm(mesg: IncomingMessage):
-    msg = eval(mesg.body.decode("utf8"))
+
+async def make_vm(msg: IncomingMessage):
+    msg = eval(msg.body.decode("utf8"))
     forwardingadrs = msg["forwardingadrs"]
     group_name = msg["groupname"]
     group_number = group_name.split("-")[1]
     ip_prefix = os.environ.get("IP_PREFIX", "192.168.1")
-    group = await ChallengeGroup.query.where(ChallengeGroup.groupname == group_name).gino.first()
 
-    
+    group = await ChallengeGroup.query.where(ChallengeGroup.groupname == group_name).gino.first()
     vm_count = await (db.select([db.func.count()]).where(and_(VirtualMachines.group_id == group.id)).gino.scalar())
-    vm_ip = "{}.{}".format(ip_prefix, vm_count+1)
+
+    vm_ip = "{}.{}".format(ip_prefix, vm_count + 1)
     await createVM(group_name, vm_ip, forwardingadrs)
 
 
-async def listen_vm_reqs(loop):
-    connection = os.environ['DB_CONNECTION']
-    await db.set_bind(connection)
-    await db.gino.create_all()
+async def bind_db_connection(connection_str):
+    await db.set_bind(connection_str)
 
-    con_str = os.environ["RABBIT_CONNECTION"]
-    con = await connect_robust(con_str)
+
+async def listen_vm_reqs(loop, rabbit_str):
+    con = await connect_robust(rabbit_str)
     channel = await con.channel()
     q = await channel.declare_queue("vm_requests")
-    await q.consume(make_vm,no_ack=True)
+    await q.consume(make_vm, no_ack=True)
 
+async def main(parse_arguments):
+    db_connection_str = os.environ['DB_CONNECTION']
+    rabbit_connection_str = os.environ["RABBIT_CONNECTION"]
 
+    loop = asyncio.get_event_loop()
+    loop.create_task(bind_db_connection(db_connection_str))
+
+    if parse_arguments.command == 'process':
+        loop.create_task(listen_vm_reqs(loop, rabbit_connection_str))
+        loop.run_forever()
+    if parse_arguments.command == "vmenvsetup":
+        setup_directories()
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(listen_vm_reqs(loop))
-    loop.run_forever()
+    logging.basicConfig(level=logging.DEBUG)
+
+    parser = argparse.ArgumentParser(description='Admin Util for Virtual Machine Manager - DEBS Challenge')
+    subparsers = parser.add_subparsers(help='sub-command help', dest="command")
+    group_parser = subparsers.add_parser("newgroup", help='Creates a new group with e-mail')
+    group_parser = subparsers.add_parser("process", help='Connect to Rabbitmq and start updating VMs')
+
+    args = parser.parse_args()
+    logging.info(args)
+    if args.command is None:
+        parser.print_help()
+    else:
+        asyncio.run(main(args))
+
+

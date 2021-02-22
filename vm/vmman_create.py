@@ -4,7 +4,6 @@ import sys
 from paramiko.rsakey import RSAKey
 from paramiko.pkey import PKey
 from paramiko.pkey import PKey
-print(os.environ["PYTHONPATH"])
 from frontend.models import db, ChallengeGroup, VirtualMachines
 
 import subprocess
@@ -55,7 +54,6 @@ def create_key_pair(team_name: str) -> PKey:
     key.write_private_key_file(private_key_file_name)
 
     with open(public_key_file_name, "w") as public_key_file:
-
         public_key_file.write("{} {}".format(key.get_name(), key.get_base64()))
         os.chmod(public_key_file_name, 0o644)
 
