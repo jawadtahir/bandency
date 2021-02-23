@@ -28,12 +28,15 @@ NETWORK_CONFIG_FILE = "network_config.cfg"
 CREATE_SCRIPT_FILE = "vm_create.sh"
 
 
-def make_dir(team_name: str) -> None:
+def make_dir(team_name: str, ip_adrs:str) -> None:
     
-    if os.path.exists(team_name):
+    vm_no = ip_adrs.split(".")[-1]
+    dir_name = "{}_{}".format(team_name, vm_no)
+    if os.path.exists(dir_name):
         return
 
-    os.mkdir(team_name)
+    os.mkdir(dir_name)
+    return dir_name
 
 
 def read_public_key():
@@ -64,6 +67,8 @@ def create_key_pair(team_name: str) -> PKey:
 def make_config_files(team_name: str, ip_adrs: str, pub_key) -> None:
     cloud_cfg_text = ""
     net_cfg_text = ""
+    vm_no = ip_adrs.split(".")[-1]
+    dir_name = "{}_{}".format(team_name, vm_no)
 
     with open(CLOUD_CONFIG_TEMPLATE_FILE) as cloud_cfg_template_file:
         cloud_cfg_text = "".join(cloud_cfg_template_file.readlines())
@@ -71,43 +76,46 @@ def make_config_files(team_name: str, ip_adrs: str, pub_key) -> None:
     with open(NETWORK_CONFIG_TEMPLATE_FILE) as net_cfg_temp_file:
         net_cfg_text = "".join(net_cfg_temp_file.readlines())
 
-    vm_no = ip_adrs.split(".")[-1]
+    
     cloud_cfg_text = cloud_cfg_text.format(name=team_name, pub_key=pub_key, vm_number=vm_no)
 
     net_cfg_text = net_cfg_text.format(ip_adrs)
 
-    cld_cfg = os.path.join(team_name, CLOUD_CONFIG_FILE)
+    cld_cfg = os.path.join(dir_name, CLOUD_CONFIG_FILE)
     with open(cld_cfg, "w") as file:
         file.write(cloud_cfg_text)
 
-    net_cfg = os.path.join(team_name, NETWORK_CONFIG_FILE)
+    net_cfg = os.path.join(dir_name, NETWORK_CONFIG_FILE)
     with open(net_cfg, "w") as file:
         file.write(net_cfg_text)
 
 
 def run_cloud_init_cmds(team_name, ip_adrs):
+    # last block of IP adrs is the VM number (in case of multiple VMs by one group)
+    vm_no = ip_adrs.split(".")[-1]
+
+    dir_name = "{}_{}".format(team_name, vm_no)
 
     # Copy the base image to the directory
-    new_os_img_path = copy(OS_IMG_PATH, team_name)
+    new_os_img_path = copy(OS_IMG_PATH, dir_name)
 
 
     sh_script_text = ""
     with open(CREATE_SCRIPT_TEMPLATE_FILE) as sh_script_temp_file:
         sh_script_text = "".join(sh_script_temp_file.readlines())
 
-    # last block of IP adrs is the VM number (in case of multiple VMs by one group)
-    vm_no = ip_adrs.split(".")[-1]
+    
 
     sh_script_text = sh_script_text.format(
         os_img_path=os.path.abspath(new_os_img_path), team=team_name, vm_number=vm_no)
 
-    script_path = os.path.join(team_name, CREATE_SCRIPT_FILE)
+    script_path = os.path.join(dir_name, CREATE_SCRIPT_FILE)
     with open(script_path, "w") as file:
         file.write(sh_script_text)
 
     os.chmod(script_path, 0o764)
 
-    sh_proc = subprocess.Popen("./"+CREATE_SCRIPT_FILE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, text=True, cwd=team_name)
+    sh_proc = subprocess.Popen("./"+CREATE_SCRIPT_FILE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, text=True, cwd=dir_name)
 
     while sh_proc.poll() is None:
         print(sh_proc.stdout.readline())
@@ -130,7 +138,7 @@ async def insert_in_db(team_name, ip_adrs, forwardingadrs):
 
 
 async def createVM(team_name: str, ip_adrs: str, forwardingadrs:str) -> None:
-    make_dir(team_name)
+    dir_name = make_dir(team_name, ip_adrs)
     # key = create_key_pair(team_name=team_name)
     pubkey = read_public_key()
     make_config_files(team_name, ip_adrs, pubkey)
