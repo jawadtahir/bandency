@@ -245,14 +245,20 @@ async def mainloop(debug, loop):
     tasks = []
     #monitor_task = worker.process_server_monitor_metrics(loop, shutdown_event, os.environ['RABBIT_CONNECTION'])
 
+    bind_adrs = os.environ.get("WEB_BIND", "localhost:8000")
+
+    cfg = Config()
+    cfg.bind = [bind_adrs]
+
+
     if debug:
-        cfg = Config()
+        
         cfg.debug = True
         print("starting with debugging enabled")
         cfg.use_reloader = True
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
     else:
-        cfg = Config()
+        
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
 
     tasks.append(webserver_task)
