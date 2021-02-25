@@ -2,6 +2,7 @@ import asyncio
 import logging
 import paramiko
 import os
+import traceback
 from signal import SIGTERM, SIGINT
 from typing import Any, Callable, Awaitable
 
@@ -99,22 +100,15 @@ async def profile():
         groupemail = form['groupemail'].strip()
         vmadrs = form['VMAdrs'].strip()
         groupname = group.groupname
-        vmadrs=vmadrs.split("/")[0] if len(vmadrs.split("/")[0]) > 0 else vmadrs.split("/")[1]
-        vmadrs = vmadrs.split(":")
+        vmadrs=vmadrs.split("/")[1]
         port = 22
         if len(sshkey) > 30:
-            if len(vmadrs) > 1:
-                try:
-
-                    port = int(vmadrs[1])
-                except ValueError:
-                    await flash("Please give VM address in \'dnsname[:port]\' format")
-                    return redirect(url_for('profile'))
-            vmadrs = vmadrs[0]
 
             try:
                 await upload_pub_key(sshkey, vmadrs, groupname, group.id, port)
             except Exception as e:
+                print(e)
+                print(traceback.format_exc())
                 await flash("Error connecting to VM. Please check the address of VM")
                 return redirect(url_for('profile'))
 
