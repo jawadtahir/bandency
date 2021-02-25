@@ -55,7 +55,7 @@ benchmarkconfiguration = ch.BenchmarkConfiguration(token="checkyourprofile",
                                                    benchmark_name="shows_up_in_dashboard",
                                                    benchmark_type="test",
                                                    queries=[ch.BenchmarkConfiguration.Query.Q1, ch.BenchmarkConfiguration.Query.Q2])
-bench = stub.createNewBenchmark(benchmarkconfiguration)
+benchmark = stub.createNewBenchmark(benchmarkconfiguration)
         </code>
     </pre>
 
@@ -63,7 +63,7 @@ bench = stub.createNewBenchmark(benchmarkconfiguration)
     <p>Then, get the location data. The location data depends on the benchmark_type. The message can be bigger then the gRPC default configuration allows. Hence increase the max_receive_message_length.</p>
     <pre>
         <code>
-    loc = stub.getLocations(empty_pb2.Empty()) #get all the locations
+loc = stub.getLocations(benchmark) #get all the locations
         </code>
     </pre>
 
