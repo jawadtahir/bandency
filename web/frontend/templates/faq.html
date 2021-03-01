@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h4>Is the watermark independ for every city?</h4>
+    <p>The highest timestamp of the batch.current is the watermark and applies for all relative windowing operations.</p>
+
+    <h4>The first window has less than 24h of data. Is this correct?</h4>
+    <p>Yes, each batch has 10k events, as the rate is around 4k of events, the operator needs to consume multiple batches to fill the whole window.
+        The snapshots for the results should be taken independent of how full a window is.</p>
+
+    <h4>How is data ordered?</h4>
+    <p>The batches are provided in an ordered way.</p>
+{% endblock %}

@@ -143,6 +143,13 @@ async def profile():
         return await render_template('profile.html', name="Profile", group=group, vms=vms,
                                      menu=helper.menu(profile=True))
 
+@app.route('/faq/')
+@login_required
+async def faq():
+    group = await get_group_information(current_user.auth_id)
+    return await render_template('faq.html', name="FAQ", group=group,
+                                 menu=helper.menu(faq=True))
+
 @app.route('/documentation/')
 @login_required
 async def documentation():
