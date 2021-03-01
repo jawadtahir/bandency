@@ -58,7 +58,8 @@ class FileDatasetLoader implements IDatasetLoader {
 
                     String note = getPropertyString(f, "note");
                     note = note.replace(plz, "");
-                    locationBuilder.setZipcode(note.trim());
+                    //locationBuilder.setZipcode(note.trim());
+                    locationBuilder.setCity(note.trim());
 
                     float qkm = f.hasProperty("qkm") ? f.getNumberProperty("qkm").floatValue() : 0.0f;
                     locationBuilder.setQkm(qkm);
