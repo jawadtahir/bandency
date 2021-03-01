@@ -77,10 +77,29 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
     pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
     with paramiko.SSHClient() as client:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(vm_adrs, port, username, pkey=pkey)
-        client.exec_command('echo "%s" >> ~/.ssh/authorized_keys' % pubkey)
-        client.exec_command('chmod 644 ~/.ssh/authorized_keys')
-        client.exec_command('chmod 700 ~/.ssh/')
+        try:
+            client.connect(vm_adrs, port, username, pkey=pkey, timeout=3.0)  # three seconds timeout
+        except:
+            print("Could not connect")
+            return await flash("Could not connect to VM to set the key")
+
+        with client.open_sftp() as sftpclient:
+            try:
+                authorized_keys = sftpclient.open('~/.ssh/authorized_keys', mode='r')
+                for authorized in authorized_keys:
+                    if pubkey in authorized:
+                        return await flash("Key already added")
+
+            except IOError:
+                print('authorized does not exist, continue')
+
+        try:
+            client.exec_command('echo "%s" >> ~/.ssh/authorized_keys' % pubkey, timeout=3.0)
+            client.exec_command('chmod 644 ~/.ssh/authorized_keys', timeout=3.0)
+            client.exec_command('chmod 700 ~/.ssh/', timeout=3.0)
+        except:
+            print("Error while setting ssh key")
+            return await flash("Error while setting ssh key")
 
     vms = await VirtualMachines.query.where(VirtualMachines.group_id == groupid).gino.all()
     for vm in vms:
@@ -143,12 +162,14 @@ async def profile():
         return await render_template('profile.html', name="Profile", group=group, vms=vms,
                                      menu=helper.menu(profile=True))
 
+
 @app.route('/faq/')
 @login_required
 async def faq():
     group = await get_group_information(current_user.auth_id)
     return await render_template('faq.html', name="FAQ", group=group,
                                  menu=helper.menu(faq=True))
+
 
 @app.route('/documentation/')
 @login_required

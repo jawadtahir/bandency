@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="alert alert-secondary">
+        Last 100 Benchmark runs
+    </div>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Internal Address</th>
+                <th>Forwarding</th>
+                <th>Last pub key (first 20 char)</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for vm in vms %}
+                <tr>
+                    <td>{{ benchmark.benchmark_type }}</td>
+                    <td>{{ benchmark.benchmark_name }}</td>
+                    <td>{{ benchmark.batchsize }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
