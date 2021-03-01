@@ -8,5 +8,6 @@ challenger/bin/main/tinylog.properties
 group*/
 *.pyc
 vm/.idea/
+vm/focal-server-cloudimg-amd64.img
 
 
