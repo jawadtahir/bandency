@@ -73,7 +73,7 @@ async def redirect_to_login(*_):
     return redirect(url_for("login"))
 
 
-async def upload_pub_key(pubkey: str, vm_adrs:str, username, groupid, port:int=22):
+async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int = 22):
     pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
     with paramiko.SSHClient() as client:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -93,41 +93,55 @@ async def upload_pub_key(pubkey: str, vm_adrs:str, username, groupid, port:int=2
 async def profile():
     if request.method == 'POST':
         group = await get_group_information(current_user.auth_id)
-
         form = await request.form
-        groupnick = form['groupnick'].strip()
-        sshkey = form['sshpubkey'].strip()
-        groupemail = form['groupemail'].strip()
-        vmadrs = form['VMAdrs'].strip()
-        groupname = group.groupname
-        vmadrs=vmadrs.split("/")[1]
-        port = 22
-        if len(sshkey) > 30:
 
+        if 'profile' in form:
+            print("profile")
+            groupnick = form['groupnick'].strip()
+            groupemail = form['groupemail'].strip()
+
+            if len(groupnick) > 32:
+                await flash('Nickname should be below 32 chars')
+                return redirect(url_for('profile'))
+
+            await group.update(groupnick=groupnick, groupemail=groupemail).apply()
+            await flash('Profile saved')
+
+            return redirect(url_for('profile'))
+        elif 'sshkey' in form:
+            print("sshkey")
+            err = False
+            if 'VMAdrs' not in form:
+                await flash('No VM selected')
+                err = True
+            if 'sshpubkey' not in form or len(form['sshpubkey'].strip()) <= 30:
+                await flash('No sshpukey or invalid sshpubkey added')
+                err = True
+
+            if err:
+                return redirect(url_for('profile'))
+
+            vmadrs = form['VMAdrs'].strip()
+            sshkey = form['sshpubkey'].strip()
+            groupname = group.groupname
+            vmadrs = vmadrs.split("/")[1]
             try:
-                await upload_pub_key(sshkey, vmadrs, groupname, group.id, port)
+                await upload_pub_key(sshkey, vmadrs, groupname, group.id, 22)
+                await flash('Added ssh key to .ssh/authorized_keys')
             except Exception as e:
                 print(e)
                 print(traceback.format_exc())
-                await flash("Error connecting to VM. Please check the address of VM")
-                return redirect(url_for('profile'))
+                await flash(
+                    "Error connecting to VM. Please inform the challenge organizers, debschallenge2021@gmail.com")
+            else:
+                await flash('Invalid key')
 
-        if len(groupnick) > 32:
-            await flash('Nickname should be below 32 chars')
             return redirect(url_for('profile'))
-
-        
-
-        await group.update(groupnick=groupnick, groupemail=groupemail).apply()
-
-        await flash('Profile saved')
-
-        return redirect(url_for('profile'))
     else:
         group = await get_group_information(current_user.auth_id)
         vms = await get_vms_of_group(group.id)
-        return await render_template('profile.html', name="Profile", group=group, vms=vms, menu=helper.menu(profile=True))
-
+        return await render_template('profile.html', name="Profile", group=group, vms=vms,
+                                     menu=helper.menu(profile=True))
 
 @app.route('/documentation/')
 @login_required
@@ -135,6 +149,7 @@ async def documentation():
     group = await get_group_information(current_user.auth_id)
     return await render_template('documentation.html', name="Documentation", group=group,
                                  menu=helper.menu(documentation=True))
+
 
 @app.route('/benchmarks/')
 @login_required
@@ -196,6 +211,7 @@ async def systemstatus():
 async def leaderboard():
     return await render_template('leaderboard.html', menu=helper.menu(leaderboard=True), name="Leaderboard")
 
+
 @app.route('/testruns')
 @login_required
 async def testruns():
@@ -237,31 +253,30 @@ def prepare_interactive_get_event_loop():
 async def mainloop(debug, loop):
     print("Run Debug Version of webserver")
     tasks = []
-    #monitor_task = worker.process_server_monitor_metrics(loop, shutdown_event, os.environ['RABBIT_CONNECTION'])
+    # monitor_task = worker.process_server_monitor_metrics(loop, shutdown_event, os.environ['RABBIT_CONNECTION'])
 
     bind_adrs = os.environ.get("WEB_BIND", "localhost:8000")
 
     cfg = Config()
     cfg.bind = [bind_adrs]
 
-
     if debug:
-        
+
         cfg.debug = True
         print("starting with debugging enabled")
         cfg.use_reloader = True
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
     else:
-        
+
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
 
     tasks.append(webserver_task)
-    #tasks.append(monitor_task)
+    # tasks.append(monitor_task)
 
     # create the database connect, without starting doesn't make sense
     await db_connection()
 
-    #await asyncio.gather(monitor_task, webserver_task, wakeup(shutdown_event))
+    # await asyncio.gather(monitor_task, webserver_task, wakeup(shutdown_event))
     try:
         gathered_tasks = asyncio.gather(*tasks)
         await gathered_tasks

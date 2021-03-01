@@ -7,6 +7,7 @@ import grpc
 from google.protobuf import empty_pb2
 
 # If the classes below are missing, generate them:
+# You need to install the grpcio-tools to generate the stubs: pip install grpcio-tools
 # python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. challenger.proto
 import challenger_pb2 as ch
 import challenger_pb2_grpc as api
