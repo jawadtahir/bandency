@@ -35,7 +35,7 @@ public class Main {
                 url = env.get("JDBC_DB_CONNECTION");
             }
 
-            Logger.info("opening database connection");
+            Logger.info("opening database connection: " + url);
             DB db = DB.createDBConnection(url);
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
