@@ -102,6 +102,7 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
             client.exec_command('echo "%s" >> ~/.ssh/authorized_keys' % pubkey, timeout=3.0)
             client.exec_command('chmod 644 ~/.ssh/authorized_keys', timeout=3.0)
             client.exec_command('chmod 700 ~/.ssh/', timeout=3.0)
+            await flash("Key successful added")
         except:
             print("Error while setting ssh key")
             traceback.print_exc()
