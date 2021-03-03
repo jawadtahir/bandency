@@ -85,20 +85,24 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
 
         with client.open_sftp() as sftpclient:
             try:
-                authorized_keys = sftpclient.open('~/.ssh/authorized_keys', mode='r')
+                filepath = '~/.ssh/authorized_keys'
+                print("accessing authorized_keys")
+                authorized_keys = sftpclient.open(filepath, mode='r')
                 for authorized in authorized_keys:
                     if pubkey in authorized:
+                        print("key already added")
                         return await flash("Key already added")
-
             except IOError:
                 print('authorized does not exist, continue')
 
         try:
+            client.exec_command('mkdir -p ~/.ssh/', timeout=3.0)
             client.exec_command('echo "%s" >> ~/.ssh/authorized_keys' % pubkey, timeout=3.0)
             client.exec_command('chmod 644 ~/.ssh/authorized_keys', timeout=3.0)
             client.exec_command('chmod 700 ~/.ssh/', timeout=3.0)
         except:
             print("Error while setting ssh key")
+            traceback.print_exc()
             return await flash("Error while setting ssh key")
 
     vms = await VirtualMachines.query.where(VirtualMachines.group_id == groupid).gino.all()
