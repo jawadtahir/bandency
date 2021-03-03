@@ -88,7 +88,7 @@ class QueryOneEventProcessor:
                     obj_points.append(Point(point.longitude, point.latitude))
 
                 polygon = Polygon(obj_points)
-                self.zipcode_polygons.append([location_info.zipcode, polygon])
+                self.zipcode_polygons.append([location_info.zipcode, location_info.city, polygon])
 
     def _resolve_location(self, event):
         location = (event.longitude, event.latitude)
@@ -99,7 +99,7 @@ class QueryOneEventProcessor:
 
         # otherwise we have to search
         point = Point(event.longitude, event.latitude)
-        for [city, polygon] in self.zipcode_polygons:
+        for [zipcode, city, polygon] in self.zipcode_polygons:
             if polygon.contains(point):
                 self.location_to_city[location] = city
                 return city
@@ -328,9 +328,9 @@ class QueryOneAlternative:
         locationfile = "locationcache5.pickle"
         locationcache = "locationlookupcache1.pickle"
 
-        benchmarkconfiguration = ch.BenchmarkConfiguration(token="cpjcwuaeufgqqxhohhvqlyndjazvzymx",
+        benchmarkconfiguration = ch.BenchmarkConfiguration(token="oesmevfbvxhvmvmdapogdtekwfoytlpq",
                                                            batch_size=20000,
-                                                           benchmark_name="test 2",
+                                                           benchmark_name="test 2 %s" % (datetime.now()),
                                                            benchmark_type="test",
                                                            queries=[ch.BenchmarkConfiguration.Query.Q1, ch.BenchmarkConfiguration.Query.Q2])
         bench = self.challengerstub.createNewBenchmark(benchmarkconfiguration)
@@ -340,7 +340,13 @@ class QueryOneAlternative:
                 self.event_processor.zipcode_polygons = pickle.load(f)
         else:
             loc = self.challengerstub.getLocations(bench)
+            allloc = loc.locations
+            for i in range(0, 100):
+                aloc = allloc[i]
+                print("city: %s, plz: %s" % (aloc.city, aloc.zipcode))
+
             print('got location data: %s' % len(loc.locations))
+
             self.event_processor.setup_locations(loc)
             with open(locationfile, "wb") as f:
                 pickle.dump(self.event_processor.zipcode_polygons, f)
@@ -366,56 +372,61 @@ class QueryOneAlternative:
 
         lastdisplay = 0
 
-        while batch:
-            if batch.last:
-                break
+        try:
+            while batch:
+                if batch.last:
+                    break
 
-            num_current += len(batch.current)
-            num_historic += len(batch.lastyear)
+                num_current += len(batch.current)
+                num_historic += len(batch.lastyear)
 
-            (not_active, dtmax_curr, payload, curr_bad, streaks) = self.event_processor.process(batch)
+                (not_active, dtmax_curr, payload, curr_bad, streaks) = self.event_processor.process(batch)
 
-            if len(payload) == 0:
-                emptycount = emptycount + 1
+                if len(payload) == 0:
+                    emptycount = emptycount + 1
 
-            resultQ1 = ch.ResultQ1(benchmark_id=bench.id, batch_seq_id=batch.seq_id, topkimproved=payload)
-            self.challengerstub.resultQ1(resultQ1)
+                resultQ1 = ch.ResultQ1(benchmark_id=bench.id, batch_seq_id=batch.seq_id, topkimproved=payload)
+                self.challengerstub.resultQ1(resultQ1)
 
-            resultQ2 = ch.ResultQ2(benchmark_id=bench.id, batch_seq_id=batch.seq_id, histogram=streaks)
-            self.challengerstub.resultQ2(resultQ2)
+                resultQ2 = ch.ResultQ2(benchmark_id=bench.id, batch_seq_id=batch.seq_id, histogram=streaks)
+                self.challengerstub.resultQ2(resultQ2)
 
-            cnt = cnt + 1
+                cnt = cnt + 1
 
-            if cnt > 1000:
-                self.challengerstub.endBenchmark(bench)
-                break
+                if cnt > 1000:
+                    break
 
 
-            duration_so_far = (datetime.now() - start_time).total_seconds()
-            if (duration_so_far - lastdisplay) >= 2:  # limit output every 2 seconds
-                with open(locationcache, "wb") as f:
-                    pickle.dump(self.event_processor.location_to_city, f)
+                duration_so_far = (datetime.now() - start_time).total_seconds()
+                if (duration_so_far - lastdisplay) >= 2:  # limit output every 2 seconds
+                    with open(locationcache, "wb") as f:
+                        pickle.dump(self.event_processor.location_to_city, f)
 
-                os.system('clear')
-                print("Streak histogram %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
-                print(
-                    "processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
-                        cnt, duration_so_far, emptycount, not_active, num_current, num_historic,
-                        (num_current + num_historic)))
-                # for topk in payload:
-                #    print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI: %8.3f, curr-P1: %8.3f , curr-P2: %8.3f " % (
-                #        topk.position, topk.city, topk.averageAQIImprovement / 1000.0, topk.currentAQI / 1000.0,
-                #        topk.currentP1 / 1000.0, topk.currentP2 / 1000.0))
+                    os.system('clear')
+                    print("Streak histogram %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
+                    print(
+                        "processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
+                            cnt, duration_so_far, emptycount, not_active, num_current, num_historic,
+                            (num_current + num_historic)))
+                    for topk in payload:
+                        print("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI-P1: %8.3f, curr-AQI-P2: %8.3f " % (
+                                topk.position, topk.city, topk.averageAQIImprovement /
+                                1000.0, topk.currentAQIP1 / 1000.0,
+                                topk.currentAQIP2 / 1000.00))
 
-                print("Streak histogram %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
-                print("Q2, output curr_bad: %s" % (curr_bad))
-                for topk_streaks in streaks:
-                    print("bucket-from: %s, bucket-to: %s, bucket-percent: %2.2f" % (
-                    topk_streaks.bucket_from, topk_streaks.bucket_to, topk_streaks.bucket_percent / 1000.0))
+                    #print("Streak histogram %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
+                    #print("Q2, output curr_bad: %s" % (curr_bad))
+                    #for topk_streaks in streaks:
+                    #    print("bucket-from: %s, bucket-to: %s, bucket-percent: %2.2f" % (
+                    #    topk_streaks.bucket_from, topk_streaks.bucket_to, topk_streaks.bucket_percent / 1000.0))
 
-                lastdisplay = duration_so_far
+                    lastdisplay = duration_so_far
 
-            batch = self.challengerstub.nextBatch(bench)
+                batch = self.challengerstub.nextBatch(bench)
+        except KeyboardInterrupt:
+            print("interrupted")
+
+        self.challengerstub.endBenchmark(bench)
 
     def process_current(self, batch):
         return
@@ -424,8 +435,8 @@ class QueryOneAlternative:
 def main():
     op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
           ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-    # with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
-    with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
+    with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
+    #with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
         stub = api.ChallengerStub(channel)
         q1 = QueryOneAlternative(stub)
         q1.run()

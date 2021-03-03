@@ -31,7 +31,7 @@ public class Main {
             String url = "jdbc:postgresql://127.0.0.1:5432/bandency?user=bandency&password=bandency";
 
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
-                dataset = "/home/msrg/data/luftdaten";
+                dataset = env.get("DATASET_PATH");
                 url = env.get("JDBC_DB_CONNECTION");
             }
 
