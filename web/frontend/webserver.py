@@ -87,12 +87,14 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
             try:
                 filepath = '~/.ssh/authorized_keys'
                 print("accessing authorized_keys")
-                authorized_keys = sftpclient.open(filepath, mode='r')
-                for authorized in authorized_keys:
-                    if pubkey in authorized:
-                        print("key already added")
-                        return await flash("Key already added")
+                with sftpclient.open(filepath) as authorized_keys:
+                    print("opened file")
+                    for authorized in authorized_keys:
+                        if pubkey in authorized:
+                            print("key already added")
+                            return await flash("Key already added")
             except IOError:
+                traceback.print_exc()
                 print('authorized does not exist, continue')
 
         try:
