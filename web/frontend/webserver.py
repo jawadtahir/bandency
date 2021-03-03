@@ -85,7 +85,7 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
 
         with client.open_sftp() as sftpclient:
             try:
-                filepath = '~/.ssh/authorized_keys'
+                filepath = '.ssh/authorized_keys'
                 print("accessing authorized_keys")
                 with sftpclient.open(filepath) as authorized_keys:
                     print("opened file")
