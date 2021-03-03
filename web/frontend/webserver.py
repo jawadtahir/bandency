@@ -95,7 +95,7 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
                             return await flash("Key already added")
             except IOError:
                 traceback.print_exc()
-                print('authorized does not exist, continue')
+                print('authorized does not exist, continue') #file does not exist, also ok
 
         try:
             client.exec_command('mkdir -p ~/.ssh/', timeout=3.0)
@@ -152,14 +152,11 @@ async def profile():
             vmadrs = vmadrs.split("/")[1]
             try:
                 await upload_pub_key(sshkey, vmadrs, groupname, group.id, 22)
-                await flash('Added ssh key to .ssh/authorized_keys')
             except Exception as e:
                 print(e)
                 print(traceback.format_exc())
                 await flash(
                     "Error connecting to VM. Please inform the challenge organizers, debschallenge2021@gmail.com")
-            else:
-                await flash('Invalid key')
 
             return redirect(url_for('profile'))
     else:
