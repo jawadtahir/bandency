@@ -329,7 +329,7 @@ class QueryOneAlternative:
         locationcache = "locationlookupcache1.pickle"
 
         benchmarkconfiguration = ch.BenchmarkConfiguration(token="oesmevfbvxhvmvmdapogdtekwfoytlpq",
-                                                           batch_size=20000,
+                                                           batch_size=10000,
                                                            benchmark_name="test 2 %s" % (datetime.now()),
                                                            benchmark_type="test",
                                                            queries=[ch.BenchmarkConfiguration.Query.Q1, ch.BenchmarkConfiguration.Query.Q2])
@@ -393,7 +393,7 @@ class QueryOneAlternative:
 
                 cnt = cnt + 1
 
-                if cnt > 1000:
+                if cnt > 2000:
                     break
 
 
