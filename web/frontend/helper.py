@@ -1,16 +1,16 @@
 def menu(profile=False,
+         vms=False,
          recentchanges=False,
          documentation=False,
          faq=False,
-         system_status=False,
          benchmarks=False,
          leaderboard=False,
          testruns=False,
-         scheduled_benchmarks=False,
          rawdata=False,
          feedback=False):
     return [
         ["Profile", "home", "/profile", profile],
+        ["VMs", "layers", "/vms", vms],
         ["Recent changes", "layers", "/recentchanges", recentchanges],
         ["Documentation", "layers", "/documentation", documentation],
         ["FAQ", "layers", "/faq", faq],

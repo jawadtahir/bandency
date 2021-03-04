@@ -75,7 +75,6 @@ async def redirect_to_login(*_):
 
 
 async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int = 22):
-
     ssh = SSHKey(pubkey, strict=True)
     try:
         ssh.parse()
@@ -111,7 +110,7 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
                             return await flash("Key already added")
             except IOError:
                 traceback.print_exc()
-                print('authorized does not exist, continue') #file does not exist, also ok
+                print('authorized does not exist, continue')  # file does not exist, also ok
 
         try:
             client.exec_command('mkdir -p ~/.ssh/', timeout=3.0)
@@ -150,37 +149,58 @@ async def profile():
             await flash('Profile saved')
 
             return redirect(url_for('profile'))
-        elif 'sshkey' in form:
-            print("sshkey")
-            err = False
-            if 'VMAdrs' not in form:
-                await flash('No VM selected')
-                err = True
-            if 'sshpubkey' not in form or len(form['sshpubkey'].strip()) <= 30:
-                await flash('No sshpukey or invalid sshpubkey added')
-                err = True
-
-            if err:
-                return redirect(url_for('profile'))
-
-            vmadrs = form['VMAdrs'].strip()
-            sshkey = form['sshpubkey'].strip()
-            groupname = group.groupname
-            vmadrs = vmadrs.split("/")[1]
-            try:
-                await upload_pub_key(sshkey, vmadrs, groupname, group.id, 22)
-            except Exception as e:
-                print(e)
-                print(traceback.format_exc())
-                await flash(
-                    "Error connecting to VM. Please inform the challenge organizers, debschallenge2021@gmail.com")
-
-            return redirect(url_for('profile'))
     else:
         group = await get_group_information(current_user.auth_id)
         vms = await get_vms_of_group(group.id)
         return await render_template('profile.html', name="Profile", group=group, vms=vms,
                                      menu=helper.menu(profile=True))
+
+
+@app.route('/vms/', methods=['GET', 'POST'])
+@login_required
+async def vms():
+    group = await get_group_information(current_user.auth_id)
+
+    if request.method == 'POST':
+        form = await request.form
+        print("sshkey")
+        err = False
+        if 'VMAdrs' not in form:
+            await flash('No VM selected')
+            err = True
+        if 'sshpubkey' not in form or len(form['sshpubkey'].strip()) <= 30:
+            await flash('No sshpukey or invalid sshpubkey added')
+            err = True
+
+        if err:
+            return redirect(url_for('profile'))
+
+        vmadrs = form['VMAdrs'].strip()
+        sshkey = form['sshpubkey'].strip()
+        groupname = group.groupname
+        vmadrs = vmadrs.split("/")[1]
+        try:
+            await upload_pub_key(sshkey, vmadrs, groupname, group.id, 22)
+        except Exception as e:
+            print(e)
+            print(traceback.format_exc())
+            await flash(
+                "Error connecting to VM. Please inform the challenge organizers, debschallenge2021@gmail.com")
+
+        return redirect(url_for('vms'))
+    else:
+        vms = await get_vms_of_group(group.id)
+        ssh = {}
+        for vm in vms:
+            splitted = vm.forwardingadrs.split(':')
+            ssh[vm.id] = "ssh -p %s %s@%s" % (splitted[1], group.groupname, splitted[0])
+
+        return await render_template('vms.html',
+                                     vms=vms,
+                                     ssh=ssh,
+                                     name="VMs",
+                                     group=group,
+                                     menu=helper.menu(vms=True))
 
 
 @app.route('/faq/')
