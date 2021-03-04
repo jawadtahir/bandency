@@ -1,5 +1,8 @@
 import asyncio
 import logging
+from logging.config import dictConfig
+from quart.logging import serving_handler
+
 import paramiko
 import os
 import traceback
@@ -19,20 +22,32 @@ from frontend.models import db, ChallengeGroup, get_group_information, get_recen
     get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines, get_vms_of_group
 from shared.util import raise_shutdown, Shutdown
 
-app = Quart(__name__)
-app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
-AuthManager(app)
 
 shutdown_event = asyncio.Event()
-
 PRIVATE_KEY_PATH = os.environ.get("PRIVATE_KEY_PATH", "cochairs")
-
 
 def signal_handler(*_: Any) -> None:
     shutdown_event.set()
 
+dictConfig({
+    'version': 1,
+    'loggers': {
+        'quart.app': {
+            'level': 'INFO',
+        },
+        'gino.engine': {
+            'level': 'WARNING',
+        }
+    },
+})
 
-logging.basicConfig(level=logging.DEBUG)
+#serving_handler.setFormatter(logging.Formatter('%(message)s'))
+
+app = Quart(__name__)
+app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
+AuthManager(app)
+
+#logging.basicConfig(level=logging.INFO)
 
 
 @app.route('/')
@@ -45,6 +60,7 @@ async def index():
 
 @app.route('/login/', methods=['GET', 'POST'])
 async def login():
+    app.logger.info("login")
     if request.method == 'POST':
         form = await request.form
         groupname = form['group'].strip()
@@ -65,6 +81,7 @@ async def login():
 
 @app.route('/logout')
 async def logout():
+    app.logger.info("logout")
     logout_user()
     return redirect(url_for("index"))
 
@@ -75,6 +92,7 @@ async def redirect_to_login(*_):
 
 
 async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int = 22):
+    app.logger.info("upload_pub_key")
     ssh = SSHKey(pubkey, strict=True)
     try:
         ssh.parse()
@@ -132,6 +150,7 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
 @app.route('/profile/', methods=['GET', 'POST'])
 @login_required
 async def profile():
+    app.logger.info("profile")
     if request.method == 'POST':
         group = await get_group_information(current_user.auth_id)
         form = await request.form
@@ -159,6 +178,7 @@ async def profile():
 @app.route('/vms/', methods=['GET', 'POST'])
 @login_required
 async def vms():
+    app.logger.info("vms")
     group = await get_group_information(current_user.auth_id)
 
     if request.method == 'POST':
@@ -206,6 +226,7 @@ async def vms():
 @app.route('/faq/')
 @login_required
 async def faq():
+    app.logger.info("faq")
     group = await get_group_information(current_user.auth_id)
     return await render_template('faq.html', name="FAQ", group=group,
                                  menu=helper.menu(faq=True))
@@ -214,6 +235,7 @@ async def faq():
 @app.route('/documentation/')
 @login_required
 async def documentation():
+    app.logger.info("documentation")
     group = await get_group_information(current_user.auth_id)
     return await render_template('documentation.html', name="Documentation", group=group,
                                  menu=helper.menu(documentation=True))
@@ -222,6 +244,7 @@ async def documentation():
 @app.route('/benchmarks/')
 @login_required
 async def benchmarks():
+    app.logger.info("benchmarks")
     group = await get_group_information(current_user.auth_id)
     benchmarks = await get_benchmarks_by_group(group.id)
     return await render_template('benchmarks.html',
@@ -234,6 +257,7 @@ async def benchmarks():
 @app.route('/benchmarkdetails/<int:benchmarkid>/')
 @login_required
 async def benchmarkdetails(benchmarkid):
+    app.logger.info("benchmarkdetails")
     benchmark = await get_benchmark(benchmarkid)
     benchmarkresults = await get_benchmarkresults(benchmarkid)
     if benchmark:
@@ -252,6 +276,7 @@ async def benchmarkdetails(benchmarkid):
 @app.route('/rawdata/')
 @login_required
 async def rawdata():
+    app.logger.info("rawdata")
     group = await get_group_information(current_user.auth_id)
     d = os.environ["DATASET_DIR"]
     files = os.listdir(d)
@@ -263,6 +288,7 @@ async def rawdata():
 
 @app.route('/recentchanges/')
 async def recentchanges():
+    app.logger.info("recentchanges")
     changes = await get_recent_changes()
     return await render_template('recentchanges.html', name="Recent changes", changes=changes,
                                  menu=helper.menu(recentchanges=True))
@@ -271,24 +297,28 @@ async def recentchanges():
 @app.route('/systemstatus')
 @login_required
 async def systemstatus():
+    app.logger.info("systemstatus")
     return await render_template('systemstatus.html', menu=helper.menu(system_status=True), name="System status")
 
 
 @app.route('/leaderboard')
 @login_required
 async def leaderboard():
+    app.logger.info("leaderboard")
     return await render_template('leaderboard.html', menu=helper.menu(leaderboard=True), name="Leaderboard")
 
 
 @app.route('/testruns')
 @login_required
 async def testruns():
+    app.logger.info("testruns")
     return await render_template('testruns.html', menu=helper.menu(testruns=True), name="Test runs")
 
 
 @app.route('/feedback')
 @login_required
 async def feedback():
+    app.logger.info("feedback")
     return await render_template('feedback.html', menu=helper.menu(feedback=True), name="Feedback")
 
 
@@ -326,16 +356,15 @@ async def mainloop(debug, loop):
     bind_adrs = os.environ.get("WEB_BIND", "localhost:8000")
 
     cfg = Config()
+    #cfg.accesslog = True
     cfg.bind = [bind_adrs]
 
     if debug:
-
         cfg.debug = True
         print("starting with debugging enabled")
         cfg.use_reloader = True
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
     else:
-
         webserver_task = serve(app, cfg, shutdown_trigger=shutdown_event.wait)
 
     tasks.append(webserver_task)
