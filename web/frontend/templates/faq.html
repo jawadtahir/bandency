@@ -3,16 +3,63 @@
 {% block content %}
     <h4>Details about non-functional requirements</h4>
     <p>See <a href="/static/DEBSNonFunctionalRequirements.pdf" target="_blank">here</a></p>
+    <p></p>
     <h4>How do I create a public key for a VM?</h4>
     <p>You need to create a public/private key pair. Once you create a key pair, copy the text of the public key to your VMs in the profile. See: <a href="https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent" target="_blank">Generating a new SSH key and adding it to the ssh-agent</a> </p>
     <p>If you added the ssh key to your agent, connect to using "ssh -p port group-#@challenge.msrg.in.tum.de" to your VM.</p>
+    <p></p>
     <h4>Is the watermark independ for every city?</h4>
     <p>The highest timestamp of the batch.current is the watermark and applies for all relative windowing operations.</p>
-
+    <p></p>
     <h4>The first window has less than 24h of data. Is this correct?</h4>
     <p>Yes, each batch has 10k events, as the rate is around 4k of events, the operator needs to consume multiple batches to fill the whole window.
         The snapshots for the results should be taken independent of how full a window is.</p>
-
+    <p></p>
     <h4>Is the data ordered?</h4>
     <p>The batches are provided in an ordered way.</p>
+    <p></p>
+
+    <h4>Is it required to submit the results for each query alternating and in ordered?</h4>
+    <p>No, not necessary. Keep in mind we take the 90 percentile of the latency between getting the next batch and the submission of the corresponding results.</p>
+    <p></p>
+
+    <h4>Is it possible to read batches as fast as possible and then submit?</h4>
+    <p>Yes, you can read already the next batch while you are calculating the queries to improve throughput.</p>
+    <p></p>
+
+    <h4>Can you please describe the datasets? (provided as zip to download)</h4>
+    <p>The files are provided as csv, see example below:</p>
+    <code>sensor_id;sensor_type;location;lat;lon;timestamp;P1;durP1;ratioP1;P2;durP2;ratioP2
+        36251;SDS011;22290;57.706;11.940;1583021390028;0.9714285714285715;6;;0.3;6;
+        ...
+    </code>
+    <p>For the challenge we are only considering P1 and P2.
+        P1 are Particles < 10µm (particulate matter) and P2 Particles < 2.5µm (ultrafine particles).
+        More details about the measurements, calibrations, etc. are published here:
+        <a href="https://luftdaten.info/evaluation/" target="_blank">https://luftdaten.info/evaluation/</a>
+        Their wiki also provides a lot of interesting firmware and instructions on how to build a sensor yourself:
+        <a href="https://github.com/opendata-stuttgart/meta/wiki/EN-Home" target="_blank">https://github.com/opendata-stuttgart/meta/wiki/EN-Home</a></p>
+    <p></p>
+
+    <h4>How big are the VMs?</h4>
+    <p>Each VM has 4 vCPUs and 8GB RAM. The disk is backed by a HDD.</p>
+    <p></p>
+
+    <h4>How are the VMs interconnected?</h4>
+    <p>The VMs are hosted on 2 physical nodes. Each of the machines has 2xIntel Xeon E5-2630 v3 @ 2.40GHz and 128GB RAM.
+    The API is hosted on a separate physical machine.
+    The connection between all physical machines is 2x10Gbits and connections are distributed accross the links based on a hash of IP fields. Hence a single TCP connection peaks in theory at 10Gbits.
+    </p>
+    <p></p>
+    <h4> I assume higher level analytics services by cloud providers cannot be used. Is this correct?</h4>
+    <p>Sure you can. But many cloud providers or commercial event processing systems have restrictions regarding publishing benchmarks,
+        plz. check the terms and make sure that you are allowed to publish the numbers.
+        If you employ external processing, the gateway facing the internet is in theory limited to 10Gbits but realistically only several Gbits are useable.
+    </p>
+
+    <h4>Accuracy of results</h4>
+    <p>Event processing frameworks can provide slightly different semantics regarding windowing, rounding, precision, etc. which in case of top-k could change the sequence
+        of the results. We acknowledge that there might be some tiny differences as long as deliberate effort is made to make the implementation as accurate as possiblem.
+    </p>
+
 {% endblock %}
