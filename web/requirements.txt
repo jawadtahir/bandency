@@ -18,3 +18,4 @@ hypercorn
 aio-pika
 psutil
 paramiko
+sshpubkeys

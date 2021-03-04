@@ -11,6 +11,7 @@ from hypercorn.config import Config
 from quart import Quart, websocket, render_template, redirect, url_for, request, flash
 from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
+from sshpubkeys import SSHKey, InvalidKeyError
 import frontend.helper as helper
 import frontend.worker as worker
 from frontend.admin import hash_password
@@ -74,6 +75,21 @@ async def redirect_to_login(*_):
 
 
 async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int = 22):
+
+    ssh = SSHKey(pubkey, strict=True)
+    try:
+        ssh.parse()
+    except InvalidKeyError:
+        await flash('Invalid key')
+        print("Invalid key")
+        traceback.print_exc()
+        return
+    except NotImplementedError:
+        await flash('Invalid key type')
+        print("Invalid key type")
+        traceback.print_exc()
+        return
+
     pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
     with paramiko.SSHClient() as client:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
