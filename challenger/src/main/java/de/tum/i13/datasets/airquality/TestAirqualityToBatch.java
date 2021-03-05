@@ -44,16 +44,23 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
     protected static Builder loadGen(Builder builder, Instant start, Instant end, Long batchSize, EPAP1Table p1enum, EPAP2Table p2enum, Float latLimit, Float lngLimit, Boolean is_no_current) {
 
         Long seconds = Duration.between(start,end).getSeconds();
-        long intervalPerRec = seconds/batchSize;
+        Long batch_size_per_city = batchSize / latLimit.longValue();
+        long intervalPerRec = seconds/batch_size_per_city;
         for (long i = 0; i < batchSize; i++) {
-            Instant event_ts = start.plus(intervalPerRec, ChronoUnit.SECONDS);
-            Instant last_event_ts = event_ts.plus(-365L, ChronoUnit.DAYS);
-            start = event_ts;
-            Timestamp proto_ts = Timestamp.newBuilder().setSeconds(event_ts.getEpochSecond()).build();
-            Timestamp last_proto_ts = Timestamp.newBuilder().setSeconds(last_event_ts.getEpochSecond()).build();
 
             Long latLmt = i%(latLimit.longValue());
             // Long lngLmt = 1L;
+
+            Instant event_ts = start.plus(intervalPerRec, ChronoUnit.SECONDS);
+            Instant last_event_ts = event_ts.plus(-365L, ChronoUnit.DAYS);
+            if ((i != 0) && (latLmt == 0)){
+                start = event_ts;
+            }
+            
+            Timestamp proto_ts = Timestamp.newBuilder().setSeconds(event_ts.getEpochSecond()).build();
+            Timestamp last_proto_ts = Timestamp.newBuilder().setSeconds(last_event_ts.getEpochSecond()).build();
+
+            
 
             Float lat = (float)latLmt - (float)0.5;
             Float lng = (float)0.5;
@@ -73,10 +80,11 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
             builder.addCurrent(measurement);
             builder.addLastyear(lastMeasurement);
 
-            if (!is_no_current){
-                builder.addAllCurrent(new ArrayList<Measurement>());
-            }
+            
 
+        }
+        if (is_no_current){
+            builder.addAllCurrent(new ArrayList<Measurement>());
         }
         return builder;
 
@@ -84,6 +92,9 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
 
 
     private Batch test1 (Builder builder){
+        /*
+        Event timestamps are less than window length
+        */
 
         Instant new_batch_ts = this.batchTime.plus(4, ChronoUnit.MINUTES);
         Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.GOOD, EPAP2Table.GOOD);
@@ -95,6 +106,9 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
     }
 
     private Batch test2(Builder builder){
+        /**
+         * Fills the window
+         */
 
         Instant new_batch_ts = this.batchTime.plus(5, ChronoUnit.MINUTES);
         Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.MODERATE, EPAP2Table.MODERATE);
@@ -105,6 +119,9 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
 
 
     private Batch test3(Builder builder){
+        /**
+         * Test AQI sliding window
+         */
 
         Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
         Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.SENSITIVE_UNHEALTY, EPAP2Table.SENSITIVE_UNHEALTY);
@@ -115,6 +132,9 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
     }
 
     private Batch test4(Builder builder){
+        /**
+         * Test 2 inactive cities
+         */
 
         Instant new_batch_ts = this.batchTime.plus(12, ChronoUnit.MINUTES);
         Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.UNHEALTY, EPAP2Table.UNHEALTY, 3F, 1F, false);
@@ -125,6 +145,9 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
     }
 
     private Batch test5(Builder builder){
+        /**
+         * Test scenario if current year does not have any events
+         */
 
         Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
         Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.VERY_UNHEALTHY, EPAP2Table.VERY_UNHEALTHY, 6F, 1F, true);

@@ -327,7 +327,7 @@ class QueryOneAlternative:
                 emptycount = emptycount + 1
 
             result = ch.ResultQ1(
-                benchmark_id=bench.id, payload_seq_id=batch.seq_id, topkimproved=payload)
+                benchmark_id=bench.id, batch_seq_id=batch.seq_id, topkimproved=payload)
 
             avg_time_per_batch = (
                 datetime.now() - self.proc_start_time) / self.batch_count
