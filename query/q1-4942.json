@@ -1,0 +1,356 @@
+{
+  "benchmarkId": "5666590349431583285",
+  "batchSeqId": "4942",
+  "topkimproved": [
+    {
+      "position": 1,
+      "city": "Tacherting",
+      "averageAQIImprovement": 462102,
+      "currentAQIP1": 486574,
+      "currentAQIP2": 198453
+    },
+    {
+      "position": 2,
+      "city": "Arnsdorf b. Dresden",
+      "averageAQIImprovement": 332576,
+      "currentAQIP1": 152974,
+      "currentAQIP2": 292664
+    },
+    {
+      "position": 3,
+      "city": "Speyer",
+      "averageAQIImprovement": 302112,
+      "currentAQIP1": 109059,
+      "currentAQIP2": 208193
+    },
+    {
+      "position": 4,
+      "city": "Hawangen",
+      "averageAQIImprovement": 285935,
+      "currentAQIP1": 181184,
+      "currentAQIP2": 351696
+    },
+    {
+      "position": 5,
+      "city": "Traben-Trarbach",
+      "averageAQIImprovement": 226031,
+      "currentAQIP1": 169802,
+      "currentAQIP2": 320557
+    },
+    {
+      "position": 6,
+      "city": "Adendorf",
+      "averageAQIImprovement": 174796,
+      "currentAQIP1": 130503,
+      "currentAQIP2": 231654
+    },
+    {
+      "position": 7,
+      "city": "Berlin Lichtenberg",
+      "averageAQIImprovement": 150655,
+      "currentAQIP1": 71558,
+      "currentAQIP2": 163907
+    },
+    {
+      "position": 8,
+      "city": "Calw",
+      "averageAQIImprovement": 134564,
+      "currentAQIP1": 80971,
+      "currentAQIP2": 157076
+    },
+    {
+      "position": 9,
+      "city": "Berlin Gesundbrunnen",
+      "averageAQIImprovement": 124420,
+      "currentAQIP1": 120983,
+      "currentAQIP2": 162767
+    },
+    {
+      "position": 10,
+      "city": "Schwerte",
+      "averageAQIImprovement": 120608,
+      "currentAQIP1": 64928,
+      "currentAQIP2": 158546
+    },
+    {
+      "position": 11,
+      "city": "Flammersfeld",
+      "averageAQIImprovement": 83625,
+      "currentAQIP1": 440531,
+      "currentAQIP2": 463398
+    },
+    {
+      "position": 12,
+      "city": "Paderborn",
+      "averageAQIImprovement": 81377,
+      "currentAQIP1": 24472,
+      "currentAQIP2": 65775
+    },
+    {
+      "position": 13,
+      "city": "L\u00fcbeck",
+      "averageAQIImprovement": 54615,
+      "currentAQIP1": 49028,
+      "currentAQIP2": 83773
+    },
+    {
+      "position": 14,
+      "city": "Bernau",
+      "averageAQIImprovement": 53730,
+      "currentAQIP1": 33820,
+      "currentAQIP2": 62056
+    },
+    {
+      "position": 15,
+      "city": "Seevetal",
+      "averageAQIImprovement": 48192,
+      "currentAQIP1": 75995,
+      "currentAQIP2": 74427
+    },
+    {
+      "position": 16,
+      "city": "Uetersen",
+      "averageAQIImprovement": 44200,
+      "currentAQIP1": 58355,
+      "currentAQIP2": 63774
+    },
+    {
+      "position": 17,
+      "city": "Schorndorf",
+      "averageAQIImprovement": 44122,
+      "currentAQIP1": 24352,
+      "currentAQIP2": 76530
+    },
+    {
+      "position": 18,
+      "city": "Heidenau",
+      "averageAQIImprovement": 44065,
+      "currentAQIP1": 21713,
+      "currentAQIP2": 65521
+    },
+    {
+      "position": 19,
+      "city": "G\u00e4rtringen",
+      "averageAQIImprovement": 43685,
+      "currentAQIP1": 32713,
+      "currentAQIP2": 92490
+    },
+    {
+      "position": 20,
+      "city": "Reinsdorf",
+      "averageAQIImprovement": 41600,
+      "currentAQIP1": 59477,
+      "currentAQIP2": 157438
+    },
+    {
+      "position": 21,
+      "city": "Hirschbach",
+      "averageAQIImprovement": 41482,
+      "currentAQIP1": 30122,
+      "currentAQIP2": 88078
+    },
+    {
+      "position": 22,
+      "city": "Aholming",
+      "averageAQIImprovement": 40852,
+      "currentAQIP1": 26825,
+      "currentAQIP2": 78653
+    },
+    {
+      "position": 23,
+      "city": "H\u00fcttenberg",
+      "averageAQIImprovement": 35049,
+      "currentAQIP1": 31346,
+      "currentAQIP2": 74306
+    },
+    {
+      "position": 24,
+      "city": "Altenbeken",
+      "averageAQIImprovement": 31335,
+      "currentAQIP1": 15657,
+      "currentAQIP2": 45168
+    },
+    {
+      "position": 25,
+      "city": "Rosenfeld",
+      "averageAQIImprovement": 30631,
+      "currentAQIP1": 3680,
+      "currentAQIP2": 13420
+    },
+    {
+      "position": 26,
+      "city": "M\u00f6gglingen",
+      "averageAQIImprovement": 30126,
+      "currentAQIP1": 22887,
+      "currentAQIP2": 73666
+    },
+    {
+      "position": 27,
+      "city": "Buchholz in der Nordheide",
+      "averageAQIImprovement": 29464,
+      "currentAQIP1": 20615,
+      "currentAQIP2": 62910
+    },
+    {
+      "position": 28,
+      "city": "Gro\u00dfhansdorf",
+      "averageAQIImprovement": 29037,
+      "currentAQIP1": 21963,
+      "currentAQIP2": 47712
+    },
+    {
+      "position": 29,
+      "city": "M\u00f6nkeberg",
+      "averageAQIImprovement": 25347,
+      "currentAQIP1": 55449,
+      "currentAQIP2": 66304
+    },
+    {
+      "position": 30,
+      "city": "Mannheim",
+      "averageAQIImprovement": 24085,
+      "currentAQIP1": 16889,
+      "currentAQIP2": 53485
+    },
+    {
+      "position": 31,
+      "city": "Eilenburg u.a.",
+      "averageAQIImprovement": 23688,
+      "currentAQIP1": 20616,
+      "currentAQIP2": 65238
+    },
+    {
+      "position": 32,
+      "city": "Oer-Erkenschwick",
+      "averageAQIImprovement": 22265,
+      "currentAQIP1": 19208,
+      "currentAQIP2": 62150
+    },
+    {
+      "position": 33,
+      "city": "Dermbach, Wiesenthal, Stadtlengsfeld, Gehaus",
+      "averageAQIImprovement": 21735,
+      "currentAQIP1": 65331,
+      "currentAQIP2": 91427
+    },
+    {
+      "position": 34,
+      "city": "Schorfheide",
+      "averageAQIImprovement": 21365,
+      "currentAQIP1": 7865,
+      "currentAQIP2": 17255
+    },
+    {
+      "position": 35,
+      "city": "Fuhlenhagen",
+      "averageAQIImprovement": 21186,
+      "currentAQIP1": 20473,
+      "currentAQIP2": 51770
+    },
+    {
+      "position": 36,
+      "city": "Schee\u00dfel",
+      "averageAQIImprovement": 20647,
+      "currentAQIP1": 19370,
+      "currentAQIP2": 38511
+    },
+    {
+      "position": 37,
+      "city": "Hildesheim",
+      "averageAQIImprovement": 17017,
+      "currentAQIP1": 23675,
+      "currentAQIP2": 69145
+    },
+    {
+      "position": 38,
+      "city": "Bebra",
+      "averageAQIImprovement": 15874,
+      "currentAQIP1": 9213,
+      "currentAQIP2": 26883
+    },
+    {
+      "position": 39,
+      "city": "Bielefeld",
+      "averageAQIImprovement": 15407,
+      "currentAQIP1": 51098,
+      "currentAQIP2": 75483
+    },
+    {
+      "position": 40,
+      "city": "Kronshagen",
+      "averageAQIImprovement": 15012,
+      "currentAQIP1": 56989,
+      "currentAQIP2": 61140
+    },
+    {
+      "position": 41,
+      "city": "Berlin Friedrichsfelde",
+      "averageAQIImprovement": 14934,
+      "currentAQIP1": 11811,
+      "currentAQIP2": 30650
+    },
+    {
+      "position": 42,
+      "city": "Hannover",
+      "averageAQIImprovement": 13484,
+      "currentAQIP1": 14522,
+      "currentAQIP2": 40826
+    },
+    {
+      "position": 43,
+      "city": "Schortens",
+      "averageAQIImprovement": 13175,
+      "currentAQIP1": 10749,
+      "currentAQIP2": 34054
+    },
+    {
+      "position": 44,
+      "city": "Altheim (Alb)",
+      "averageAQIImprovement": 13072,
+      "currentAQIP1": 10303,
+      "currentAQIP2": 38035
+    },
+    {
+      "position": 45,
+      "city": "Ritterhude",
+      "averageAQIImprovement": 13025,
+      "currentAQIP1": 26093,
+      "currentAQIP2": 57657
+    },
+    {
+      "position": 46,
+      "city": "Neuruppin",
+      "averageAQIImprovement": 12333,
+      "currentAQIP1": 27954,
+      "currentAQIP2": 55831
+    },
+    {
+      "position": 47,
+      "city": "Lingen",
+      "averageAQIImprovement": 12030,
+      "currentAQIP1": 13995,
+      "currentAQIP2": 37210
+    },
+    {
+      "position": 48,
+      "city": "Bissendorf",
+      "averageAQIImprovement": 11860,
+      "currentAQIP1": 17641,
+      "currentAQIP2": 46259
+    },
+    {
+      "position": 49,
+      "city": "Lichtenau",
+      "averageAQIImprovement": 11813,
+      "currentAQIP1": 39889,
+      "currentAQIP2": 25168
+    },
+    {
+      "position": 50,
+      "city": "Waren/ M\u00fcritz",
+      "averageAQIImprovement": 11155,
+      "currentAQIP1": 27354,
+      "currentAQIP2": 49544
+    }
+  ]
+}

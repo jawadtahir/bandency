@@ -1,0 +1,97 @@
+{
+  "benchmarkId": "5666590349431583285",
+  "batchSeqId": "1978",
+  "histogram": [
+    {
+      "bucketTo": 8632,
+      "bucketPercent": 3333
+    },
+    {
+      "bucketFrom": 8632,
+      "bucketTo": 17264,
+      "bucketPercent": 15833
+    },
+    {
+      "bucketFrom": 17264,
+      "bucketTo": 25896,
+      "bucketPercent": 12500
+    },
+    {
+      "bucketFrom": 25896,
+      "bucketTo": 34528,
+      "bucketPercent": 6666
+    },
+    {
+      "bucketFrom": 34528,
+      "bucketTo": 43160,
+      "bucketPercent": 4166
+    },
+    {
+      "bucketFrom": 43160,
+      "bucketTo": 51792,
+      "bucketPercent": 2500
+    },
+    {
+      "bucketFrom": 51792,
+      "bucketTo": 60424,
+      "bucketPercent": 3333
+    },
+    {
+      "bucketFrom": 60424,
+      "bucketTo": 69056
+    },
+    {
+      "bucketFrom": 69056,
+      "bucketTo": 77688
+    },
+    {
+      "bucketFrom": 77688,
+      "bucketTo": 86320,
+      "bucketPercent": 2500
+    },
+    {
+      "bucketFrom": 86320,
+      "bucketTo": 94952,
+      "bucketPercent": 4166
+    },
+    {
+      "bucketFrom": 94952,
+      "bucketTo": 103584
+    },
+    {
+      "bucketFrom": 103584,
+      "bucketTo": 112216,
+      "bucketPercent": 2500
+    },
+    {
+      "bucketFrom": 112216,
+      "bucketTo": 120848,
+      "bucketPercent": 2500
+    },
+    {
+      "bucketFrom": 120848,
+      "bucketTo": 129480,
+      "bucketPercent": 4166
+    },
+    {
+      "bucketFrom": 129480,
+      "bucketTo": 138112,
+      "bucketPercent": 5000
+    },
+    {
+      "bucketFrom": 138112,
+      "bucketTo": 146744,
+      "bucketPercent": 5833
+    },
+    {
+      "bucketFrom": 146744,
+      "bucketTo": 155376,
+      "bucketPercent": 13333
+    },
+    {
+      "bucketFrom": 155376,
+      "bucketTo": 164008,
+      "bucketPercent": 11666
+    }
+  ]
+}

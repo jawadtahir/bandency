@@ -1,0 +1,356 @@
+{
+  "benchmarkId": "5666590349431583285",
+  "batchSeqId": "1029",
+  "topkimproved": [
+    {
+      "position": 1,
+      "city": "Tacherting",
+      "averageAQIImprovement": 434954,
+      "currentAQIP1": 501060,
+      "currentAQIP2": 205291
+    },
+    {
+      "position": 2,
+      "city": "Speyer",
+      "averageAQIImprovement": 345648,
+      "currentAQIP1": 254790,
+      "currentAQIP2": 407600
+    },
+    {
+      "position": 3,
+      "city": "Hawangen",
+      "averageAQIImprovement": 249937,
+      "currentAQIP1": 175524,
+      "currentAQIP2": 341728
+    },
+    {
+      "position": 4,
+      "city": "Marburg",
+      "averageAQIImprovement": 223199,
+      "currentAQIP1": 152785,
+      "currentAQIP2": 291265
+    },
+    {
+      "position": 5,
+      "city": "Berlin Lichtenberg",
+      "averageAQIImprovement": 169039,
+      "currentAQIP1": 82069,
+      "currentAQIP2": 175020
+    },
+    {
+      "position": 6,
+      "city": "Arnsdorf b. Dresden",
+      "averageAQIImprovement": 148673,
+      "currentAQIP1": 183694,
+      "currentAQIP2": 348723
+    },
+    {
+      "position": 7,
+      "city": "Traben-Trarbach",
+      "averageAQIImprovement": 131237,
+      "currentAQIP1": 151541,
+      "currentAQIP2": 281093
+    },
+    {
+      "position": 8,
+      "city": "Berlin Gesundbrunnen",
+      "averageAQIImprovement": 102999,
+      "currentAQIP1": 98688,
+      "currentAQIP2": 147145
+    },
+    {
+      "position": 9,
+      "city": "Calw",
+      "averageAQIImprovement": 102251,
+      "currentAQIP1": 88967,
+      "currentAQIP2": 168831
+    },
+    {
+      "position": 10,
+      "city": "Schwerte",
+      "averageAQIImprovement": 76344,
+      "currentAQIP1": 62737,
+      "currentAQIP2": 155432
+    },
+    {
+      "position": 11,
+      "city": "Seevetal",
+      "averageAQIImprovement": 65718,
+      "currentAQIP1": 73022,
+      "currentAQIP2": 84165
+    },
+    {
+      "position": 12,
+      "city": "Adendorf",
+      "averageAQIImprovement": 57933,
+      "currentAQIP1": 156993,
+      "currentAQIP2": 175001
+    },
+    {
+      "position": 13,
+      "city": "Schorfheide",
+      "averageAQIImprovement": 55577,
+      "currentAQIP1": 91812,
+      "currentAQIP2": 157925
+    },
+    {
+      "position": 14,
+      "city": "L\u00fcbeck",
+      "averageAQIImprovement": 48948,
+      "currentAQIP1": 21495,
+      "currentAQIP2": 61094
+    },
+    {
+      "position": 15,
+      "city": "Paderborn",
+      "averageAQIImprovement": 41321,
+      "currentAQIP1": 38613,
+      "currentAQIP2": 96118
+    },
+    {
+      "position": 16,
+      "city": "Buchholz in der Nordheide",
+      "averageAQIImprovement": 33568,
+      "currentAQIP1": 16875,
+      "currentAQIP2": 56732
+    },
+    {
+      "position": 17,
+      "city": "Uetersen",
+      "averageAQIImprovement": 32771,
+      "currentAQIP1": 55039,
+      "currentAQIP2": 56845
+    },
+    {
+      "position": 18,
+      "city": "Hildesheim",
+      "averageAQIImprovement": 29900,
+      "currentAQIP1": 25703,
+      "currentAQIP2": 74948
+    },
+    {
+      "position": 19,
+      "city": "Heidenau",
+      "averageAQIImprovement": 27620,
+      "currentAQIP1": 23343,
+      "currentAQIP2": 73051
+    },
+    {
+      "position": 20,
+      "city": "Bernau",
+      "averageAQIImprovement": 23279,
+      "currentAQIP1": 47857,
+      "currentAQIP2": 69568
+    },
+    {
+      "position": 21,
+      "city": "Kronshagen",
+      "averageAQIImprovement": 12779,
+      "currentAQIP1": 36511,
+      "currentAQIP2": 14012
+    },
+    {
+      "position": 22,
+      "city": "Frontenhausen",
+      "averageAQIImprovement": 11859,
+      "currentAQIP1": 34373,
+      "currentAQIP2": 49074
+    },
+    {
+      "position": 23,
+      "city": "Altenbeken",
+      "averageAQIImprovement": 11472,
+      "currentAQIP1": 7216,
+      "currentAQIP2": 20151
+    },
+    {
+      "position": 24,
+      "city": "Fuhlenhagen",
+      "averageAQIImprovement": 10771,
+      "currentAQIP1": 9358,
+      "currentAQIP2": 25952
+    },
+    {
+      "position": 25,
+      "city": "Altheim (Alb)",
+      "averageAQIImprovement": 9101,
+      "currentAQIP1": 3406,
+      "currentAQIP2": 12130
+    },
+    {
+      "position": 26,
+      "city": "Gro\u00dfhansdorf",
+      "averageAQIImprovement": 8237,
+      "currentAQIP1": 7087,
+      "currentAQIP2": 11019
+    },
+    {
+      "position": 27,
+      "city": "Helgoland",
+      "averageAQIImprovement": 8227,
+      "currentAQIP1": 29299,
+      "currentAQIP2": 26588
+    },
+    {
+      "position": 28,
+      "city": "M\u00f6nkeberg",
+      "averageAQIImprovement": 6239,
+      "currentAQIP1": 6564,
+      "currentAQIP2": 8785
+    },
+    {
+      "position": 29,
+      "city": "Schee\u00dfel",
+      "averageAQIImprovement": 4561,
+      "currentAQIP1": 5552,
+      "currentAQIP2": 7101
+    },
+    {
+      "position": 30,
+      "city": "Reichenberg, Guttenberger Wald",
+      "averageAQIImprovement": 3914,
+      "currentAQIP1": 2944,
+      "currentAQIP2": 5591
+    },
+    {
+      "position": 31,
+      "city": "Schortens",
+      "averageAQIImprovement": 3092,
+      "currentAQIP1": 5752,
+      "currentAQIP2": 10748
+    },
+    {
+      "position": 32,
+      "city": "Bebra",
+      "averageAQIImprovement": 2033,
+      "currentAQIP1": 4928,
+      "currentAQIP2": 11958
+    },
+    {
+      "position": 33,
+      "city": "Quickborn",
+      "averageAQIImprovement": 1622,
+      "currentAQIP1": 2948,
+      "currentAQIP2": 4065
+    },
+    {
+      "position": 34,
+      "city": "Berlin Friedrichsfelde",
+      "averageAQIImprovement": 1578,
+      "currentAQIP1": 3257,
+      "currentAQIP2": 7525
+    },
+    {
+      "position": 35,
+      "city": "Fl\u00f6rsheim am Main",
+      "averageAQIImprovement": 502,
+      "currentAQIP1": 2407,
+      "currentAQIP2": 3904
+    },
+    {
+      "position": 36,
+      "city": "Inzigkofen",
+      "averageAQIImprovement": -101,
+      "currentAQIP1": 325,
+      "currentAQIP2": 1073
+    },
+    {
+      "position": 37,
+      "city": "Henstedt-Ulzburg",
+      "averageAQIImprovement": -429,
+      "currentAQIP1": 4035,
+      "currentAQIP2": 8827
+    },
+    {
+      "position": 38,
+      "city": "Timmendorfer Strand",
+      "averageAQIImprovement": -446,
+      "currentAQIP1": 9446,
+      "currentAQIP2": 13268
+    },
+    {
+      "position": 39,
+      "city": "Waldm\u00fcnchen",
+      "averageAQIImprovement": -664,
+      "currentAQIP1": 1429,
+      "currentAQIP2": 3525
+    },
+    {
+      "position": 40,
+      "city": "Arnis, Marienhof",
+      "averageAQIImprovement": -853,
+      "currentAQIP1": 2293,
+      "currentAQIP2": 4402
+    },
+    {
+      "position": 41,
+      "city": "Ellerbek",
+      "averageAQIImprovement": -1202,
+      "currentAQIP1": 6141,
+      "currentAQIP2": 10205
+    },
+    {
+      "position": 42,
+      "city": "Berlin Karlshorst",
+      "averageAQIImprovement": -1255,
+      "currentAQIP1": 2599,
+      "currentAQIP2": 4499
+    },
+    {
+      "position": 43,
+      "city": "Sankt Annen, Rehm-Flehde-Bargen",
+      "averageAQIImprovement": -1717,
+      "currentAQIP1": 9915,
+      "currentAQIP2": 9477
+    },
+    {
+      "position": 44,
+      "city": "Schorndorf",
+      "averageAQIImprovement": -2111,
+      "currentAQIP1": 22598,
+      "currentAQIP2": 72021
+    },
+    {
+      "position": 45,
+      "city": "Aholming",
+      "averageAQIImprovement": -2266,
+      "currentAQIP1": 23887,
+      "currentAQIP2": 74992
+    },
+    {
+      "position": 46,
+      "city": "Berlin Alt-Hohensch\u00f6nhausen",
+      "averageAQIImprovement": -2572,
+      "currentAQIP1": 5698,
+      "currentAQIP2": 20992
+    },
+    {
+      "position": 47,
+      "city": "Kummerfeld",
+      "averageAQIImprovement": -2956,
+      "currentAQIP1": 5404,
+      "currentAQIP2": 10118
+    },
+    {
+      "position": 48,
+      "city": "Reinbek",
+      "averageAQIImprovement": -2995,
+      "currentAQIP1": 9040,
+      "currentAQIP2": 16621
+    },
+    {
+      "position": 49,
+      "city": "Erwitte",
+      "averageAQIImprovement": -2995,
+      "currentAQIP1": 1535,
+      "currentAQIP2": 3299
+    },
+    {
+      "position": 50,
+      "city": "Alt\u00f6tting",
+      "averageAQIImprovement": -3211,
+      "currentAQIP1": 1074,
+      "currentAQIP2": 4786
+    }
+  ]
+}

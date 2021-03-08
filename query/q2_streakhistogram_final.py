@@ -2,6 +2,8 @@ import logging
 import os
 import pickle
 from datetime import datetime, timedelta
+import json
+from google.protobuf.json_format import MessageToJson
 
 import grpc
 from google.protobuf import empty_pb2
@@ -371,6 +373,7 @@ class QueryOneAlternative:
         emptycount = 0
 
         lastdisplay = 0
+        next_snapshot = None
 
         try:
             while batch:
@@ -391,9 +394,22 @@ class QueryOneAlternative:
                 resultQ2 = ch.ResultQ2(benchmark_id=bench.id, batch_seq_id=batch.seq_id, histogram=streaks)
                 self.challengerstub.resultQ2(resultQ2)
 
+                if(next_snapshot is None):
+                    next_snapshot = dtmax_curr + timedelta(hours=24)
+
+                if(next_snapshot and dtmax_curr > next_snapshot):
+                    with open("q1-%s.json" % batch.seq_id, 'w') as q1dump:
+                        q1dump.write(MessageToJson(resultQ1))
+                    with open("q2-%s.json" % batch.seq_id, 'w') as q2dump:
+                        q2dump.write(MessageToJson(resultQ2))
+
+                    next_snapshot = next_snapshot + timedelta(hours=24)
+
+
+
                 cnt = cnt + 1
 
-                if cnt > 2000:
+                if cnt > 10000:
                     break
 
 
@@ -403,7 +419,7 @@ class QueryOneAlternative:
                         pickle.dump(self.event_processor.location_to_city, f)
 
                     os.system('clear')
-                    print("Streak histogram %s most improved zipcodes, last 24h - date: %s " % (len(payload), dtmax_curr))
+                    print("Q1 - Air quality improvement %s last 24h - date: %s " % (len(payload), dtmax_curr))
                     print(
                         "processed %s in %s seconds - empty: %s not_active: %s num_current: %s, num_historic: %s, total_events: %s" % (
                             cnt, duration_so_far, emptycount, not_active, num_current, num_historic,

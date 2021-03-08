@@ -33,7 +33,7 @@
         36251;SDS011;22290;57.706;11.940;1583021390028;0.9714285714285715;6;;0.3;6;
         ...
     </code>
-    <p>For the challenge we are only considering P1 and P2.
+    <p>For the challenge we are only considering lat, lon, P1 and P2.
         P1 are Particles < 10µm (particulate matter) and P2 Particles < 2.5µm (ultrafine particles).
         More details about the measurements, calibrations, etc. are published here:
         <a href="https://luftdaten.info/evaluation/" target="_blank">https://luftdaten.info/evaluation/</a>
@@ -59,7 +59,28 @@
 
     <h4>Accuracy of results</h4>
     <p>Event processing frameworks can provide slightly different semantics regarding windowing, rounding, precision, etc. which in case of top-k could change the sequence
-        of the results. We acknowledge that there might be some tiny differences as long as deliberate effort is made to make the implementation as accurate as possiblem.
+        of the results. We acknowledge that there might be some tiny differences as long as deliberate effort is made to make the implementation as accurate as possible.
+    </p>
+    <h4>Data cleaning, reproduce the datasource?</h4>
+    <p>
+    The original data (provided as CSV) contains null values, measurement errors (e.g., 1999.90 or 999.90) and values without longitude or latitude.
+    Those are filtered and not returned by the API.
+    To fully reproduce the datasource, additionally you need to read the corresponding files exactly 365 days ago.
+    The API first reads from the current data, then fills the historic window with the corresponding historic values, ... up to the batch size.
+    </p>
+    <p></p>
+    <h4>Can you explain the 5 minute snapshot?</h4>
+    <p>
+        AQI is always calculated based on 24h intervals per city (which can be multiple polygons)
+        Example: Assume a batch has 10k events and the first event in the window is 00:03 and last event is at 00:06.
+        A snapshot is taken always at 00:00, 00:05, 00:10, ... 00:55
+        By taking a snapshot we refer to first processing the events up to 00:05, then calculate the AQI (snapshot), continue processing until the last event of the batch at 00:06
+        Next batch arrives, 00:06 - 00:08:
+        => No snapshot
+        Next batch arrives, 00:08 - 00:11
+        First process up to 00:10, snapshot, process until 00:11
+
+
     </p>
 
 {% endblock %}
