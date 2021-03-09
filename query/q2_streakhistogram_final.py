@@ -221,8 +221,11 @@ class QueryOneEventProcessor:
 
                     if (window_aqi_curr.active(dtmax_curr - activity_timeout)) and (
                     window_aqi_last.active(dtmax_curr - timedelta(days=365) - activity_timeout)):
-                        last_year_avg_aqi = window_aqi_curr.getMean()
-                        curr_year_avg_aqi = window_aqi_last.getMean()
+                        last_year_avg_aqi = window_aqi_last.getMean()
+                        curr_year_avg_aqi = window_aqi_curr.getMean()
+
+                        #if "Tacherting" in city:
+                        #    print("Tacherting")
 
                         curr_year_window_p1 = self.data[self.id_curr][city][1]
                         curr_year_window_p2 = self.data[self.id_curr][city][2]
@@ -236,18 +239,10 @@ class QueryOneEventProcessor:
 
                         if curr_year_window_p1.active(dtmax_curr - activity_timeout) and (
                         last_year_window_p1.active(dtmax_curr - timedelta(days=365 + 5) - activity_timeout)):
-                            mtemp = curr_year_window_p1.getMean()
-                            if not mtemp:
-                                print("city: %s dtmax_curr: %s valvs: %s window_aqi_curr: %s window_aqi_last: %s" %
-                                      (city, dtmax_curr, curr_year_window_p1.has_elements(), window_aqi_curr.size(),
-                                       window_aqi_last.size()))
-                                exit(0)
-                            curr_year_aqi = utils.EPATableCalc(mtemp)
-                            last_year_aqi = utils.EPATableCalc(last_year_window_p1.getMean())
-
+                            p1_curr = curr_year_window_p1.getMean()
+                            p2_curr = curr_year_window_p2.getMean()
                             res.append((city,
                                         round(last_year_avg_aqi - curr_year_avg_aqi, 3),
-                                        round(curr_year_aqi, 3),
                                         round(utils.EPATableCalc(curr_year_window_p1.getMean(), pollutant="P1"), 3),
                                         round(utils.EPATableCalc(curr_year_window_p2.getMean(), pollutant="P2"), 3)))
                             cnt = cnt + 1
@@ -267,8 +262,8 @@ class QueryOneEventProcessor:
                 topklist.append(ch.TopKCities(position=i,
                                               city=res[0],
                                               averageAQIImprovement=int(res[1] * 1000.0),
-                                              currentAQIP1=int(res[3] * 1000.0),
-                                              currentAQIP2=int(res[4] * 1000.0)))
+                                              currentAQIP1=int(res[2] * 1000.0),
+                                              currentAQIP2=int(res[3] * 1000.0)))
 
         curr_bad = 0
         streak_res = list()
@@ -394,9 +389,9 @@ class QueryOneAlternative:
                     next_snapshot = dtmax_curr + timedelta(hours=24)
 
                 if(next_snapshot and dtmax_curr > next_snapshot):
-                    with open("day-%s_q1_batch-%s.json" % (day, batch.seq_id), 'w') as q1dump:
+                    with open("test_day-%s_q1_batch-%s.json" % (day, batch.seq_id), 'w') as q1dump:
                         q1dump.write(MessageToJson(resultQ1))
-                    with open("day-%s_q2_batch-%s.json" % (day, batch.seq_id), 'w') as q2dump:
+                    with open("test_day-%s_q2_batch-%s.json" % (day, batch.seq_id), 'w') as q2dump:
                         q2dump.write(MessageToJson(resultQ2))
 
                     next_snapshot = next_snapshot + timedelta(hours=24)
