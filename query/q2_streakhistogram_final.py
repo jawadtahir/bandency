@@ -168,9 +168,9 @@ class QueryOneEventProcessor:
             ts = payload.timestamp
             dt = datetime.fromtimestamp(ts.seconds) + timedelta(microseconds=ts.nanos / 1000.0)
 
-            if (year == self.id_curr) and dt > self.next_snapshot:
-                self.snapshot_aqi(self.id_curr, dt)
-                self.snapshot_aqi(self.id_lastyear, dt - timedelta(days=365))
+            while (year == self.id_curr) and dt > self.next_snapshot:
+                self.snapshot_aqi(self.id_curr, self.next_snapshot)
+                self.snapshot_aqi(self.id_lastyear, self.next_snapshot - timedelta(days=365))
                 self.next_snapshot = self.next_aqi_snapshot(self.next_snapshot)
 
             per_city[city][1].add(dt, payload.p1)
