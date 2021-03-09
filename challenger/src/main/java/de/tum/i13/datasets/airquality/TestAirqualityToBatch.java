@@ -18,6 +18,11 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
     public static final String T4 = "T4";
     public static final String T5 = "T5";
     public static final String T6 = "T6";
+    public static final String T7 = "T7";
+    public static final String T8 = "T8";
+    public static final String T9 = "T9";
+    public static final String T10 = "T10";
+
 
     String test = T1;
     Instant snapshotTime = Instant.MIN;
@@ -157,6 +162,56 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
 
     }
 
+
+    private Batch test6(Builder builder){
+        /**
+         * Tests 5 day improvement window
+         */
+
+        Instant new_batch_ts = this.batchTime.plus(3, ChronoUnit.DAYS);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
+        this.batchTime = new_batch_ts;
+
+        return batchBuilder.build();
+    }
+
+    private Batch test7(Builder builder){
+        /**
+         * Tests 5 day improvement window
+         */
+
+        Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
+        this.batchTime = new_batch_ts;
+
+        return batchBuilder.build();
+    }
+
+    private Batch test8(Builder builder){
+        /**
+         * Tests 5 day improvement window
+         */
+
+        Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
+        this.batchTime = new_batch_ts;
+
+        return batchBuilder.build();
+    }
+
+    private Batch test9(Builder builder){
+        /**
+         * Tests 5 day improvement window
+         */
+
+        Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
+        this.batchTime = new_batch_ts;
+
+        return batchBuilder.build();
+    }
+
+
     @Override
     public Batch nextElement() {
         Builder builder = Batch.newBuilder();
@@ -190,6 +245,28 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
                 this.test = T6;
                 break;
 
+            case T6:
+
+                batch = test6(builder);
+                this.test = T10;
+                break;
+
+            case T7:
+                batch = test7(builder);
+                this.test = T8;
+                break;
+
+            case T8:
+                batch = test8(builder);
+                this.test = T9;
+                break;
+
+            case T9:
+
+                batch = test9(builder);
+                this.test = T10;
+                break;
+
             default:
                 break;
         }
@@ -202,7 +279,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
 
     @Override
     public boolean hasMoreElements() {
-        if(this.test.equals(T6)) {
+        if(this.test.equals(T10)) {
             return false;
         } else {
             return true;
