@@ -129,7 +129,7 @@ class QueryOneEventProcessor:
                     avg = max(mean_p1, mean_p2)
                     self.avg_aqi[year][city].add(ts, avg)  # this for Q1
 
-                    if year is self.id_curr:
+                    if year is self.id_curr: #Q2 handling
                         desc_p1 = utils.epaDescription(mean_p1, "P1")
                         desc_p2 = utils.epaDescription(mean_p2, "P2")
 
@@ -142,9 +142,6 @@ class QueryOneEventProcessor:
                         if state == "bad" and c_state == "good":  # initialized with bad
                             self.streak[city][0] = "good"
                             self.streak[city][2] = ts
-                        # if state == "good" and c_state == "good":
-                        # span_seconds = max(dtlongest, )
-                        # self.streak[city][1] = (ts - dtfrom).seconds
                         if state == "good" and c_state == "bad":
                             self.streak[city][0] = "bad"
                             self.streak[city][1] = 0  # max(dtlongest, (ts - dtfrom).seconds)
@@ -261,10 +258,10 @@ class QueryOneEventProcessor:
 
         sort_res = sorted(res, key=lambda r: r[1], reverse=True)
 
-        topk = 50
+        streaks = 50
 
         topklist = list()
-        for i in range(1, topk + 1):
+        for i in range(1, streaks + 1):
             if len(sort_res) >= i:
                 res = sort_res[i - 1]
                 topklist.append(ch.TopKCities(position=i,
@@ -285,15 +282,12 @@ class QueryOneEventProcessor:
                     else:
                         curr_bad = curr_bad + 1
 
-        topk_streaks = list()
-
-        topk = 20
-
+        streaks = 20
         topk_streaks = list()
         if (len(streak_res) > 10):
             streak_min = 0
             streak_max = min(int(np.max(streak_res)), int(timedelta(days=7).total_seconds()))
-            steps = int((streak_max - streak_min) / topk) + 1
+            steps = int((streak_max - streak_min) / streaks) + 1
             hist, bin_edges = np.histogram(streak_res, bins=range(streak_min, streak_max + 1, steps))
 
             s = np.sum(hist)
@@ -375,6 +369,8 @@ class QueryOneAlternative:
         lastdisplay = 0
         next_snapshot = None
 
+        day = 1
+
         try:
             while batch:
                 if batch.last:
@@ -398,18 +394,16 @@ class QueryOneAlternative:
                     next_snapshot = dtmax_curr + timedelta(hours=24)
 
                 if(next_snapshot and dtmax_curr > next_snapshot):
-                    with open("q1-%s.json" % batch.seq_id, 'w') as q1dump:
+                    with open("day-%s_q1_batch-%s.json" % (day, batch.seq_id), 'w') as q1dump:
                         q1dump.write(MessageToJson(resultQ1))
-                    with open("q2-%s.json" % batch.seq_id, 'w') as q2dump:
+                    with open("day-%s_q2_batch-%s.json" % (day, batch.seq_id), 'w') as q2dump:
                         q2dump.write(MessageToJson(resultQ2))
 
                     next_snapshot = next_snapshot + timedelta(hours=24)
-
-
+                    day = day + 1
 
                 cnt = cnt + 1
-
-                if cnt > 10000:
+                if cnt > 20000:
                     break
 
 
