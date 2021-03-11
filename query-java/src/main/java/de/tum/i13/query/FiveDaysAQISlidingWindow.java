@@ -4,6 +4,7 @@ import com.google.protobuf.Timestamp;
 import de.tum.i13.helper.TimestampHelper;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 public class FiveDaysAQISlidingWindow {
@@ -30,7 +31,7 @@ public class FiveDaysAQISlidingWindow {
     }
 
     public double getMean() {
-        return sum.divide(new BigDecimal(values.size())).doubleValue();
+        return sum.divide(new BigDecimal(values.size()), RoundingMode.HALF_DOWN).doubleValue();
     }
 
     private boolean firstSmaller(Timestamp ts) {

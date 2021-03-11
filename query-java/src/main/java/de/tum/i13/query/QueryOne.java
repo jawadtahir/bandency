@@ -84,7 +84,8 @@ public class QueryOne {
         Timestamp cityActiveTreshold = addTimeunit(lastEventCurr, TimeUnit.MINUTES, -15);
         Timestamp lastEventLast = addTimeunit(lastEventCurr, TimeUnit.DAYS, -365);
 
-        PriorityQueue<TopKCities> topKCities = new PriorityQueue<>(51, Comparator.comparingInt(TopKCities::getAverageAQIImprovement).reversed());
+        //PriorityQueue<TopKCities> topKCities = new PriorityQueue<>(Comparator.comparingInt(TopKCities::getAverageAQIImprovement).reversed());
+        ArrayList<TopKCities> topKCities = new ArrayList<>();
 
         for(String city : this.currentYear.keySet()) {
             MeanSlidingWindow current = this.currentYear.get(city);
@@ -110,15 +111,25 @@ public class QueryOne {
                                 .setAverageAQIImprovement(toRetAqi(lastFiveDays.getMean() - currentFiveDays.getMean()))
                                 .build();
                         topKCities.add(topk);
-                        if(topKCities.size() > 50) {
-                            topKCities.remove(50);
-                        }
                     }
                 }
             }
         }
 
-        return Pair.of(newLatest, new ArrayList<>(topKCities));
+        topKCities.sort(Comparator.comparingInt(TopKCities::getAverageAQIImprovement).reversed());
+
+        ArrayList<TopKCities> firstFifty = new ArrayList<>();
+        int cnt = 1;
+        for(TopKCities tk : topKCities) {
+            if(cnt > 50)
+                break;
+            firstFifty.add(TopKCities.newBuilder(tk)
+                    .setPosition(cnt).build());
+
+            ++cnt;
+        }
+
+        return Pair.of(newLatest, firstFifty);
     }
 
     private Timestamp processEvents(Batch batch) {

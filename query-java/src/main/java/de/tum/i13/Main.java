@@ -6,6 +6,7 @@ import de.tum.i13.query.LocationLookup;
 import de.tum.i13.query.QueryOne;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static de.tum.i13.helper.TimestampHelper.timestampToInstant;
 
@@ -23,6 +25,8 @@ public class Main {
         ManagedChannel channel = ManagedChannelBuilder
                 .forAddress("challenge.msrg.in.tum.de", 5023)
                 .usePlaintext()
+                .maxRetryAttempts(10)
+                .enableRetry()
                 .build();
 
 
@@ -32,7 +36,7 @@ public class Main {
 
         BenchmarkConfiguration bc = BenchmarkConfiguration.newBuilder()
                 .setBenchmarkName("Testrun " + new Date().toString())
-                .setBatchSize(100)
+                .setBatchSize(10000)
                 .addQueries(BenchmarkConfiguration.Query.Q1)
                 .addQueries(BenchmarkConfiguration.Query.Q2)
                 .setToken(System.getenv().get("API_TOKEN")) //go to: https://challenge.msrg.in.tum.de/profile/
@@ -60,9 +64,11 @@ public class Main {
 
         //Start the benchmark
         challengeClient.startBenchmark(newBenchmark);
+        System.out.println("started benchmark");
 
         //Process the events
         int cnt = 0;
+        StopWatch sw = StopWatch.createStarted();
         while(true) {
             Batch batch = challengeClient.nextBatch(newBenchmark);
             if (batch.getLast()) { //Stop when we get the last batch
@@ -73,7 +79,13 @@ public class Main {
             //process the batch of events we have
             Pair<Timestamp, ArrayList<TopKCities>> timestampArrayListPair = q1.calculateTopKImproved(batch);
 
-            printTopK(timestampArrayListPair);
+            if(sw.getTime(TimeUnit.SECONDS) >= 2) {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+                printTopK(timestampArrayListPair, cnt);
+                sw.reset();
+                sw.start();
+            }
 
             ResultQ1 q1Result = ResultQ1.newBuilder()
                     .setBenchmarkId(newBenchmark.getId())
@@ -92,7 +104,6 @@ public class Main {
                     .build();
 
             challengeClient.resultQ2(q2Result);
-            System.out.println("Processed batch #" + cnt);
             ++cnt;
 
 
@@ -113,17 +124,18 @@ public class Main {
         System.out.println("ended Benchmark");
     }
 
-    private static void printTopK(Pair<Timestamp, ArrayList<TopKCities>> pair) {
+    private static void printTopK(Pair<Timestamp, ArrayList<TopKCities>> pair, int cnt) {
         Instant instant = timestampToInstant(pair.getLeft());
         var topKImproved = pair.getRight();
 
-        System.out.printf("Q1 - Air quality improvement %s last 24h - date: %s \n", topKImproved.size(), instant.toString());
+        System.out.printf("Q1 - Air quality improvement %s last 24h - date: %s batch: %s\n", topKImproved.size(), instant.toString(), cnt);
         for(TopKCities city : topKImproved) {
             System.out.printf("pos: %2s, city: %25.25s, avg imp.: %8.3f, curr-AQI-P1: %8.3f, curr-AQI-P2: %8.3f \n",
                             city.getPosition(),
                     city.getCity(), city.getAverageAQIImprovement()/1000.0, city.getCurrentAQIP1() / 1000.0,
                     city.getCurrentAQIP2()/ 1000.00);
         }
+        System.out.flush();
 
     }
 
