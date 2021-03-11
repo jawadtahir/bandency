@@ -89,7 +89,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
 
         }
         if (is_no_current){
-            builder.addAllCurrent(new ArrayList<Measurement>());
+            builder.clearCurrent();
         }
         return builder;
 
@@ -129,7 +129,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
          */
 
         Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
-        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.SENSITIVE_UNHEALTY, EPAP2Table.SENSITIVE_UNHEALTY);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, 2500L, EPAP1Table.SENSITIVE_UNHEALTY, EPAP2Table.SENSITIVE_UNHEALTY);
         this.batchTime = new_batch_ts;
 
         return batchBuilder.build();
@@ -149,27 +149,26 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
 
     }
 
+
     private Batch test5(Builder builder){
         /**
-         * Test scenario if current year does not have any events
+         * Tests 5 day improvement window
          */
 
         Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
-        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.VERY_UNHEALTHY, EPAP2Table.VERY_UNHEALTHY, 6F, 1F, true);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, 2500L, EPAP1Table.VERY_UNHEALTHY, EPAP2Table.VERY_UNHEALTHY);
         this.batchTime = new_batch_ts;
 
         return batchBuilder.build();
-
     }
-
 
     private Batch test6(Builder builder){
         /**
          * Tests 5 day improvement window
          */
 
-        Instant new_batch_ts = this.batchTime.plus(3, ChronoUnit.DAYS);
-        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
+        Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, 2500L, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
         this.batchTime = new_batch_ts;
 
         return batchBuilder.build();
@@ -181,7 +180,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
          */
 
         Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
-        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, 2500L, EPAP1Table.HAZARDS2, EPAP2Table.HAZARDS2);
         this.batchTime = new_batch_ts;
 
         return batchBuilder.build();
@@ -193,7 +192,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
          */
 
         Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
-        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, 2500L, EPAP1Table.HAZARDS3, EPAP2Table.HAZARDS3);
         this.batchTime = new_batch_ts;
 
         return batchBuilder.build();
@@ -201,14 +200,15 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
 
     private Batch test9(Builder builder){
         /**
-         * Tests 5 day improvement window
+         * Test scenario if current year does not have any events
          */
 
         Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
-        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, this.batchSize, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, 2500L, EPAP1Table.HAZARDS1, EPAP2Table.HAZARDS1, 6F, 1F, true);
         this.batchTime = new_batch_ts;
 
         return batchBuilder.build();
+
     }
 
 
@@ -248,7 +248,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
             case T6:
 
                 batch = test6(builder);
-                this.test = T10;
+                this.test = T7;
                 break;
 
             case T7:
