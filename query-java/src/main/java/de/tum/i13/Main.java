@@ -1,5 +1,6 @@
 package de.tum.i13;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Timestamp;
 import de.tum.i13.helper.SerializationHelper;
 import de.tum.i13.query.LocationLookup;
@@ -14,23 +15,23 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static de.tum.i13.helper.TimestampHelper.timestampToInstant;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         ManagedChannel channel = ManagedChannelBuilder
                 .forAddress("challenge.msrg.in.tum.de", 5023)
                 .usePlaintext()
-                .maxRetryAttempts(10)
+                .maxRetryAttempts(1000)
                 .enableRetry()
                 .build();
 
-
-        var challengeClient = ChallengerGrpc.newBlockingStub(channel) //for demo, we show the blocking stub
+        var challengeClient = ChallengerGrpc.newFutureStub(channel) //for demo, we show the blocking stub
                 .withMaxInboundMessageSize(100 * 1024 * 1024)
                 .withMaxOutboundMessageSize(100 * 1024 * 1024);
 
@@ -45,10 +46,10 @@ public class Main {
 
         //Create a new Benchmark
         System.out.println("createNewBenchmark");
-        Benchmark newBenchmark = challengeClient.createNewBenchmark(bc);
+        Benchmark newBenchmark = challengeClient.createNewBenchmark(bc).get();
 
         //Get the locations
-        Locations locations = challengeClient.getLocations(newBenchmark);
+        Locations locations = challengeClient.getLocations(newBenchmark).get();
         LocationLookup ll = new LocationLookup(locations.getLocationsList());
         String cacheFile = "/home/chris/temp/locationcache.obj";
         if(new File(cacheFile).exists()) {
@@ -69,12 +70,14 @@ public class Main {
         //Process the events
         int cnt = 0;
         StopWatch sw = StopWatch.createStarted();
+        Batch batch = challengeClient.nextBatch(newBenchmark).get();
         while(true) {
-            Batch batch = challengeClient.nextBatch(newBenchmark);
             if (batch.getLast()) { //Stop when we get the last batch
                 System.out.println("Received lastbatch, finished!");
                 break;
             }
+
+            ListenableFuture<Batch> nextBatch = challengeClient.nextBatch(newBenchmark);
 
             //process the batch of events we have
             Pair<Timestamp, ArrayList<TopKCities>> timestampArrayListPair = q1.calculateTopKImproved(batch);
@@ -95,7 +98,7 @@ public class Main {
 
 
             //return the result of Q1
-            challengeClient.resultQ1(q1Result);
+            challengeClient.resultQ1(q1Result).get();
             //com.google.protobuf.u
 
 
@@ -106,7 +109,8 @@ public class Main {
                     .addAllHistogram(histogram)
                     .build();
 
-            challengeClient.resultQ2(q2Result);
+            challengeClient.resultQ2(q2Result).get();
+            batch = nextBatch.get();
             ++cnt;
 
 
@@ -144,12 +148,6 @@ public class Main {
 
     private static List<TopKStreaks> calculateHistogram(Batch batch) {
         //TODO: improve implementation
-
-        return new ArrayList<>();
-    }
-
-    private static List<TopKCities> calculateTopKImproved(Batch batch) {
-        //TODO: improve this implementation
 
         return new ArrayList<>();
     }
