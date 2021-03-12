@@ -53,10 +53,12 @@ public class AQICalc {
                 return entry;
             }
         }
+        System.out.println("getEPAEntry - null: " + v + " P: " + p1.name());
         return null;
     }
 
     public double calculate(double v, P p) {
-        return getEPAEntry(v, p).calc(v);
+        EPAEntry entry = getEPAEntry(v, p);
+        return entry.calc(v);
     }
 }

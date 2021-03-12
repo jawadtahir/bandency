@@ -1,6 +1,7 @@
 package de.tum.i13;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 import de.tum.i13.helper.SerializationHelper;
 import de.tum.i13.query.LocationLookup;
@@ -25,9 +26,12 @@ public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         ManagedChannel channel = ManagedChannelBuilder
-                .forAddress("challenge.msrg.in.tum.de", 5023)
+                .forAddress("challenge.msrg.in.tum.de", 5025)
                 .usePlaintext()
                 .maxRetryAttempts(1000)
+                .keepAliveTime(30, TimeUnit.SECONDS)
+                .keepAliveTimeout(15, TimeUnit.SECONDS)
+                .keepAliveWithoutCalls(false)
                 .enableRetry()
                 .build();
 
@@ -98,9 +102,8 @@ public class Main {
 
 
             //return the result of Q1
-            challengeClient.resultQ1(q1Result).get();
-            //com.google.protobuf.u
-
+            //Send both results in parallel
+            ListenableFuture<Empty> q1FutureRes = challengeClient.resultQ1(q1Result);
 
             var histogram = calculateHistogram(batch);
             ResultQ2 q2Result = ResultQ2.newBuilder()
@@ -109,7 +112,12 @@ public class Main {
                     .addAllHistogram(histogram)
                     .build();
 
-            challengeClient.resultQ2(q2Result).get();
+            ListenableFuture<Empty> q2FutureRes = challengeClient.resultQ2(q2Result);
+
+            q1FutureRes.get();
+            q2FutureRes.get();
+
+            //get the next batch, we go for low latency and don't want to have a lot in flight
             batch = nextBatch.get();
             ++cnt;
 
