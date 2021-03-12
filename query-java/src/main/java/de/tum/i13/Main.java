@@ -3,7 +3,7 @@ package de.tum.i13;
 import com.google.protobuf.Timestamp;
 import de.tum.i13.helper.SerializationHelper;
 import de.tum.i13.query.LocationLookup;
-import de.tum.i13.query.QueryOne;
+import de.tum.i13.query.Query;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.lang3.time.StopWatch;
@@ -60,7 +60,7 @@ public class Main {
             }
         }
 
-        QueryOne q1 = new QueryOne(ll);
+        Query q1 = new Query(ll);
 
         //Start the benchmark
         challengeClient.startBenchmark(newBenchmark);
@@ -93,8 +93,11 @@ public class Main {
                     .addAllTopkimproved(timestampArrayListPair.getRight())
                     .build();
 
+
             //return the result of Q1
             challengeClient.resultQ1(q1Result);
+            //com.google.protobuf.u
+
 
             var histogram = calculateHistogram(batch);
             ResultQ2 q2Result = ResultQ2.newBuilder()
@@ -107,7 +110,7 @@ public class Main {
             ++cnt;
 
 
-            if(cnt > 50_000 && (cnt % 10_000) == 0) {
+            if(cnt > 9_000 && (cnt % 10_000) == 0) {
                 try {
                     SerializationHelper.writeTooFile(cacheFile, ll.snapshotCache());
                 } catch (Exception ex) {

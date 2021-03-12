@@ -27,11 +27,11 @@ public class MeanSlidingWindow {
     }
 
     public double getMeanP1() {
-        return this.sumP1.divide(new BigDecimal(this.measurements.size()), RoundingMode.HALF_DOWN).doubleValue();
+        return this.sumP1.divide(new BigDecimal(this.measurements.size()), 3, RoundingMode.HALF_UP).doubleValue();
     }
 
     public double getMeanP2() {
-        return this.sumP2.divide(new BigDecimal(this.measurements.size()), RoundingMode.HALF_DOWN).doubleValue();
+        return this.sumP2.divide(new BigDecimal(this.measurements.size()), 3, RoundingMode.HALF_UP).doubleValue();
     }
 
     public boolean hasElements() {
@@ -47,7 +47,7 @@ public class MeanSlidingWindow {
         if(measurements.isEmpty())
             return;
 
-        while(firstSmaller(maxTimestamp)) {
+        while(!measurements.isEmpty() && firstSmaller(maxTimestamp)) {
             Measurement m = measurements.get(0);
             this.sumP1 = this.sumP1.subtract(new BigDecimal(m.getP1()));
             this.sumP2 = this.sumP2.subtract(new BigDecimal(m.getP2()));
@@ -61,6 +61,10 @@ public class MeanSlidingWindow {
 
     public boolean isActive(Timestamp activeTreshold) {
         //TODO
-        return true;
+        if(!hasElements())
+            return false;
+
+        Measurement last = measurements.get(measurements.size() - 1);
+        return TimestampHelper.isSmaller(activeTreshold, last.getTimestamp());
     }
 }

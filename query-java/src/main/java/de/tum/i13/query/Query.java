@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import static de.tum.i13.helper.TimestampHelper.addTimeunit;
 import static de.tum.i13.helper.TimestampHelper.isSmaller;
 
-public class QueryOne {
+public class Query {
     private final LocationLookup ll;
     private final AQICalc aqicalc;
 
@@ -53,7 +53,7 @@ public class QueryOne {
         return null;
     }
 
-    public QueryOne(LocationLookup ll) {
+    public Query(LocationLookup ll) {
         this.ll = ll;
         this.aqicalc = new AQICalc();
         this.currentYear = new HashMap<>();

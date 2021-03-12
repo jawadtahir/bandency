@@ -36,23 +36,23 @@ public class LocationLookupTest {
     @Test
     public void testInside() {
         LocationLookup ll = extracted();
-        Optional<String> inside = ll.lookupLocation(1.1, 1.1);
-        assertEquals("trianglecity", inside.get());
+        String inside = ll.lookupLocation(1.1, 1.1);
+        assertEquals("trianglecity", inside);
     }
 
     @Test
     public void equalPoint() {
         LocationLookup ll = extracted();
-        Optional<String> inside = ll.lookupLocation(1.0, 1.0);
-        assertEquals("trianglecity", inside.get());
+        String inside = ll.lookupLocation(1.0, 1.0);
+        assertEquals("trianglecity", inside);
     }
 
 
     @Test
     public void testOutside() {
         LocationLookup ll = extracted();
-        Optional<String> inside = ll.lookupLocation(0.9, .9);
-        assertTrue(inside.isEmpty());
+        String inside = ll.lookupLocation(0.9, .9);
+        assertNull(inside);
     }
 
     @Test

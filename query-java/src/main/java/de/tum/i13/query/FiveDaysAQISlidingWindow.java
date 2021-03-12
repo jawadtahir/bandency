@@ -31,7 +31,7 @@ public class FiveDaysAQISlidingWindow {
     }
 
     public double getMean() {
-        return sum.divide(new BigDecimal(values.size()), RoundingMode.HALF_DOWN).doubleValue();
+        return sum.divide(new BigDecimal(values.size()), 3, RoundingMode.HALF_UP).doubleValue();
     }
 
     private boolean firstSmaller(Timestamp ts) {
@@ -39,11 +39,15 @@ public class FiveDaysAQISlidingWindow {
         return TimestampHelper.isSmaller(tsfirst, ts);
     }
 
+    public boolean hasElements() {
+        return tss.size() > 0;
+    }
+
     public void resize(Timestamp ts) {
         if(tss.isEmpty())
             return;
 
-        while(firstSmaller(ts)) {
+        while(hasElements() && firstSmaller(ts)) {
             tss.remove(0);
             this.sum = sum.subtract(values.get(0));
             values.remove(0);
