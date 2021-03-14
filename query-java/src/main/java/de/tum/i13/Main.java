@@ -107,7 +107,7 @@ public class Main {
                     .addAllTopkimproved(timestampArrayListPair.getRight())
                     .build();
 
-            if(batch.getSeqId() > 0 && (batch.getSeqId() % 100_000) == 0) {
+            if(batch.getSeqId() > 0 && (batch.getSeqId() % 10_000) == 0) {
                 writeQ1ToFile(q1Result, timestampArrayListPair.getLeft(), batch.getSeqId());
             }
 
