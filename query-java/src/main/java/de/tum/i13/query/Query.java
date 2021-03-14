@@ -87,22 +87,33 @@ public class Query {
         //PriorityQueue<TopKCities> topKCities = new PriorityQueue<>(Comparator.comparingInt(TopKCities::getAverageAQIImprovement).reversed());
         ArrayList<TopKCities> topKCities = new ArrayList<>();
 
+        //Resize mean Windows
+        var meanCurrentResizeTs = addTimeunit(lastEventCurr, TimeUnit.DAYS, -1);
+        for(var currentYearV : this.currentYear.values()) {
+            currentYearV.resize(meanCurrentResizeTs);
+        }
+        var meanLastResizeTs = addTimeunit(lastEventCurr, TimeUnit.DAYS, -366 + -1);
+        for(var lastYearV : this.lastYear.values()) {
+            lastYearV.resize(meanLastResizeTs);
+        }
+
+        //Resize AVG Windows
+        var avgCurrentResizeTs = addTimeunit(lastEventCurr, TimeUnit.DAYS, -5);
+        for(var currentavgV : this.avgCurrentYear.values()) {
+            currentavgV.resize(avgCurrentResizeTs);
+        }
+        var avgLastResizeTs = addTimeunit(lastEventCurr, TimeUnit.DAYS, -365 + -5);
+        for(var lastavgV : this.avgLastYear.values()) {
+            lastavgV.resize(avgLastResizeTs);
+        }
+
         for(String city : this.currentYear.keySet()) {
             MeanSlidingWindow current = this.currentYear.get(city);
             if(current.isActive(cityActiveTreshold) && this.lastYear.containsKey(city)) {
-                MeanSlidingWindow last = this.lastYear.get(city);
-
-                //for the current AQI needed
-                current.resize(addTimeunit(lastEventCurr, TimeUnit.DAYS, -1));
-
                 //resizing for the AQI improvement 5D
                 if(this.avgCurrentYear.containsKey(city) && this.avgLastYear.containsKey(city)) {
                     FiveDaysAQISlidingWindow currentFiveDays = this.avgCurrentYear.get(city);
-                    currentFiveDays.resize(addTimeunit(lastEventCurr, TimeUnit.DAYS, -5));
-
                     FiveDaysAQISlidingWindow lastFiveDays = this.avgLastYear.get(city);
-                    lastFiveDays.resize(addTimeunit(lastEventCurr, TimeUnit.DAYS, -365 + -5));
-
                     try {
 
                         if (currentFiveDays.size() > 0 && lastFiveDays.size() > 0) {
