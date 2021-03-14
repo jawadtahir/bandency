@@ -164,6 +164,9 @@ public class AirQualityParser implements Enumeration<Measurement>, Closeable {
         if(pl.getLatitude() == 0.0 || pl.getLongitude() == 0.0 || pl.getP1() == 0.0 || pl.getP1() == 1999.90 || pl.getP2() == 0.0 || pl.getP2() == 999.90)
             return null;
 
+        if(pl.getP1() < 0 || pl.getP2() < 0)
+            return null;
+
         return pl;
     }
 
