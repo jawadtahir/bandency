@@ -48,3 +48,7 @@ gradle-app.setting
 *.iml
 *.ipr
 *.iws
+
+### other
+*.json
+.envrc

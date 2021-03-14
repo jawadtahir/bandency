@@ -6,16 +6,18 @@ import de.tum.i13.helper.TimestampHelper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class FiveDaysAQISlidingWindow {
 
-    private final ArrayList<Timestamp> tss;
-    private final ArrayList<BigDecimal> values;
+    private final LinkedList<Timestamp> tss;
+    private final LinkedList<BigDecimal> values;
     private BigDecimal sum;
 
     public FiveDaysAQISlidingWindow() {
-        values = new ArrayList<>();
-        tss = new ArrayList<>();
+        values = new LinkedList<>();
+        tss = new LinkedList<>();
         sum = new BigDecimal(0);
     }
 
@@ -35,7 +37,7 @@ public class FiveDaysAQISlidingWindow {
     }
 
     private boolean firstSmaller(Timestamp ts) {
-        var tsfirst = tss.get(0);
+        var tsfirst = tss.peek();
         return TimestampHelper.isSmaller(tsfirst, ts);
     }
 
@@ -48,9 +50,10 @@ public class FiveDaysAQISlidingWindow {
             return;
 
         while(hasElements() && firstSmaller(ts)) {
-            tss.remove(0);
-            this.sum = sum.subtract(values.get(0));
-            values.remove(0);
+            tss.remove();
+            this.sum = sum.subtract(values.peek());
+
+            values.remove();
         }
     }
 }

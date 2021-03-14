@@ -7,14 +7,15 @@ import de.tum.i13.helper.TimestampHelper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class MeanSlidingWindow {
-    private final ArrayList<Measurement> measurements;
+    private final LinkedList<Measurement> measurements;
     private BigDecimal sumP1;
     private BigDecimal sumP2;
 
     public MeanSlidingWindow() {
-        this.measurements = new ArrayList<>();
+        this.measurements = new LinkedList<>();
         this.sumP1 = BigDecimal.ZERO;
         this.sumP2 = BigDecimal.ZERO;
     }
@@ -48,10 +49,9 @@ public class MeanSlidingWindow {
             return;
 
         while(!measurements.isEmpty() && firstSmaller(maxTimestamp)) {
-            Measurement m = measurements.get(0);
+            Measurement m = measurements.remove();
             this.sumP1 = this.sumP1.subtract(new BigDecimal(m.getP1()));
             this.sumP2 = this.sumP2.subtract(new BigDecimal(m.getP2()));
-            measurements.remove(0);
         }
     }
 
@@ -64,7 +64,7 @@ public class MeanSlidingWindow {
         if(!hasElements())
             return false;
 
-        Measurement last = measurements.get(measurements.size() - 1);
+        Measurement last = measurements.getLast();
         return TimestampHelper.isSmaller(activeTreshold, last.getTimestamp());
     }
 }

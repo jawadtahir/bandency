@@ -103,14 +103,19 @@ public class Query {
                     FiveDaysAQISlidingWindow lastFiveDays = this.avgLastYear.get(city);
                     lastFiveDays.resize(addTimeunit(lastEventCurr, TimeUnit.DAYS, -365 + -5));
 
-                    if(currentFiveDays.size() > 0 && lastFiveDays.size() > 0) {
-                        TopKCities topk = TopKCities.newBuilder()
-                                .setCity(city)
-                                .setCurrentAQIP1(toRetAqi(aqicalc.calculate(current.getMeanP1(), P.P1)))
-                                .setCurrentAQIP2(toRetAqi(aqicalc.calculate(current.getMeanP2(), P.P25)))
-                                .setAverageAQIImprovement(toRetAqi(lastFiveDays.getMean() - currentFiveDays.getMean()))
-                                .build();
-                        topKCities.add(topk);
+                    try {
+
+                        if (currentFiveDays.size() > 0 && lastFiveDays.size() > 0) {
+                            TopKCities topk = TopKCities.newBuilder()
+                                    .setCity(city)
+                                    .setCurrentAQIP1(toRetAqi(aqicalc.calculate(current.getMeanP1(), P.P1)))
+                                    .setCurrentAQIP2(toRetAqi(aqicalc.calculate(current.getMeanP2(), P.P25)))
+                                    .setAverageAQIImprovement(toRetAqi(lastFiveDays.getMean() - currentFiveDays.getMean()))
+                                    .build();
+                            topKCities.add(topk);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
                 }
             }
@@ -142,6 +147,8 @@ public class Query {
             if(!isSmaller(highest, curr.getTimestamp())) {
                 highest = curr.getTimestamp();
             }
+            if(curr.getP1() < 0 || curr.getP2() < 0)
+                continue;
 
             //check if we have to do a 5 min snapshot
             if(nextCurrSnapshot.isEmpty()) {
@@ -168,6 +175,10 @@ public class Query {
             if(highest == null) {
                 highest = last.getTimestamp();
             }
+
+            if(last.getP1() < 0 || last.getP2() < 0)
+                continue;
+
 
             Timestamp relativeHighest = addTimeunit(last.getTimestamp(), TimeUnit.DAYS, 365);
             if(!isSmaller(highest, relativeHighest)) {

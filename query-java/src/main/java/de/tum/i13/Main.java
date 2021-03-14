@@ -2,7 +2,9 @@ package de.tum.i13;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Empty;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.JsonFormat;
 import de.tum.i13.helper.SerializationHelper;
 import de.tum.i13.query.LocationLookup;
 import de.tum.i13.query.Query;
@@ -11,19 +13,24 @@ import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static de.tum.i13.helper.TimestampHelper.timestampToInstant;
+import static de.tum.i13.helper.TimestampHelper.*;
 
 public class Main {
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 
         ManagedChannel channel = ManagedChannelBuilder
                 .forAddress("challenge.msrg.in.tum.de", 5025)
@@ -55,7 +62,7 @@ public class Main {
         //Get the locations
         Locations locations = challengeClient.getLocations(newBenchmark).get();
         LocationLookup ll = new LocationLookup(locations.getLocationsList());
-        String cacheFile = "/home/chris/temp/locationcache.obj";
+        String cacheFile = System.getenv().get("CACHE_FILE");
         if(new File(cacheFile).exists()) {
             try {
                 ll.restoreCache(SerializationHelper.fromFile(cacheFile));
@@ -100,6 +107,9 @@ public class Main {
                     .addAllTopkimproved(timestampArrayListPair.getRight())
                     .build();
 
+            if(batch.getSeqId() > 0 && (batch.getSeqId() % 100_000) == 0) {
+                writeQ1ToFile(q1Result, timestampArrayListPair.getLeft(), batch.getSeqId());
+            }
 
             //return the result of Q1
             //Send both results in parallel
@@ -130,13 +140,25 @@ public class Main {
                 }
             }
 
-            if(cnt > 100_000) { //for testing you can
-                break;
-            }
+            //if(cnt > 10_000) { //for testing you can
+            //    break;
+            //}
         }
 
         challengeClient.endBenchmark(newBenchmark);
         System.out.println("ended Benchmark");
+    }
+
+    private static void writeQ1ToFile(ResultQ1 q1, Timestamp ts, long cnt) throws IOException {
+        String print = JsonFormat.printer().print(ResultQ1.newBuilder().mergeFrom(q1));
+        String filename = String.format("java_test_q1_batch-%s.json", cnt);
+
+        try(FileWriter fw = new FileWriter(filename, true);
+            BufferedWriter writer = new BufferedWriter(fw)) {
+
+                writer.append(print);
+                writer.flush();
+        }
     }
 
     private static void printTopK(Pair<Timestamp, ArrayList<TopKCities>> pair, int cnt) {

@@ -203,8 +203,8 @@ class QueryOneEventProcessor:
             startminute = dtmax_curr.minute - (dtmax_curr.minute % 5)
             self.next_snapshot = dtmax_curr.replace(minute=startminute, second=0, microsecond=0) + timedelta(minutes=5)
 
-        self.process_payloads(self.id_curr, batch.current)
         self.process_payloads(self.id_lastyear, batch.lastyear)
+        self.process_payloads(self.id_curr, batch.current)
 
         activity_timeout = timedelta(minutes=10)
 
@@ -388,11 +388,11 @@ class QueryOneAlternative:
                 if(next_snapshot is None):
                     next_snapshot = dtmax_curr + timedelta(hours=24)
 
-                if(next_snapshot and dtmax_curr > next_snapshot):
-                    with open("test_day-%s_q1_batch-%s.json" % (day, batch.seq_id), 'w') as q1dump:
+                if batch.seq_id > 0 and (batch.seq_id % 1000) == 0:
+                    with open("py_test_q1_batch-%s.json" % batch.seq_id, 'w') as q1dump:
                         q1dump.write(MessageToJson(resultQ1))
-                    with open("test_day-%s_q2_batch-%s.json" % (day, batch.seq_id), 'w') as q2dump:
-                        q2dump.write(MessageToJson(resultQ2))
+                    #with open("test_q2_batch-%s.json" % batch.seq_id, 'w') as q2dump:
+                    #    q2dump.write(MessageToJson(resultQ2))
 
                     next_snapshot = next_snapshot + timedelta(hours=24)
                     day = day + 1
