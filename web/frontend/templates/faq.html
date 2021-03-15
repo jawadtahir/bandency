@@ -4,19 +4,27 @@
     <h4>Details about non-functional requirements</h4>
     <p>See <a href="/static/DEBSNonFunctionalRequirements.pdf" target="_blank">here</a></p>
     <p></p>
+
     <h4>How do I create a public key for a VM?</h4>
     <p>You need to create a public/private key pair. Once you create a key pair, copy the text of the public key to your VMs in the profile. See: <a href="https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent" target="_blank">Generating a new SSH key and adding it to the ssh-agent</a> </p>
     <p>If you added the ssh key to your agent, connect to using "ssh -p port group-#@challenge.msrg.in.tum.de" to your VM.</p>
     <p></p>
+
     <h4>Is the watermark independ for every city?</h4>
     <p>The highest timestamp of the batch.current is the watermark and applies for all relative windowing operations.</p>
     <p></p>
+
     <h4>The first window has less than 24h of data. Is this correct?</h4>
     <p>Yes, each batch has 10k events, as the rate is around 4k of events, the operator needs to consume multiple batches to fill the whole window.
         The snapshots for the results should be taken independent of how full a window is.</p>
     <p></p>
+
     <h4>Is the data ordered?</h4>
     <p>The batches are provided in an ordered way.</p>
+    <p></p>
+
+    <h4>Is an example solution provided? How is the correctness verification done?</h4>
+    <p>No example implementation is provided, but we provide example results at different batches.</p>
     <p></p>
 
     <h4>Is it required to submit the results for each query alternating and in ordered?</h4>
@@ -24,7 +32,12 @@
     <p></p>
 
     <h4>Is it possible to read batches as fast as possible and then submit?</h4>
-    <p>Yes, you can read already the next batch while you are calculating the queries to improve throughput.</p>
+    <p>Yes, you can read already the next batch while you are calculating the results of the queries to improve throughput.</p>
+    <p></p>
+
+    <h4>I'll get the error: retry UNAVAILABLE: Abrupt GOAWAY closed sent stream</h4>
+    <p>We also get the same error occasionally after 30-60k batches. We tested for several days an alternative "envoy proxy" and didn't got the error.
+        Hence, on March 15th we also switched the challenger service (both the internally and external endpoints) to envoy proxy. (Previously we used nginx + grpc modules).</p>
     <p></p>
 
     <h4>Can you please describe the datasets? (provided as zip to download)</h4>
