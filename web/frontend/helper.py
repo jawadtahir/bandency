@@ -19,6 +19,6 @@ def menu(profile=False,
         ["Leaderboard", "layers", "/leaderboard", leaderboard],
         ["Benchmarks", "layers", "/benchmarks", benchmarks],
         #["System status", "layers", "/systemstatus", system_status],
-        ["Test runs", "layers", "/testruns", testruns],
+        #["Test runs", "layers", "/testruns", testruns],
         ["Datasets", "rawdata", "/rawdata", rawdata],
         ["Feedback", "layers", "/feedback", feedback]]
