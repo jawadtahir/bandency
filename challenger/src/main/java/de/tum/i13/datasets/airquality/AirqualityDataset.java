@@ -32,7 +32,7 @@ public class AirqualityDataset {
             AirqualityToBatch atb = new TestAirqualityToBatch();
             return atb;
         } else if(benchmarkType == BenchmarkType.Evaluation) {
-            AirqualityToBatch atb = new AirqualityToBatch(batchsize, LocalDateTime.of(2020, 8, 1, 0, 0), LocalDateTime.of(2021, 1, 1, 0,0), afa);
+            AirqualityToBatch atb = new AirqualityToBatch(batchsize, LocalDateTime.of(2020, 8, 1, 0, 0), LocalDateTime.of(2020, 9, 1, 0,0), afa);
             return atb;
         }
 

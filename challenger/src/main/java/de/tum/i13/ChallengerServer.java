@@ -61,7 +61,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         //TODO: precompute the batchsizes
         int batchSize = request.getBatchSize();
         if(batchSize > 20_000) {
-            Logger.info("no benchmark selected: " + request.getToken());
+            Logger.info("batchsize to large: " + request.getToken());
 
             Status status = Status.FAILED_PRECONDITION.withDescription("batchsize to large");
             responseObserver.onError(status.asException());
