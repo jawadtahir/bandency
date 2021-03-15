@@ -308,11 +308,11 @@ async def leaderboard():
     return await render_template('leaderboard.html', menu=helper.menu(leaderboard=True), name="Leaderboard")
 
 
-@app.route('/testruns')
+@app.route('/exampleresults')
 @login_required
-async def testruns():
-    app.logger.info("testruns")
-    return await render_template('testruns.html', menu=helper.menu(testruns=True), name="Test runs")
+async def exampleresults():
+    app.logger.info("exampleresults")
+    return await render_template('exampleresults.html', menu=helper.menu(exampleresults=True), name="Example results")
 
 
 @app.route('/feedback')
