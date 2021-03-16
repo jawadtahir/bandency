@@ -10,7 +10,7 @@
     <p>If you added the ssh key to your agent, connect to using "ssh -p port group-#@challenge.msrg.in.tum.de" to your VM.</p>
     <p></p>
 
-    <h4>Is the watermark independ for every city?</h4>
+    <h4>Is the watermark independent for every city?</h4>
     <p>The highest timestamp of the batch.current is the watermark and applies for all relative windowing operations.</p>
     <p></p>
 
@@ -35,9 +35,8 @@
     <p>Yes, you can read already the next batch while you are calculating the results of the queries to improve throughput.</p>
     <p></p>
 
-    <h4>I'll get the error: retry UNAVAILABLE: Abrupt GOAWAY closed sent stream</h4>
-    <p>We also got the same error occasionally after 30-60k batches. We tested for several days "envoy proxy" and didn't got the error.
-        Hence, on March 15th we switched the challenger service (both the internally and external endpoints) to envoy proxy. (Previously we used nginx + grpc modules). Plz. let us know if this error still arises.</p>
+    <h4>I get the error: retry UNAVAILABLE: Abrupt GOAWAY closed sent stream</h4>
+    <p>We also got the same error occasionally after 30-60k batches. After stress-testing for several days a different GRPC Proxy (envoy proxy) and didn't got the error we decided to switch from Nginx + modules. Plz. let us know if this error still arises.</p>
     <p></p>
 
     <h4>Can you please describe the datasets? (provided as zip to download)</h4>
@@ -64,6 +63,7 @@
     The connection between all physical machines is 2x10Gbits and connections are distributed accross the links based on a hash of IP fields. Hence a single TCP connection peaks in theory at 10Gbits.
     </p>
     <p></p>
+
     <h4> I assume higher level analytics services by cloud providers cannot be used. Is this correct?</h4>
     <p>Sure you can. But many cloud providers or commercial event processing systems have restrictions regarding publishing benchmarks,
         plz. check the terms and make sure that you are allowed to publish the numbers.
@@ -92,8 +92,23 @@
         => No snapshot
         Next batch arrives, 00:08 - 00:11
         First process up to 00:10, snapshot, process until 00:11
+    </p>
+    <p>Another explanation attempt:</p>
+    <p>The 5days windows are snapshots of the AQI. While the 24h windows are
+        actual measurements of p1 and p2 values. So every 5 minutes you need to
+        calculate the AQI from p1 and p2 and snapshot them to the 5 day AQI
+        window. AQI is defined as a metric which goes over 24h, this where the
+        1day window comes from.
 
-
+        The reference for sizing the windows depends on the definition of the
+        watermark. The watermark is the timestamp of the last event received in
+        a batch. Hence the 24h should be sized relative so watermark - 24h and
+        watermark - 5 days for the current windows. Or watermark - (365+1) days
+        and watermark - (365+5) days for the last year windows.
+        e.g., if the watermark is a Instant you
+        <code></code>window.resize(watermark.minus(Duration.ofDays(365+1)));<code></code>
+        You can ignore leap years as in the description, assuming that a year
+        is 365 days is fine.
     </p>
 
 {% endblock %}
