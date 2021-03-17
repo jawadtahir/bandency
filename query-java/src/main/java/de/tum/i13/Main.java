@@ -33,7 +33,7 @@ public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 
         ManagedChannel channel = ManagedChannelBuilder
-                .forAddress("challenge.msrg.in.tum.de", 5025)
+                .forAddress(System.getenv("API_URL"), 5023)
                 .usePlaintext()
                 .maxRetryAttempts(1000)
                 .keepAliveTime(30, TimeUnit.SECONDS)
@@ -75,7 +75,7 @@ public class Main {
         Query q1 = new Query(ll);
 
         //Start the benchmark
-        challengeClient.startBenchmark(newBenchmark);
+        challengeClient.startBenchmark(newBenchmark).get();
         System.out.println("started benchmark");
 
         //Process the events
@@ -127,6 +127,9 @@ public class Main {
             q1FutureRes.get();
             q2FutureRes.get();
 
+            if(cnt > 25_000)
+                break;
+
             //get the next batch, we go for low latency and don't want to have a lot in flight
             batch = nextBatch.get();
             ++cnt;
@@ -145,7 +148,7 @@ public class Main {
             //}
         }
 
-        challengeClient.endBenchmark(newBenchmark);
+        challengeClient.endBenchmark(newBenchmark).get();
         System.out.println("ended Benchmark");
     }
 
