@@ -11,13 +11,13 @@ public class MeanSlidingWindowTest {
 
     @Test
     public void testEmptyWindow() {
-        var msw = new MeanSlidingWindow();
+        var msw = new MeanSlidingWindow(null);
         assertEquals(false, msw.hasElements());
     }
 
     @Test
     public void testOneElement(){
-        var msw = new MeanSlidingWindow();
+        var msw = new MeanSlidingWindow(null);
         Measurement m = Measurement.newBuilder()
                 .setP1(1.0f)
                 .setP2(2.0f)
@@ -32,7 +32,7 @@ public class MeanSlidingWindowTest {
 
     @Test
     public void testTwoElement(){
-        var msw = new MeanSlidingWindow();
+        var msw = new MeanSlidingWindow(null);
         Measurement m1 = Measurement.newBuilder()
                 .setP1(1.0f)
                 .setP2(2.0f)
@@ -55,7 +55,7 @@ public class MeanSlidingWindowTest {
 
     @Test
     public void testResizeSeconds(){
-        var msw = new MeanSlidingWindow();
+        var msw = new MeanSlidingWindow(null);
         Measurement m1 = Measurement.newBuilder()
                 .setP1(1.0f)
                 .setP2(2.0f)
@@ -79,7 +79,7 @@ public class MeanSlidingWindowTest {
 
     @Test
     public void testResizeNanos(){
-        var msw = new MeanSlidingWindow();
+        var msw = new MeanSlidingWindow(null);
         Measurement m1 = Measurement.newBuilder()
                 .setP1(1.0f)
                 .setP2(2.0f)

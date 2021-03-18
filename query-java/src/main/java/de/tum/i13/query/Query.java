@@ -4,9 +4,11 @@ import com.google.protobuf.Timestamp;
 import de.tum.i13.Batch;
 import de.tum.i13.Measurement;
 import de.tum.i13.TopKCities;
+import de.tum.i13.TopKStreaks;
 import de.tum.i13.aqi.AQICalc;
+import de.tum.i13.helper.HistogramHelper;
 import de.tum.i13.helper.TimestampHelper;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +19,8 @@ import static de.tum.i13.helper.TimestampHelper.isSmaller;
 public class Query {
     private final LocationLookup ll;
     private final AQICalc aqicalc;
+    private final int BINS = 20;
+
 
     private Optional<Timestamp> nextCurrSnapshot;
     private Optional<Timestamp> nextLastSnapshot;
@@ -28,6 +32,8 @@ public class Query {
 
     private HashMap<String, FiveDaysAQISlidingWindow> avgCurrentYear;
     private HashMap<String, FiveDaysAQISlidingWindow> avgLastYear;
+
+    private HashMap<String, Timestamp> streakSince;
 
     private HashMap<String, MeanSlidingWindow> measuresForYear(Y y) {
         switch (y) {
@@ -62,6 +68,8 @@ public class Query {
         this.avgCurrentYear = new HashMap<>();
         this.avgLastYear = new HashMap<>();
 
+        this.streakSince = new HashMap<>();
+
         this.nextCurrSnapshot = Optional.empty();
         this.nextLastSnapshot = Optional.empty();
 
@@ -72,7 +80,7 @@ public class Query {
         return (int)Math.round(aqi*1000);
     }
 
-    public Pair<Timestamp, ArrayList<TopKCities>> calculateTopKImproved(Batch batch) {
+    public Triple<Timestamp, ArrayList<TopKCities>, ArrayList<TopKStreaks>> calculateTopKImproved(Batch batch) {
 
         //working throught the events
         Timestamp newLatest = processEvents(batch);
@@ -92,6 +100,10 @@ public class Query {
         for(var currentYearV : this.currentYear.values()) {
             currentYearV.resize(meanCurrentResizeTs);
         }
+
+        var streaks = calculateLongestStreaks(this.currentYear, lastEventCurr);
+
+
         var meanLastResizeTs = addTimeunit(lastEventCurr, TimeUnit.DAYS, -366 + -1);
         for(var lastYearV : this.lastYear.values()) {
             lastYearV.resize(meanLastResizeTs);
@@ -102,6 +114,7 @@ public class Query {
         for(var currentavgV : this.avgCurrentYear.values()) {
             currentavgV.resize(avgCurrentResizeTs);
         }
+
         var avgLastResizeTs = addTimeunit(lastEventCurr, TimeUnit.DAYS, -365 + -5);
         for(var lastavgV : this.avgLastYear.values()) {
             lastavgV.resize(avgLastResizeTs);
@@ -145,7 +158,77 @@ public class Query {
             ++cnt;
         }
 
-        return Pair.of(newLatest, firstFifty);
+        return Triple.of(newLatest, firstFifty, streaks);
+    }
+
+    private long durationSeconds(Timestamp tsFirst, Timestamp tsSecond) {
+        return tsSecond.getSeconds() - tsFirst.getSeconds();
+    }
+
+    private ArrayList<TopKStreaks> calculateLongestStreaks(HashMap<String, MeanSlidingWindow> avgCurrentYear, Timestamp watermark) {
+
+        Timestamp entryBarrier = addTimeunit(watermark, TimeUnit.DAYS, -7);
+        int durationWeekSeconds = (int)(watermark.getSeconds() - entryBarrier.getSeconds());
+
+        int maxTime = -1;
+        int minTime = durationWeekSeconds;
+
+        for(var entry: avgCurrentYear.entrySet()) {
+            String city = entry.getKey();
+            boolean aqi = entry.getValue().isGood();
+
+
+            if(streakSince.containsKey(city)) {
+                if(!aqi) {
+                    streakSince.remove(city);
+                } else {
+                    //calculate seconds
+                    int spanSeconds = (int)(watermark.getSeconds() - streakSince.get(city).getSeconds());
+                    spanSeconds = Math.min(durationWeekSeconds, spanSeconds);
+
+                    minTime = Math.min(minTime, spanSeconds);
+                    maxTime = Math.max(maxTime, spanSeconds);
+                }
+            } else if(aqi) {
+                streakSince.put(city, watermark);
+                minTime = 0;
+                maxTime = Math.max(minTime, 0);
+            }
+        }
+        if(maxTime < 0) {
+            return new ArrayList<>();
+        }
+        //binning
+        int binWidth = maxTime - minTime;
+        if(binWidth < BINS) {
+            return new ArrayList<>();
+        }
+        int step = binWidth / BINS;
+
+        int[] bins = new int[BINS];
+        for(int i = 0; i < 20; ++i) {
+            bins[i] = (i+1)*step;
+        }
+        //bins[bins.length-1] = maxTime+1;
+
+        int[] histogram = new int[BINS];
+        int cnt = 0;
+        for(var ts : streakSince.values()) {
+            long baseSecond = ts.getSeconds();
+            int duration = Math.min(durationWeekSeconds, (int)(watermark.getSeconds() - baseSecond));
+            int pos = HistogramHelper.lookupRegion(bins, duration);
+            histogram[pos]++;
+            ++cnt;
+        }
+
+        var topKStreaks = new ArrayList<TopKStreaks>();
+        for(int i = 0; i < histogram.length; ++i) {
+            int percent = (int) (((100.0/(double)cnt)*(double)histogram[i])*1000);
+            TopKStreaks streak = TopKStreaks.newBuilder().setBucketFrom(i * step).setBucketTo(bins[i]).setBucketPercent(percent).build();
+            topKStreaks.add(streak);
+        }
+
+        return topKStreaks;
     }
 
     private Timestamp processEvents(Batch batch) {
@@ -176,11 +259,13 @@ public class Query {
 
             String location = this.ll.lookupLocation(curr.getLongitude(), curr.getLatitude());
             if(location != null) {
-                currentYear.putIfAbsent(location, new MeanSlidingWindow());
+                currentYear.putIfAbsent(location, new MeanSlidingWindow(this.aqicalc));
                 MeanSlidingWindow msw = currentYear.get(location);
                 msw.addMesurement(curr);
             }
         }
+
+
 
         for(Measurement last : batch.getLastyearList()) {
             if(highest == null) {
@@ -204,7 +289,7 @@ public class Query {
 
             String location = this.ll.lookupLocation(last.getLongitude(), last.getLatitude());
             if(location != null) {
-                lastYear.putIfAbsent(location, new MeanSlidingWindow());
+                lastYear.putIfAbsent(location, new MeanSlidingWindow(this.aqicalc));
                 MeanSlidingWindow msw = lastYear.get(location);
                 msw.addMesurement(last);
             }

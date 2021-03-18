@@ -2,19 +2,21 @@ package de.tum.i13.query;
 
 import com.google.protobuf.Timestamp;
 import de.tum.i13.Measurement;
+import de.tum.i13.aqi.AQICalc;
 import de.tum.i13.helper.TimestampHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class MeanSlidingWindow {
     private final LinkedList<Measurement> measurements;
     private BigDecimal sumP1;
     private BigDecimal sumP2;
+    private AQICalc calc;
 
-    public MeanSlidingWindow() {
+    public MeanSlidingWindow(AQICalc calc) {
+        this.calc = calc;
         this.measurements = new LinkedList<>();
         this.sumP1 = BigDecimal.ZERO;
         this.sumP2 = BigDecimal.ZERO;
@@ -33,6 +35,18 @@ public class MeanSlidingWindow {
 
     public double getMeanP2() {
         return this.sumP2.divide(new BigDecimal(this.measurements.size()), 3, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    public double calcAqi() {
+        return Math.max(this.calc.calculate(getMeanP1(), P.P1), this.calc.calculate(getMeanP2(), P.P25));
+    }
+
+    public boolean isGood() {
+        if(this.measurements.size() > 0) {
+            return this.calc.isGood(getMeanP1(), P.P1) && this.calc.isGood(getMeanP1(), P.P25);
+        } else {
+            return false;
+        }
     }
 
     public boolean hasElements() {
