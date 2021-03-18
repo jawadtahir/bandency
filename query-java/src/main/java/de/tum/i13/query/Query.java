@@ -173,10 +173,13 @@ public class Query {
         int maxTime = -1;
         int minTime = durationWeekSeconds;
 
+        avgCurrentYear.entrySet().removeIf(entry -> !entry.getValue().isActive(watermark));
+
         for(var entry: avgCurrentYear.entrySet()) {
             String city = entry.getKey();
-            boolean aqi = entry.getValue().isGood();
+            MeanSlidingWindow msw = entry.getValue();
 
+            boolean aqi = msw.isGood();
 
             if(streakSince.containsKey(city)) {
                 if(!aqi) {

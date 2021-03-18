@@ -111,10 +111,6 @@ public class Main {
                     .addAllTopkimproved(res.getMiddle())
                     .build();
 
-            if(batch.getSeqId() > 0 && (batch.getSeqId() % 10_000) == 0) {
-                writeQ1ToFile(q1Result, res.getLeft(), batch.getSeqId());
-            }
-
             //return the result of Q1
             //Send both results in parallel
             ListenableFuture<Empty> q1FutureRes = challengeClient.resultQ1(q1Result);
@@ -127,11 +123,17 @@ public class Main {
 
             ListenableFuture<Empty> q2FutureRes = challengeClient.resultQ2(q2Result);
 
+            if(batch.getSeqId() > 0 && (batch.getSeqId() % 10_000) == 0) {
+                writeQ1ToFile(q1Result, res.getLeft(), batch.getSeqId());
+                writeQ2ToFile(q2Result, res.getLeft(), batch.getSeqId());
+            }
+
+
             q1FutureRes.get();
             q2FutureRes.get();
 
-            if(cnt > 25_000)
-                break;
+            //if(cnt > 50_001)
+            //    break;
 
             //get the next batch, we go for low latency and don't want to have a lot in flight
             batch = nextBatch.get();
@@ -176,6 +178,18 @@ public class Main {
                 writer.flush();
         }
     }
+
+    private static void writeQ2ToFile(ResultQ2 q2, Timestamp ts, long cnt) throws IOException {
+        String print = JsonFormat.printer().print(ResultQ2.newBuilder().mergeFrom(q2));
+        String filename = String.format("java_test_q2_batch-%s.json", cnt);
+
+        try(FileWriter fw = new FileWriter(filename, true);
+            BufferedWriter writer = new BufferedWriter(fw)) {
+            writer.append(print);
+            writer.flush();
+        }
+    }
+
 
     private static void printTopK(Timestamp ts, ArrayList<TopKCities> topKImproved, int cnt) {
         Instant instant = timestampToInstant(ts);
