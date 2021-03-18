@@ -192,7 +192,7 @@ public class TestAirqualityToBatch extends AirqualityToBatch {
          */
 
         Instant new_batch_ts = this.batchTime.plus(24, ChronoUnit.HOURS);
-        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, 2500L, EPAP1Table.HAZARDS3, EPAP2Table.HAZARDS3);
+        Builder batchBuilder = loadGen(builder, this.batchTime, new_batch_ts, 2500L, EPAP1Table.HAZARDAS3, EPAP2Table.HAZARDAS3);
         this.batchTime = new_batch_ts;
 
         return batchBuilder.build();
