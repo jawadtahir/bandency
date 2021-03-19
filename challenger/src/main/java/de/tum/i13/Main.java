@@ -30,12 +30,12 @@ public class Main {
             String hostName = InetAddress.getLocalHost().getHostName();
 
             String url = "jdbc:postgresql://127.0.0.1:5432/bandency?user=bandency&password=bandency";
-            int preloadForTest = 100;
+            int preloadEvaluation = 100;
 
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 dataset = env.get("DATASET_PATH");
                 url = env.get("JDBC_DB_CONNECTION");
-                preloadForTest = 20_000;
+                preloadEvaluation = 20_000;
             }
 
             Logger.info("opening database connection: " + url);
@@ -48,7 +48,8 @@ public class Main {
             AirqualityDataset ad = new AirqualityDataset(afa);
 
             InMemoryLoader iml = new InMemoryLoader(ad);
-            InMemoryDataset inMemoryDataset = iml.loadData(preloadForTest, 10_000);
+            Logger.info("Preloading data in memory: " + preloadEvaluation);
+            InMemoryDataset inMemoryDataset = iml.loadData(preloadEvaluation, 10_000);
 
             ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
 
