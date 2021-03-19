@@ -4,9 +4,10 @@ import de.tum.i13.dal.DB;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ResultsVerifier;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.airquality.AccessType;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.airquality.AirqualityFileAccess;
+import de.tum.i13.datasets.cache.InMemoryDataset;
+import de.tum.i13.datasets.cache.InMemoryLoader;
 import de.tum.i13.datasets.location.PrepareLocationDataset;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -29,10 +30,12 @@ public class Main {
             String hostName = InetAddress.getLocalHost().getHostName();
 
             String url = "jdbc:postgresql://127.0.0.1:5432/bandency?user=bandency&password=bandency";
+            int preloadForTest = 100;
 
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 dataset = env.get("DATASET_PATH");
                 url = env.get("JDBC_DB_CONNECTION");
+                preloadForTest = 20_000;
             }
 
             Logger.info("opening database connection: " + url);
@@ -42,13 +45,16 @@ public class Main {
             PrepareLocationDataset pld = new PrepareLocationDataset(Path.of(dataset));
 
             AirqualityFileAccess afa = new AirqualityFileAccess(Path.of(dataset));
-            AirqualityDataset ad = new AirqualityDataset(afa, AccessType.FromDisk);
+            AirqualityDataset ad = new AirqualityDataset(afa);
+
+            InMemoryLoader iml = new InMemoryLoader(ad);
+            InMemoryDataset inMemoryDataset = iml.loadData(preloadForTest, 10_000);
 
             ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
 
             Logger.info("Initializing Challenger Service");
             Queries q = new Queries(db.getConnection());
-            ChallengerServer cs = new ChallengerServer(pld, ad, verificationQueue, q);
+            ChallengerServer cs = new ChallengerServer(pld, ad, inMemoryDataset, verificationQueue, q);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder

@@ -7,6 +7,7 @@ import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.AirqualityDataset;
+import de.tum.i13.datasets.cache.InMemoryDataset;
 import de.tum.i13.datasets.location.PrepareLocationDataset;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -26,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     final private PrepareLocationDataset pld;
     private final AirqualityDataset ad;
+    private final InMemoryDataset inMemoryAd;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
     private final Random random;
@@ -33,9 +35,10 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(PrepareLocationDataset pld, AirqualityDataset ad, ArrayBlockingQueue<ToVerify> dbInserter, Queries q) {
+    public ChallengerServer(PrepareLocationDataset pld, AirqualityDataset ad, InMemoryDataset inMemoryAd, ArrayBlockingQueue<ToVerify> dbInserter, Queries q) {
         this.pld = pld;
         this.ad = ad;
+        this.inMemoryAd = inMemoryAd;
         this.dbInserter = dbInserter;
         this.q = q;
         benchmark = new ConcurrentHashMap<>();
@@ -68,7 +71,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             responseObserver.onCompleted();
             return;
         }
-
 
         try {
             if(!q.checkIfGroupExists(token)) {
@@ -112,8 +114,17 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             bt = BenchmarkType.Test;
         }else if (request.getBenchmarkType().equalsIgnoreCase("verification")) {
             bt = BenchmarkType.Verification;
-        } else if (request.getBenchmarkType().equalsIgnoreCase("eval")){
+        } else if (request.getBenchmarkType().equalsIgnoreCase("evaluation")){
             bt = BenchmarkType.Evaluation;
+        }
+
+        if(bt == BenchmarkType.Evaluation && batchSize != 10_000) {
+            errorCounter.inc();
+
+            Status status = Status.FAILED_PRECONDITION.withDescription("Evaluation is only possible with batch size == 10_000");
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
         }
 
 
@@ -146,7 +157,15 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
         bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
 
-        bms.setDatasource(ad.newDataSource(bt, batchSize));
+        switch(bt) {
+            case Test:
+            case Verification:
+                bms.setDatasource(ad.newDataSource(bt, batchSize));
+                break;
+            case Evaluation:
+                bms.setDatasource(this.inMemoryAd.getIterator());
+                break;
+        }
 
 
         Logger.info("Ready for benchmark: " + bms.toString());
@@ -200,9 +219,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                     return;
                 }
                 case Evaluation -> {
-                    Status status = Status.FAILED_PRECONDITION.withDescription("Evaluation currently not available");
-    
-                    responseObserver.onError(status.asException());
+                    responseObserver.onNext(pld.loadData(benchmarkType).getAllLocations());
                     responseObserver.onCompleted();
                     return;
                 }

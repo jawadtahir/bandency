@@ -53,7 +53,7 @@ public class Main {
                 .addQueries(BenchmarkConfiguration.Query.Q1)
                 .addQueries(BenchmarkConfiguration.Query.Q2)
                 .setToken(System.getenv().get("API_TOKEN")) //go to: https://challenge.msrg.in.tum.de/profile/
-                .setBenchmarkType("test") //Benchmark Type for testing
+                .setBenchmarkType("evaluation") //Benchmark Type for testing
                 .build();
 
         //Create a new Benchmark

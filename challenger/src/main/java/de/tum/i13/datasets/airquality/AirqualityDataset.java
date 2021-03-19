@@ -8,19 +8,13 @@ import java.time.LocalDateTime;
 public class AirqualityDataset {
 
     private final AirqualityFileAccess afa;
-    private final AccessType at;
 
-    public AirqualityDataset(AirqualityFileAccess afa, AccessType at) {
+    public AirqualityDataset(AirqualityFileAccess afa) {
         this.afa = afa;
-        this.at = at;
     }
 
     public AirQualityDataSource newDataSource(BenchmarkType benchmarkType, long batchsize) {
-        switch (at) {
-            case FromDisk:
-                return prepareDiskReader(benchmarkType, batchsize);
-        }
-        throw new TodoException("Add in memory data source");
+        return prepareDiskReader(benchmarkType, batchsize);
     }
 
     private AirQualityDataSource prepareDiskReader(BenchmarkType benchmarkType, long batchsize) {
@@ -32,7 +26,7 @@ public class AirqualityDataset {
             AirqualityToBatch atb = new TestAirqualityToBatch();
             return atb;
         } else if(benchmarkType == BenchmarkType.Evaluation) {
-            AirqualityToBatch atb = new AirqualityToBatch(batchsize, LocalDateTime.of(2020, 8, 1, 0, 0), LocalDateTime.of(2020, 9, 1, 0,0), afa);
+            AirqualityToBatch atb = new AirqualityToBatch(batchsize, LocalDateTime.of(2020, 4, 1, 0, 0), LocalDateTime.of(2020, 9, 1, 0,0), afa);
             return atb;
         }
 
