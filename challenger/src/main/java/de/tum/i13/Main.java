@@ -35,7 +35,7 @@ public class Main {
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 dataset = env.get("DATASET_PATH");
                 url = env.get("JDBC_DB_CONNECTION");
-                preloadEvaluation = 20_000;
+                preloadEvaluation = 40_000;
             }
 
             Logger.info("opening database connection: " + url);
