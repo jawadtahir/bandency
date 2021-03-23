@@ -6,6 +6,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.JsonFormat;
 import de.tum.i13.helper.SerializationHelper;
+import de.tum.i13.loadtest.LoadTest;
 import de.tum.i13.query.LocationLookup;
 import de.tum.i13.query.Query;
 import io.grpc.ManagedChannel;
@@ -33,6 +34,11 @@ public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 
+        LoadTest lt = new LoadTest();
+        lt.run();
+
+        return;
+        /*
         ManagedChannel channel = ManagedChannelBuilder
                 .forAddress(System.getenv("API_URL"), 5023)
                 .usePlaintext()
@@ -155,6 +161,8 @@ public class Main {
 
         challengeClient.endBenchmark(newBenchmark).get();
         System.out.println("ended Benchmark");
+
+         */
     }
 
     private static void printImproved(Timestamp ts, ArrayList<TopKStreaks> topKStreaks, int cnt) {

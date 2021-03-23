@@ -52,7 +52,6 @@ sourceSets {
     }
 }
 
-mainClassName = "de.tum.i13.Main"
 
 jar {
     manifest {
