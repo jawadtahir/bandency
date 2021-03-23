@@ -16,6 +16,7 @@ public class Main {
 
         ManagedChannel channel = ManagedChannelBuilder
                 .forAddress("challenge.msrg.in.tum.de", 5023)
+                //.forAddress("192.168.1.4", 5023) //in case it is used internally
                 .usePlaintext()
                 .build();
 
@@ -30,7 +31,8 @@ public class Main {
                 .addQueries(BenchmarkConfiguration.Query.Q1)
                 .addQueries(BenchmarkConfiguration.Query.Q2)
                 .setToken("see API key in your Profile") //go to: https://challenge.msrg.in.tum.de/profile/
-                .setBenchmarkType("test") //Benchmark Type for testing
+                .setBenchmarkType("evaluation") //Benchmark Type for evaluation
+                //.setBenchmarkType("test") //Benchmark Type for testing
                 .build();
 
         //Create a new Benchmark
