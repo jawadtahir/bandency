@@ -420,24 +420,17 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         AtomicReference<Batch> batchRef = new AtomicReference<>();;
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
 
-            if(b.getBenchmarkType() == BenchmarkType.Test) {
+            if(b.getBenchmarkType() == BenchmarkType.Evaluation) { //this comes from memory and is too fast
+                batchRef.set(b.getNextBatch(request.getId()));
+                nextBatchValidation.inc();
+            } else {
                 Histogram.Timer batchReadTimer = batchReadLatency.startTimer();
 
-                synchronized (this) {
-                    batchRef.set(b.getNextBatch(request.getId()));
-                }
+                batchRef.set(b.getNextBatch(request.getId()));
 
                 batchReadTimer.observeDuration();
                 nextBatchTest.inc();
-
-            } else if(b.getBenchmarkType() == BenchmarkType.Evaluation) {
-
-                synchronized (this) {
-                    batchRef.set(b.getNextBatch(request.getId()));
-                }
-                nextBatchValidation.inc();
             }
-
             //Additionally record the batchsize to put the latency into perspective
             batchSizeHistogram.observe(b.getBatchSize());
 
