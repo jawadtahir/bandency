@@ -389,9 +389,14 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             .name("batchReadLatency_seconds")
             .help("Batch read latency in seconds.").register();
 
-    static final Counter nextMessageCounter = Counter.build()
-            .name("nextMessage")
-            .help("calls to nextMessage methods")
+    static final Counter nextBatchTest = Counter.build()
+            .name("nextMessage_test")
+            .help("calls to nextMessage methods with test")
+            .register();
+
+    static final Counter nextBatchValidation = Counter.build()
+            .name("nextMessage_validation")
+            .help("calls to nextMessage methods with validation")
             .register();
 
     static final Histogram batchSizeHistogram = Histogram.build()
@@ -415,13 +420,23 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         AtomicReference<Batch> batchRef = new AtomicReference<>();;
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
 
-            Histogram.Timer batchReadTimer = batchReadLatency.startTimer();
+            if(b.getBenchmarkType() == BenchmarkType.Test) {
+                Histogram.Timer batchReadTimer = batchReadLatency.startTimer();
 
-            synchronized (this) {
-                batchRef.set(b.getNextBatch(request.getId()));
+                synchronized (this) {
+                    batchRef.set(b.getNextBatch(request.getId()));
+                }
+
+                batchReadTimer.observeDuration();
+                nextBatchTest.inc();
+
+            } else if(b.getBenchmarkType() == BenchmarkType.Evaluation) {
+
+                synchronized (this) {
+                    batchRef.set(b.getNextBatch(request.getId()));
+                }
+                nextBatchValidation.inc();
             }
-            
-            batchReadTimer.observeDuration();
 
             //Additionally record the batchsize to put the latency into perspective
             batchSizeHistogram.observe(b.getBatchSize());
@@ -440,8 +455,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             responseObserver.onNext(acquired_batch);
             responseObserver.onCompleted();
         }
-
-        nextMessageCounter.inc();
     }
 
 
