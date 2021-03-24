@@ -17,10 +17,14 @@ import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,17 +34,19 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     private final InMemoryDataset inMemoryAd;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
+    private final int durationEvaluationMinutes;
     private final Random random;
 
 
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(PrepareLocationDataset pld, AirqualityDataset ad, InMemoryDataset inMemoryAd, ArrayBlockingQueue<ToVerify> dbInserter, Queries q) {
+    public ChallengerServer(PrepareLocationDataset pld, AirqualityDataset ad, InMemoryDataset inMemoryAd, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
         this.pld = pld;
         this.ad = ad;
         this.inMemoryAd = inMemoryAd;
         this.dbInserter = dbInserter;
         this.q = q;
+        this.durationEvaluationMinutes = durationEvaluationMinutes;
         benchmark = new ConcurrentHashMap<>();
         random = new Random(System.nanoTime());
     }
@@ -163,7 +169,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                 bms.setDatasource(ad.newDataSource(bt, batchSize));
                 break;
             case Evaluation:
-                bms.setDatasource(this.inMemoryAd.getIterator());
+                Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
+                bms.setDatasource(this.inMemoryAd.getIterator(stopTime));
                 break;
         }
 

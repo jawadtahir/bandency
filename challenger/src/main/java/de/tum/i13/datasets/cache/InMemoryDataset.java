@@ -3,6 +3,7 @@ package de.tum.i13.datasets.cache;
 import de.tum.i13.bandency.Batch;
 import de.tum.i13.datasets.airquality.AirQualityDataSource;
 
+import java.time.Instant;
 import java.util.ArrayList;
 
 public class InMemoryDataset {
@@ -13,8 +14,8 @@ public class InMemoryDataset {
         this.inMemoryBatches = inMemoryBatches;
     }
 
-    synchronized public AirQualityDataSource getIterator() {
-        InMemoryDatasetIterator imdi = new InMemoryDatasetIterator(this.inMemoryBatches.iterator());
+    synchronized public AirQualityDataSource getIterator(Instant stopTime) {
+        InMemoryDatasetIterator imdi = new InMemoryDatasetIterator(this.inMemoryBatches.iterator(), stopTime);
         return imdi;
     }
 

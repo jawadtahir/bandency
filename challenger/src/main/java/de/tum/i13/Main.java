@@ -31,11 +31,13 @@ public class Main {
 
             String url = "jdbc:postgresql://127.0.0.1:5432/bandency?user=bandency&password=bandency";
             int preloadEvaluation = 100;
+            int durationEvaluationMinutes = 1;
 
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 dataset = env.get("DATASET_PATH");
                 url = env.get("JDBC_DB_CONNECTION");
-                preloadEvaluation = 40_000;
+                preloadEvaluation = 30_000;
+                durationEvaluationMinutes = 15;
             }
 
             Logger.info("opening database connection: " + url);
@@ -49,13 +51,14 @@ public class Main {
 
             InMemoryLoader iml = new InMemoryLoader(ad);
             Logger.info("Preloading data in memory: " + preloadEvaluation);
+            Logger.info("Evaluation duration in minutes: " + durationEvaluationMinutes);
             InMemoryDataset inMemoryDataset = iml.loadData(preloadEvaluation, 10_000);
 
             ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
 
             Logger.info("Initializing Challenger Service");
             Queries q = new Queries(db.getConnection());
-            ChallengerServer cs = new ChallengerServer(pld, ad, inMemoryDataset, verificationQueue, q);
+            ChallengerServer cs = new ChallengerServer(pld, ad, inMemoryDataset, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder
