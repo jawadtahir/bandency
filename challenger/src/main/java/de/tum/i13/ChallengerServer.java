@@ -416,7 +416,11 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
 
             Histogram.Timer batchReadTimer = batchReadLatency.startTimer();
-            batchRef.set(b.getNextBatch(request.getId()));
+
+            synchronized (this) {
+                batchRef.set(b.getNextBatch(request.getId()));
+            }
+            
             batchReadTimer.observeDuration();
 
             //Additionally record the batchsize to put the latency into perspective
