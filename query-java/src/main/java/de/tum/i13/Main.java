@@ -34,13 +34,17 @@ public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 
-        LoadTest lt = new LoadTest();
-        lt.run();
 
-        return;
-        /*
+        /*LoadTest lt = new LoadTest();
+        lt.run();
+        if(true) {
+            return;
+        }*/
+
+
         ManagedChannel channel = ManagedChannelBuilder
                 .forAddress(System.getenv("API_URL"), 5023)
+                //.forAddress("127.0.0.1", 8081)
                 .usePlaintext()
                 .maxRetryAttempts(1000)
                 .keepAliveTime(30, TimeUnit.SECONDS)
@@ -85,10 +89,16 @@ public class Main {
         challengeClient.startBenchmark(newBenchmark).get();
         System.out.println("started benchmark");
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            challengeClient.endBenchmark(newBenchmark);
+            System.out.println("endBenchmark");
+        }));
+
         //Process the events
         int cnt = 0;
         StopWatch sw = StopWatch.createStarted();
         Batch batch = challengeClient.nextBatch(newBenchmark).get();
+
         while(true) {
             if (batch.getLast()) { //Stop when we get the last batch
                 System.out.println("Received lastbatch, finished!");
@@ -105,7 +115,7 @@ public class Main {
                 System.out.flush();
                 printTopK(res.getLeft(), res.getMiddle(), cnt);
                 System.out.println();
-                printImproved(res.getLeft(), res.getRight(), cnt);
+                //printImproved(res.getLeft(), res.getRight(), cnt);
 
                 sw.reset();
                 sw.start();
@@ -154,6 +164,8 @@ public class Main {
                 }
             }
 
+            //Thread.sleep(10_000);
+
             //if(cnt > 10_000) { //for testing you can
             //    break;
             //}
@@ -161,8 +173,6 @@ public class Main {
 
         challengeClient.endBenchmark(newBenchmark).get();
         System.out.println("ended Benchmark");
-
-         */
     }
 
     private static void printImproved(Timestamp ts, ArrayList<TopKStreaks> topKStreaks, int cnt) {

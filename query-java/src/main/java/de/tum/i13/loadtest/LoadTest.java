@@ -41,15 +41,15 @@ public class LoadTest {
                 .addQueries(BenchmarkConfiguration.Query.Q1)
                 .addQueries(BenchmarkConfiguration.Query.Q2)
                 .setToken(System.getenv().get("API_TOKEN")) //go to: https://challenge.msrg.in.tum.de/profile/
-                .setBenchmarkType("test") //Benchmark Type for testing
-                //.setBenchmarkType("evaluation") //Benchmark Type for testing
+                //.setBenchmarkType("test") //Benchmark Type for testing
+                .setBenchmarkType("evaluation") //Benchmark Type for testing
                 .build();
 
 
         System.out.println("createNewBenchmark");
         Benchmark newBenchmark = challengeClient.createNewBenchmark(bc).get();
 
-        int count = 20_000;
+        int count = 30_000;
 
         CountDownLatch latch = new CountDownLatch(count);
 
