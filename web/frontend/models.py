@@ -135,4 +135,4 @@ async def get_benchmarkresults(benchmarkid):
     return await BenchmarkResults.query.where(BenchmarkResults.id == benchmarkid).gino.first()
 
 async def get_querymetrics(benchmarkid):
-    return await Quermetrics.query.where(Quermetrics.benchmark_id == benchmarkid).gino.all()
+    return await Quermetrics.query.where(Quermetrics.benchmark_id == benchmarkid).order_by(Quermetrics.batch_id.asc()).gino.all()
