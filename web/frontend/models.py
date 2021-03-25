@@ -110,6 +110,17 @@ class BenchmarkResults(db.Model):
     q2_90percentile = db.Column(db.Float())
     summary = db.Column(db.Unicode())
 
+class Quermetrics(db.Model):
+    __tablename__ = 'querymetrics'
+
+    benchmark_id = db.Column(BigInteger())
+    batch_id = db.Column(BigInteger())
+    starttime = db.Column(BigInteger())
+    q1resulttime = db.Column(BigInteger())
+    q1latency = db.Column(BigInteger())
+    q2resulttime = db.Column(BigInteger())
+    q2latency = db.Column(BigInteger())
+
 
 async def get_benchmarks_by_group(gid):
     return await Benchmarks.query.where(Benchmarks.group_id == gid).order_by(Benchmarks.timestamp.desc()).limit(
@@ -122,3 +133,6 @@ async def get_benchmark(benchmarkid):
 
 async def get_benchmarkresults(benchmarkid):
     return await BenchmarkResults.query.where(BenchmarkResults.id == benchmarkid).gino.first()
+
+async def get_querymetrics(benchmarkid):
+    return await Quermetrics.query.where(Quermetrics.benchmark_id == benchmarkid).gino.all()

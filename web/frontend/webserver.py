@@ -11,7 +11,7 @@ from typing import Any, Callable, Awaitable
 
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
-from quart import Quart, websocket, render_template, redirect, url_for, request, flash
+from quart import Quart, websocket, render_template, redirect, url_for, request, flash, make_response
 from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
 from sshpubkeys import SSHKey, InvalidKeyError
@@ -19,15 +19,16 @@ import frontend.helper as helper
 import frontend.worker as worker
 from frontend.admin import hash_password
 from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes, \
-    get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines, get_vms_of_group
+    get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines, get_vms_of_group, get_querymetrics
 from shared.util import raise_shutdown, Shutdown
-
 
 shutdown_event = asyncio.Event()
 PRIVATE_KEY_PATH = os.environ.get("PRIVATE_KEY_PATH", "cochairs")
 
+
 def signal_handler(*_: Any) -> None:
     shutdown_event.set()
+
 
 dictConfig({
     'version': 1,
@@ -41,13 +42,14 @@ dictConfig({
     },
 })
 
-#serving_handler.setFormatter(logging.Formatter('%(message)s'))
+# serving_handler.setFormatter(logging.Formatter('%(message)s'))
 
 app = Quart(__name__)
 app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
 AuthManager(app)
 
-#logging.basicConfig(level=logging.INFO)
+
+# logging.basicConfig(level=logging.INFO)
 
 
 @app.route('/')
@@ -273,6 +275,23 @@ async def benchmarkdetails(benchmarkid):
     return redirect_to_login()
 
 
+@app.route('/querymetrics/<int:benchmarkid>/')
+@login_required
+async def querymetrics(benchmarkid):
+
+    async def generate():
+        yield b'benchmark_id, batch_id, starttime, q1resulttime, q1latency, q2resulttime, q2latency\n'
+        qm = await get_querymetrics(benchmarkid)
+        for m in qm:
+            yield b"%d, %d, %d, %d, %d, %d, %d\n" % (m.benchmark_id, m.batch_id, m.starttime, m.q1resulttime, m.q1latency, m.q2resulttime, m.q2latency)
+
+    #return generate()
+    return await make_response(generate(), {'Content-Type': 'text/csv',
+                                            'Cache-Control': 'no-cache',
+                                            'Transfer-Encoding': 'chunked',
+                                            'Content-Disposition': 'attachment; filename=\"benchmark-%s-querymetrics.csv\"' % (benchmarkid)})
+
+
 @app.route('/rawdata/')
 @login_required
 async def rawdata():
@@ -356,7 +375,7 @@ async def mainloop(debug, loop):
     bind_adrs = os.environ.get("WEB_BIND", "localhost:8000")
 
     cfg = Config()
-    #cfg.accesslog = True
+    # cfg.accesslog = True
     cfg.bind = [bind_adrs]
 
     if debug:
