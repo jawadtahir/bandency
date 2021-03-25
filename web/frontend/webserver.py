@@ -279,6 +279,7 @@ async def benchmarkdetails(benchmarkid):
 @login_required
 async def deactivatebenchmark():
     if request.method == 'POST':
+        app.logger.info("deactivatebenchmark")
         form = await request.form
         benchmarkid = form["benchmarkid"]
         #TODO: ensure that benchmark is from own group
@@ -294,9 +295,10 @@ async def deactivatebenchmark():
     else:
         return redirect('/profile')
 
-@app.route('/deactivatebenchmark/<int:benchmarkid>/')
+@app.route('/querymetrics/<int:benchmarkid>/')
 @login_required
 async def querymetrics(benchmarkid):
+    app.logger.info("querymetrics")
 
     async def generate():
         yield b'benchmark_id, batch_id, starttime, q1resulttime, q1latency, q2resulttime, q2latency\n'
