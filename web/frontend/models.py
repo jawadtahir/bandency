@@ -1,6 +1,6 @@
 from gino import Gino
 from quart_auth import AuthUser
-from sqlalchemy import TIMESTAMP, INTEGER, BigInteger
+from sqlalchemy import TIMESTAMP, INTEGER, BigInteger, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 
 db = Gino()
@@ -90,6 +90,7 @@ class Benchmarks(db.Model):
     __tablename__ = 'benchmarks'
 
     id = db.Column(BigInteger, primary_key=True)
+    is_active = db.Column(Boolean)
     group_id = db.Column(UUID)
     timestamp = db.Column(TIMESTAMP)
     benchmark_name = db.Column(db.Unicode())
@@ -126,6 +127,8 @@ async def get_benchmarks_by_group(gid):
     return await Benchmarks.query.where(Benchmarks.group_id == gid).order_by(Benchmarks.timestamp.desc()).limit(
         100).gino.all()
 
+async def benchmark_get_is_active(gid, benchmarkid):
+    return await Benchmarks.query.where(Benchmarks.id == benchmarkid and Benchmarks.group_id == gid).gino.first()
 
 async def get_benchmark(benchmarkid):
     return await Benchmarks.query.where(Benchmarks.id == benchmarkid).gino.first()

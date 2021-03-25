@@ -19,7 +19,8 @@ import frontend.helper as helper
 import frontend.worker as worker
 from frontend.admin import hash_password
 from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes, \
-    get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines, get_vms_of_group, get_querymetrics
+    get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines, get_vms_of_group, get_querymetrics, \
+    benchmark_get_is_active
 from shared.util import raise_shutdown, Shutdown
 
 shutdown_event = asyncio.Event()
@@ -274,8 +275,26 @@ async def benchmarkdetails(benchmarkid):
 
     return redirect_to_login()
 
+@app.route('/deactivatebenchmark/', methods=['POST'])
+@login_required
+async def deactivatebenchmark():
+    if request.method == 'POST':
+        form = await request.form
+        benchmarkid = form["benchmarkid"]
+        #TODO: ensure that benchmark is from own group
+        group = await get_group_information(current_user.auth_id)
+        benchmark = await benchmark_get_is_active(group.id, int(benchmarkid))
+        if not benchmark:
+            await flash("Benchmark not found!")
+        else:
+            await benchmark.update(is_active=False).apply()
+            await flash("Benchmark %s deactivated" % benchmarkid)
 
-@app.route('/querymetrics/<int:benchmarkid>/')
+        return redirect("/benchmarkdetails/%s" % (form["benchmarkid"]))
+    else:
+        return redirect('/profile')
+
+@app.route('/deactivatebenchmark/<int:benchmarkid>/')
 @login_required
 async def querymetrics(benchmarkid):
 
