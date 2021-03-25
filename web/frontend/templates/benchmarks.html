@@ -4,6 +4,10 @@
     <div class="alert alert-secondary">
         Last 100 Benchmark runs
     </div>
+    <div class="alert alert-info">
+        New feature: Download detailed metrics for each batch as CSV, see Benchmark details
+    </div>
+
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
         <table class="table table-bordered table-hover">
             <thead>
@@ -12,7 +16,7 @@
                 <th>Timestamp</th>
                 <th>Type</th>
                 <th>Name</th>
-                <th>Batchsize</th>
+                <th align="right">Batchsize</th>
             </tr>
             </thead>
             <tbody>
@@ -22,7 +26,7 @@
                     <td class="humantimestamp" title="{{ benchmark.timestamp }}"></td>
                     <td>{{ benchmark.benchmark_type }}</td>
                     <td>{{ benchmark.benchmark_name }}</td>
-                    <td>{{ benchmark.batchsize }}</td>
+                    <td align="right">{{ benchmark.batchsize }}</td>
                 </tr>
             {% endfor %}
             </tbody>

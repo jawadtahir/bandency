@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 
 {% block content %}
+    <div class="alert alert-secondary">
+        Downloaded metrics are in Nanoseconds
+    </div>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
         <a class="btn btn-primary" href="/querymetrics/{{ benchmark.id }}/">Download Metrics CSV</a>
     </div>
@@ -23,11 +26,11 @@
                 </tr>
                 <tr>
                     <td>Name</td>
-                    <td>{{ benchmark.benchmark_name }}</td>
+                    <td align="right">{{ benchmark.benchmark_name }}</td>
                 </tr>
                 <tr>
                     <td>Batchsize</td>
-                    <td>{{ benchmark.batchsize }}</td>
+                    <td align="right">{{ benchmark.batchsize }}</td>
                 </tr>
                 {% if not benchmarkresults %}
                     <tr>
@@ -39,34 +42,34 @@
                 {% if benchmarkresults %}
                     <tr>
                         <td>Duration</td>
-                        <td>{{ benchmarkresults.duration_sec }}</td>
+                        <td align="right">{{ benchmarkresults.duration_sec }}</td>
                     </tr>
                     <tr>
                         <td>Query 1, received results</td>
-                        <td>{{ benchmarkresults.q1_count }}</td>
+                        <td align="right">{{ benchmarkresults.q1_count }}</td>
                     </tr>
                     <tr>
-                        <td>Query1, throughput</td>
-                        <td>{{ benchmarkresults.q1_throughput }}</td>
+                        <td>Query1, throughput (batches/second)</td>
+                        <td align="right">{{ benchmarkresults.q1_throughput }}</td>
                     </tr>
                     <tr>
                         <td>Query 1, 90 percentile</td>
-                        <td>{{ benchmarkresults.q1_90percentile }}</td>
+                        <td align="right">{{ benchmarkresults.q1_90percentile }} ms</td>
                     </tr>
                     <tr>
                         <td>Query 2, received results</td>
-                        <td>{{ benchmarkresults.q2_count }}</td>
+                        <td align="right">{{ benchmarkresults.q2_count }}</td>
                     </tr>
                     <tr>
                         <td>Query 2, throughput</td>
-                        <td>{{ benchmarkresults.q2_throughput }}</td>
+                        <td align="right">{{ benchmarkresults.q2_throughput }}</td>
                     </tr>
                     <tr>
                         <td>Query 2, 90 percentile</td>
-                        <td>{{ benchmarkresults.q2_90percentile }}</td>
+                        <td align="right">{{ benchmarkresults.q2_90percentile }} ms</td>
                     </tr>
                     <tr>
-                        <td>Details</td>
+                        <td>Details (Nanoseconds)</td>
                         <td><textarea rows="8" style="min-width: 100%;resize:none">{{ benchmarkresults.summary }}</textarea></td>
                     </tr>
                 {% endif %}
