@@ -52,6 +52,8 @@ AuthManager(app)
 
 # logging.basicConfig(level=logging.INFO)
 
+async def lastUpdate():
+    await flash("Last FAQ update - March 29th", "info")
 
 @app.route('/')
 async def index():
@@ -100,12 +102,12 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
     try:
         ssh.parse()
     except InvalidKeyError:
-        await flash('Invalid key')
+        await flash('Invalid key', "danger")
         print("Invalid key")
         traceback.print_exc()
         return
     except NotImplementedError:
-        await flash('Invalid key type')
+        await flash('Invalid key type', "danger")
         print("Invalid key type")
         traceback.print_exc()
         return
@@ -117,7 +119,7 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
             client.connect(vm_adrs, port, username, pkey=pkey, timeout=3.0)  # three seconds timeout
         except:
             print("Could not connect")
-            return await flash("Could not connect to VM to set the key")
+            return await flash("Could not connect to VM to set the key", "danger")
 
         with client.open_sftp() as sftpclient:
             try:
@@ -128,7 +130,7 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
                     for authorized in authorized_keys:
                         if pubkey in authorized:
                             print("key already added")
-                            return await flash("Key already added")
+                            return await flash("Key already added", "danger")
             except IOError:
                 traceback.print_exc()
                 print('authorized does not exist, continue')  # file does not exist, also ok
@@ -138,11 +140,11 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
             client.exec_command('echo "%s" >> ~/.ssh/authorized_keys' % pubkey, timeout=3.0)
             client.exec_command('chmod 644 ~/.ssh/authorized_keys', timeout=3.0)
             client.exec_command('chmod 700 ~/.ssh/', timeout=3.0)
-            await flash("Key successful added")
+            await flash("Key successful added", "success")
         except:
             print("Error while setting ssh key")
             traceback.print_exc()
-            return await flash("Error while setting ssh key")
+            return await flash("Error while setting ssh key", "danger")
 
     vms = await VirtualMachines.query.where(VirtualMachines.group_id == groupid).gino.all()
     for vm in vms:
@@ -153,6 +155,8 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
 @app.route('/profile/', methods=['GET', 'POST'])
 @login_required
 async def profile():
+    await lastUpdate()
+
     app.logger.info("profile")
     if request.method == 'POST':
         group = await get_group_information(current_user.auth_id)
@@ -164,11 +168,11 @@ async def profile():
             groupemail = form['groupemail'].strip()
 
             if len(groupnick) > 32:
-                await flash('Nickname should be below 32 chars')
+                await flash('Nickname should be below 32 chars', "danger")
                 return redirect(url_for('profile'))
 
             await group.update(groupnick=groupnick, groupemail=groupemail).apply()
-            await flash('Profile saved')
+            await flash('Profile saved', "success")
 
             return redirect(url_for('profile'))
     else:
@@ -181,6 +185,8 @@ async def profile():
 @app.route('/vms/', methods=['GET', 'POST'])
 @login_required
 async def vms():
+    await lastUpdate()
+
     app.logger.info("vms")
     group = await get_group_information(current_user.auth_id)
 
@@ -189,10 +195,10 @@ async def vms():
         print("sshkey")
         err = False
         if 'VMAdrs' not in form:
-            await flash('No VM selected')
+            await flash('No VM selected', "danger")
             err = True
         if 'sshpubkey' not in form or len(form['sshpubkey'].strip()) <= 30:
-            await flash('No sshpukey or invalid sshpubkey added')
+            await flash('No sshpukey or invalid sshpubkey added', "danger")
             err = True
 
         if err:
@@ -208,7 +214,7 @@ async def vms():
             print(e)
             print(traceback.format_exc())
             await flash(
-                "Error connecting to VM. Please inform the challenge organizers, debschallenge2021@gmail.com")
+                "Error connecting to VM. Please inform the challenge organizers, debschallenge2021@gmail.com", "danger")
 
         return redirect(url_for('vms'))
     else:
@@ -238,6 +244,7 @@ async def faq():
 @app.route('/documentation/')
 @login_required
 async def documentation():
+    await lastUpdate()
     app.logger.info("documentation")
     group = await get_group_information(current_user.auth_id)
     return await render_template('documentation.html', name="Documentation", group=group,
@@ -247,6 +254,7 @@ async def documentation():
 @app.route('/benchmarks/')
 @login_required
 async def benchmarks():
+    await lastUpdate()
     app.logger.info("benchmarks")
     group = await get_group_information(current_user.auth_id)
     benchmarks = await get_benchmarks_by_group(group.id)
@@ -286,10 +294,10 @@ async def deactivatebenchmark():
         group = await get_group_information(current_user.auth_id)
         benchmark = await benchmark_get_is_active(group.id, int(benchmarkid))
         if not benchmark:
-            await flash("Benchmark not found!")
+            await flash("Benchmark not found!", "danger")
         else:
             await benchmark.update(is_active=False).apply()
-            await flash("Benchmark %s deactivated" % benchmarkid)
+            await flash("Benchmark %s deactivated" % benchmarkid, "success")
 
         return redirect("/benchmarkdetails/%s" % (form["benchmarkid"]))
     else:
@@ -344,6 +352,7 @@ async def systemstatus():
 @app.route('/leaderboard')
 @login_required
 async def leaderboard():
+    await lastUpdate()
     app.logger.info("leaderboard")
     return await render_template('leaderboard.html', menu=helper.menu(leaderboard=True), name="Leaderboard")
 

@@ -125,5 +125,35 @@ benchmark = stub.createNewBenchmark(benchmarkconfiguration)
         You can ignore leap years as in the description, assuming that a year
         is 365 days is fine.
     </p>
+    <p></p>
+    <h4>AQI-Calculation - Ranges</h4>
+    <p>
+        We just noted that there is a discrepancy in the official sources
+        The source we specified in the FAQ misses one entry compared to the
+        AQI-Breakpoints downloadable as CSV, see here: <a href="https://aqs.epa.gov/aqsweb/documents/codetables/aqi_breakpoints.html" >AQI Breakpoints</a>
+
+    <p>It contains one additional entry for for
+        "PM2.5 - Local Conditions","88101","X","24-HR BLK AVG" and "PM10 Total
+        0-10um STP","81102","X","24-HR BLK AVG"
+
+        Please add this additional lines to your lookup function for P10 and PM2.5.
+        If a value is still out of range, then it should be discarded.
+    <p>
+    </p>Thank you for making us aware of this problem!<p>
+    </p>
+    <p></p>
+    <h4>The supplied datasets on the website always start in January. Is this the intended behavior that the batches start in March?</h4>
+    <p>
+        Yes that's intended. We shifted it (mid December 2020) since there were
+        data quality problems in that timeframe. Still there are some outages
+        but not that many.
+    </p>
+    <p>
+        The exact times do not matter since calculation lastyear/ windows end, ... is all relative to the watermark anyway.
+        The examples are calculated for the "test" datasource consuming it batch by batch, hence the starting date (begin of March) as you indicated.
+    </p>
+    <p>
+        The "evaluation" datasource starts with April 1st.
+    </p>
 
 {% endblock %}
