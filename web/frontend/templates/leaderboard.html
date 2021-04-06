@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 
 {% block content %}
+    <div class="alert alert-secondary">
+        Criteria: both q1 and q2 have results, 
+    </div>
     <h4>Latency Ranking - (Sorted by lowest latency ((q1 + q2) /2)</h4>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
         <table class="table">
@@ -25,7 +28,7 @@
             </tbody>
         </table>
     </div>
-    <h4>Runtime/Throughput Ranking (Sorted by highest throughput (q1 + q2) / 2</h4>
+    <h4>Runtime/Throughput Ranking (Sorted by highest throughput (q1 + q2) / 2)</h4>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
         <table class="table">
             <thead>
