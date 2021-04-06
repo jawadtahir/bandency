@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import copy
 from logging.config import dictConfig
 from quart.logging import serving_handler
 
@@ -20,7 +21,7 @@ import frontend.worker as worker
 from frontend.admin import hash_password
 from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes, \
     get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines, get_vms_of_group, get_querymetrics, \
-    benchmark_get_is_active
+    benchmark_get_is_active, get_evaluation_results
 from shared.util import raise_shutdown, Shutdown
 
 shutdown_event = asyncio.Event()
@@ -353,8 +354,26 @@ async def systemstatus():
 @login_required
 async def leaderboard():
     await lastUpdate()
+    res = await get_evaluation_results()
+    #g.id, g.groupname, br.q1_90percentile, br.q1_throughput, br.q2_throughput, br.q2_90percentile, avg90percentile, avgthroughput
+    l = list()
+
+    for a in res:
+        l.append(dict(a._row))
+
+    latencies = copy.deepcopy(l)
+    latencies = sorted(latencies, key=lambda k: float(k['avg90percentile']))
+    for i, lat in enumerate(latencies):
+        lat["rank"] = i+1
+
+    throughput = copy.deepcopy(l)
+    throughput = sorted(throughput, key=lambda k: float(k['avgthroughput']), reverse=True)
+    for i, lat in enumerate(throughput):
+        lat["rank"] = i+1
+
     app.logger.info("leaderboard")
-    return await render_template('leaderboard.html', menu=helper.menu(leaderboard=True), name="Leaderboard")
+
+    return await render_template('leaderboard.html', latencies=latencies, throughput=throughput, menu=helper.menu(leaderboard=True), name="Leaderboard")
 
 
 @app.route('/exampleresults')

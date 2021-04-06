@@ -22,6 +22,7 @@ class Group(AuthUser):
         await self._resolve()
         return self._email
 
+
 class RecentChanges(db.Model):
     __tablename__ = 'recentchanges'
 
@@ -59,11 +60,13 @@ class VirtualMachines(db.Model):
     forwardingadrs = db.Column(db.Unicode())
     sshpubkey = db.Column(db.Unicode())
 
+
 async def get_vms_of_group(groupid):
-    return await VirtualMachines.query\
-        .where(VirtualMachines.group_id == groupid)\
-        .order_by(VirtualMachines.internaladrs)\
+    return await VirtualMachines.query \
+        .where(VirtualMachines.group_id == groupid) \
+        .order_by(VirtualMachines.internaladrs) \
         .gino.all()
+
 
 class ServerMonitorMetrics(db.Model):
     __tablename__ = 'servermonitormetrics'
@@ -111,6 +114,7 @@ class BenchmarkResults(db.Model):
     q2_90percentile = db.Column(db.Float())
     summary = db.Column(db.Unicode())
 
+
 class Quermetrics(db.Model):
     __tablename__ = 'querymetrics'
 
@@ -123,12 +127,24 @@ class Quermetrics(db.Model):
     q2latency = db.Column(BigInteger())
 
 
+async def get_evaluation_results():
+    return await db.all("""select distinct on(g.id) g.groupname, br.q1_90percentile, br.q1_throughput, br.q2_throughput, br.q2_90percentile, ((br.q1_90percentile + br.q2_90percentile) / 2) as avg90percentile, ((br.q1_throughput + br.q2_throughput) / 2) as avgthroughput from benchmarks as b
+                           join benchmarkresults as br
+                           on br.id = b.id
+                           join groups as g
+                           on g.id = b.group_id
+                           where b.benchmark_type like 'Evaluation' and br.q1_count > 100 and br.q2_count > 100 and b.is_active is True 
+                           order by g.id, timestamp desc""")
+
+
 async def get_benchmarks_by_group(gid):
     return await Benchmarks.query.where(Benchmarks.group_id == gid).order_by(Benchmarks.timestamp.desc()).limit(
         100).gino.all()
 
+
 async def benchmark_get_is_active(gid, benchmarkid):
     return await Benchmarks.query.where(Benchmarks.id == benchmarkid and Benchmarks.group_id == gid).gino.first()
+
 
 async def get_benchmark(benchmarkid):
     return await Benchmarks.query.where(Benchmarks.id == benchmarkid).gino.first()
@@ -137,5 +153,7 @@ async def get_benchmark(benchmarkid):
 async def get_benchmarkresults(benchmarkid):
     return await BenchmarkResults.query.where(BenchmarkResults.id == benchmarkid).gino.first()
 
+
 async def get_querymetrics(benchmarkid):
-    return await Quermetrics.query.where(Quermetrics.benchmark_id == benchmarkid).order_by(Quermetrics.batch_id.asc()).gino.all()
+    return await Quermetrics.query.where(Quermetrics.benchmark_id == benchmarkid).order_by(
+        Quermetrics.batch_id.asc()).gino.all()
