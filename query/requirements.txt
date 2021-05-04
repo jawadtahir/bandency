@@ -1,5 +1,0 @@
-grpcio-tools
-paramiko
-tqdm
-shapely
-numpy
