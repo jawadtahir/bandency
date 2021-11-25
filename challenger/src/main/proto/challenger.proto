@@ -9,16 +9,23 @@ import "google/protobuf/timestamp.proto";
 
 package Challenger;
 
-message Measurement {
-  google.protobuf.Timestamp timestamp = 1;
-  string symbol = 2;
-  float price = 3;
+message Event {
+  string symbolid = 1;
+
+  enum SecType {
+    Equity = 0;
+    Index = 1;
+  }
+  SecType sectype = 2;
+  float lasttradeprice = 3;
+  google.protobuf.Timestamp lastUpdate = 4;
+  google.protobuf.Timestamp lastTrade = 5;
 }
 
 message Batch {
   int64 seq_id = 1;
   bool last = 2;
-  repeated Measurement trades = 3;
+  repeated Event events = 3;
 }
 
 message Benchmark {
@@ -28,11 +35,13 @@ message Benchmark {
 message ResultQ1 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
+  //TODO: add results for EMA
 }
 
 message ResultQ2 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
+  //TODO: add results for breakout patterns
 }
 
 message BenchmarkConfiguration {
