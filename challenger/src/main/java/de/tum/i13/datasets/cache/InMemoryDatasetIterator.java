@@ -1,27 +1,20 @@
 package de.tum.i13.datasets.cache;
 
-import de.tum.i13.bandency.Batch;
-import de.tum.i13.datasets.airquality.AirQualityDataSource;
 import org.tinylog.Logger;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
 
-public class InMemoryDatasetIterator implements AirQualityDataSource {
+public class InMemoryDatasetIterator<T> implements CloseableSource<T> {
 
-
-    private final Iterator<Batch> iter;
+    private final Iterator<T> iter;
     private final Instant stopTime;
 
-    public InMemoryDatasetIterator(Iterator<Batch> iter, Instant stopTime) {
+    public InMemoryDatasetIterator(Iterator<T> iter, Instant stopTime) {
 
         this.iter = iter;
         this.stopTime = stopTime;
-    }
-
-    @Override
-    public void close() throws Exception {
-        //do nothing
     }
 
     @Override
@@ -34,8 +27,13 @@ public class InMemoryDatasetIterator implements AirQualityDataSource {
     }
 
     @Override
-    public Batch nextElement() {
+    public T nextElement() {
 
         return this.iter.next();
+    }
+
+    @Override
+    public void close() throws IOException {
+        //do nothing
     }
 }

@@ -5,7 +5,7 @@ import de.tum.i13.bandency.ResultQ1;
 import de.tum.i13.bandency.ResultQ2;
 import de.tum.i13.dal.BenchmarkDuration;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.airquality.AirQualityDataSource;
+import de.tum.i13.datasets.cache.CloseableSource;
 
 import org.HdrHistogram.Histogram;
 
@@ -28,7 +28,7 @@ public class BenchmarkState {
 
     private double averageLatency;
     private long startNanoTime;
-    private AirQualityDataSource datasource;
+    private CloseableSource<Batch> datasource;
     private boolean q1Active;
     private boolean q2Active;
     private long benchmarkId;
@@ -140,11 +140,11 @@ public class BenchmarkState {
         this.startNanoTime = startNanoTime;
     }
 
-    public void setDatasource(AirQualityDataSource newDataSource) {
+    public void setDatasource(CloseableSource<Batch> newDataSource) {
         this.datasource = newDataSource;
     }
 
-    public AirQualityDataSource getDatasource() {
+    public CloseableSource<Batch> getDatasource() {
         return this.datasource;
     }
 

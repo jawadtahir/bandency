@@ -1,14 +1,15 @@
 package de.tum.i13;
 
+import de.tum.i13.bandency.Batch;
 import de.tum.i13.dal.DB;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ResultsVerifier;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.airquality.AirqualityDataset;
-import de.tum.i13.datasets.airquality.AirqualityFileAccess;
+import de.tum.i13.datasets.airquality.StringZipFile;
+import de.tum.i13.datasets.airquality.StringZipFileIterator;
 import de.tum.i13.datasets.cache.InMemoryDataset;
 import de.tum.i13.datasets.cache.InMemoryLoader;
-import de.tum.i13.datasets.location.PrepareLocationDataset;
+import de.tum.i13.datasets.financial.FinancialDataLoader;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.prometheus.client.exporter.HTTPServer;
@@ -44,21 +45,22 @@ public class Main {
             DB db = DB.createDBConnection(url);
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
-            PrepareLocationDataset pld = new PrepareLocationDataset(Path.of(dataset));
+            
 
-            AirqualityFileAccess afa = new AirqualityFileAccess(Path.of(dataset));
-            AirqualityDataset ad = new AirqualityDataset(afa);
+            StringZipFile szf = new StringZipFile(Path.of(dataset).toFile());
+            StringZipFileIterator szfi = szf.open();
+            FinancialDataLoader fdl = new FinancialDataLoader(szfi);
+            InMemoryLoader<Batch> iml = new InMemoryLoader<Batch>(fdl);
 
-            InMemoryLoader iml = new InMemoryLoader(ad);
             Logger.info("Preloading data in memory: " + preloadEvaluation);
             Logger.info("Evaluation duration in minutes: " + durationEvaluationMinutes);
-            InMemoryDataset inMemoryDataset = iml.loadData(preloadEvaluation, 10_000);
+            InMemoryDataset<Batch> inMemoryData = iml.loadData(1);
 
             ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
 
             Logger.info("Initializing Challenger Service");
             Queries q = new Queries(db.getConnection());
-            ChallengerServer cs = new ChallengerServer(pld, ad, inMemoryDataset, verificationQueue, q, durationEvaluationMinutes);
+            ChallengerServer cs = new ChallengerServer(inMemoryData, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder

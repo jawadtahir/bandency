@@ -1,11 +1,12 @@
 package de.tum.i13.datasets.airquality;
 
 import java.io.*;
-import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class StringZipFileIterator implements Enumeration<String>, Closeable {
+import de.tum.i13.datasets.cache.CloseableSource;
+
+public class StringZipFileIterator implements CloseableSource<String> {
 
 
     private final ZipFile zipFile;

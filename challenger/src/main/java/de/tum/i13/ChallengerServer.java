@@ -6,44 +6,33 @@ import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.airquality.AirqualityDataset;
 import de.tum.i13.datasets.cache.InMemoryDataset;
-import de.tum.i13.datasets.location.PrepareLocationDataset;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
 import org.tinylog.Logger;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
-    final private PrepareLocationDataset pld;
-    private final AirqualityDataset ad;
-    private final InMemoryDataset inMemoryAd;
+    private final InMemoryDataset<Batch> inMemoryDataset;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
     private final int durationEvaluationMinutes;
     private final Random random;
-
-
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(PrepareLocationDataset pld, AirqualityDataset ad, InMemoryDataset inMemoryAd, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
-        this.pld = pld;
-        this.ad = ad;
-        this.inMemoryAd = inMemoryAd;
+    public ChallengerServer(InMemoryDataset<Batch> inMemoryDataset, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
+        this.inMemoryDataset = inMemoryDataset;
         this.dbInserter = dbInserter;
         this.q = q;
         this.durationEvaluationMinutes = durationEvaluationMinutes;
@@ -163,18 +152,9 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
         bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
 
-        switch(bt) {
-            case Test:
-            case Verification:
-                bms.setDatasource(ad.newDataSource(bt, batchSize));
-                break;
-            case Evaluation:
-                Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
-                bms.setDatasource(this.inMemoryAd.getIterator(stopTime));
-                break;
-        }
-
-
+        Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
+        bms.setDatasource(this.inMemoryDataset.getIterator(stopTime));
+                
         Logger.info("Ready for benchmark: " + bms.toString());
 
         this.benchmark.put(benchmarkId, bms);
@@ -192,178 +172,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     static boolean isValid (String bmType){
         return true;
     }
-
-    static final Counter getLocationsCounter = Counter.build()
-            .name("getLocations")
-            .help("calls to getLocations methods")
-            .register();
-
-    @Override
-    public void getLocations(Benchmark request, StreamObserver<Locations> responseObserver) {
-
-        if(!this.benchmark.containsKey(request.getId())) {
-            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
-
-            responseObserver.onError(status.asException());
-            responseObserver.onCompleted();
-            return;
-        }
-
-        BenchmarkType benchmarkType = this.benchmark.get(request.getId()).getBenchmarkType();
-        getLocationsCounter.inc();
-
-        try {
-            
-            switch (benchmarkType) {
-                case Verification -> {
-                    responseObserver.onNext(pld.loadData(benchmarkType).getAllLocations());
-                    responseObserver.onCompleted();
-                    return;
-                }
-                case Test -> {
-                    responseObserver.onNext(pld.loadData(benchmarkType).getAllLocations());
-                    responseObserver.onCompleted();
-                    return;
-                }
-                case Evaluation -> {
-                    responseObserver.onNext(pld.loadData(benchmarkType).getAllLocations());
-                    responseObserver.onCompleted();
-                    return;
-                }
-            }
-
-
-        } catch (IOException e) {
-            Status status = Status.FAILED_PRECONDITION.withDescription("Invalid location set");
-
-            responseObserver.onError(status.asException());
-            responseObserver.onCompleted();
-            return;
-        }
-        
-
-    }
-
-    static final Counter initializeLatencyMeasuringCounter = Counter.build()
-            .name("initializeLatencyMeasuring")
-            .help("calls to initializeLatencyMeasuring methods")
-            .register();
-
-    @Override
-    public void initializeLatencyMeasuring(Benchmark request, StreamObserver<Ping> responseObserver) {
-        if(!this.benchmark.containsKey(request.getId())) {
-            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
-
-            responseObserver.onError(status.asException());
-            responseObserver.onCompleted();
-            return;
-        }
-
-        long random_id = new Random().nextLong();
-        Ping ping = Ping.newBuilder()
-                .setBenchmarkId(request.getId())
-                .setCorrelationId(random_id)
-                .build();
-
-        this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
-            b.addLatencyTimeStamp(random_id, System.nanoTime());
-            return b;
-        });
-
-        responseObserver.onNext(ping);
-        responseObserver.onCompleted();
-
-        initializeLatencyMeasuringCounter.inc();
-    }
-
-    static final Counter measureCounter = Counter.build()
-            .name("measure")
-            .help("calls to measure methods")
-            .register();
-
-    @Override
-    public void measure(Ping request, StreamObserver<Ping> responseObserver) {
-        if(!this.benchmark.containsKey(request.getBenchmarkId())) {
-            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
-
-            responseObserver.onError(status.asException());
-            responseObserver.onCompleted();
-            return;
-        }
-
-        long current_time = System.nanoTime();
-        AtomicReference<Ping> ping = new AtomicReference<>();
-        this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b) -> {
-            b.correlatePing(request.getCorrelationId(), current_time);
-
-            long random_id = new Random().nextLong();
-            Ping local = Ping.newBuilder()
-                    .setCorrelationId(random_id)
-                    .setBenchmarkId(request.getBenchmarkId())
-                    .build();
-
-            ping.set(local);
-            b.addLatencyTimeStamp(random_id, System.nanoTime());
-            return b;
-        });
-
-        Ping acquiredPing = ping.getAcquire();
-        if(acquiredPing == null) {
-            responseObserver.onError(new Exception("Initialize first latency measurements"));
-        }
-        responseObserver.onNext(ping.get());
-        responseObserver.onCompleted();
-
-        measureCounter.inc();
-    }
-
-
-    static final Counter endMeasurementCounter = Counter.build()
-            .name("endMeasurement")
-            .help("calls to endMeasurement methods")
-            .register();
-
-    static final Histogram measurementHistogram = Histogram.build()
-            .name("clientLatency")
-            .help("measurements of client latency")
-            .register();
-
-    @Override
-    public void endMeasurement(Ping request, StreamObserver<Empty> responseObserver) {
-        if(!this.benchmark.containsKey(request.getBenchmarkId())) {
-            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
-
-            responseObserver.onError(status.asException());
-            responseObserver.onCompleted();
-            return;
-        }
-
-        this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b)-> {
-            long correlation_id = request.getCorrelationId();
-            b.correlatePing(correlation_id, System.nanoTime());
-            double v = b.calcAverageTransportLatency();
-            if(v > 0) {
-                v /= 1_000_000;
-                measurementHistogram.observe(v);
-            }
-
-            try {
-                q.insertLatencyMeasurementStats(request.getBenchmarkId(), v);
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-
-
-            Logger.debug("average latency: " + v + "ms");
-            return b;
-        });
-
-        responseObserver.onNext(Empty.newBuilder().build());
-        responseObserver.onCompleted();
-
-        endMeasurementCounter.inc();
-    }
-
 
     static final Counter startBenchmarkCounter = Counter.build()
             .name("startBenchmark")

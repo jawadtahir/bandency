@@ -1,29 +1,24 @@
 package de.tum.i13.datasets.cache;
 
-import de.tum.i13.bandency.Batch;
-import de.tum.i13.challenger.BenchmarkType;
-import de.tum.i13.datasets.airquality.AirQualityDataSource;
-import de.tum.i13.datasets.airquality.AirqualityDataset;
 import me.tongfei.progressbar.ProgressBar;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class InMemoryLoader {
+public class InMemoryLoader<T> {
 
-    private AirqualityDataset ad;
+    private CloseableSource<T> batchDatasource;
 
-    public InMemoryLoader(AirqualityDataset ad) {
+    public InMemoryLoader(CloseableSource<T> batchDatasource) {
 
-        this.ad = ad;
+        this.batchDatasource = batchDatasource;
     }
 
-    public InMemoryDataset loadData(int batches, int batchSize) {
+    public InMemoryDataset<T> loadData(int batches) {
         try (ProgressBar pb = new ProgressBar("Loading data", batches)) {
-            AirQualityDataSource airQualityDataSource = ad.newDataSource(BenchmarkType.Evaluation, batchSize);
-            ArrayList<Batch> inMemoryBatches = new ArrayList<>(batches);
+            ArrayList<T> inMemoryBatches = new ArrayList<>(batches);
 
-            Iterator<Batch> batchIterator = airQualityDataSource.asIterator();
+            Iterator<T> batchIterator = this.batchDatasource.asIterator();
 
             int cnt = 0;
             while (cnt < batches && batchIterator.hasNext()) {
@@ -32,7 +27,7 @@ public class InMemoryLoader {
                 pb.step();
             }
 
-            return new InMemoryDataset(inMemoryBatches);
+            return new InMemoryDataset<T>(inMemoryBatches);
         }
     }
 }
