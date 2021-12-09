@@ -44,6 +44,12 @@ message ResultQ2 {
   //TODO: add results for breakout patterns
 }
 
+message ResultQ3 {
+  int64 benchmark_id = 1;
+  int64 batch_seq_id = 2;
+  //TODO: add stuff for query3
+}
+
 message BenchmarkConfiguration {
   string token = 1; //Token from the webapp for authentication
   int32 batch_size = 2; //Small batches might need different algorithms than large batches
@@ -53,6 +59,7 @@ message BenchmarkConfiguration {
   enum Query {
     Q1 = 0;
     Q2 = 1;
+    Q3 = 2;
   }
   repeated Query queries = 5;
 }
@@ -71,6 +78,7 @@ service Challenger {
   //post the result
   rpc resultQ1(ResultQ1) returns (google.protobuf.Empty);
   rpc resultQ2(ResultQ2) returns (google.protobuf.Empty);
+  rpc resultQ3(ResultQ3) returns (google.protobuf.Empty);
 
   //This marks the end of the throughput measurements
   rpc endBenchmark(Benchmark) returns (google.protobuf.Empty);

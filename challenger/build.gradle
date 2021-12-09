@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "application"
     id "com.google.protobuf" version "0.8.18"
-    id "idea"
+//    id "idea"
 }
 
 repositories {
@@ -14,7 +14,7 @@ group 'org.example'
 version '1.0-SNAPSHOT'
 
 
-apply plugin : "java"
+//apply plugin : "java"
 
 application {
     mainClass.set("de.tum.i13.Main")
@@ -58,7 +58,6 @@ jar {
 dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.google.guava:guava:31.0-jre'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 
     implementation 'io.prometheus:simpleclient:0.12.0'
     implementation 'io.prometheus:simpleclient_hotspot:0.12.0'

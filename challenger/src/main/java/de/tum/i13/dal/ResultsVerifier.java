@@ -27,8 +27,8 @@ public class ResultsVerifier implements Runnable{
         this.verificationQueue = verificationQueue;
         this.db = db;
         this.q = new Queries(db);
-        this.shuttingDown = new AtomicReference(false);
-        this.shutdown = new AtomicReference(true);
+        this.shuttingDown = new AtomicReference<Boolean>(false);
+        this.shutdown = new AtomicReference<Boolean>(true);
     }
 
     static final Counter verifyMeasurementCounter = Counter.build()
