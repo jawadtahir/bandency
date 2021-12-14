@@ -13,8 +13,8 @@ message Event {
   string symbolid = 1;
 
   enum SecType {
-    Equity = 0;
-    Index = 1;
+    Equity = 1;
+    Index = 2;
   }
   SecType sectype = 2;
   float lasttradeprice = 3;
@@ -25,30 +25,44 @@ message Event {
 message Batch {
   int64 seq_id = 1;
   bool last = 2;
-  repeated Event events = 3;
+  repeated string lookup_symbols = 3;
+  repeated Event events = 4;
 }
 
 message Benchmark {
   int64 id = 1;
 }
 
+message QueryResult {
+  string symbol = 1;
+  float ema_38 = 2;
+  float ema_100 = 3;
+}
+
 message ResultQ1 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
-  //TODO: add results for EMA
+
+  repeated QueryResult query_results = 3;
+}
+
+message CrossOverEvent {
+  enum SignalType {
+    Buy = 1;
+    Sell = 2;
+  }
+
+  google.protobuf.Timestamp ts = 0;
+  SignalType signal = 1;
 }
 
 message ResultQ2 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
-  //TODO: add results for breakout patterns
+  
+  repeated CrossOverEvent crossover_events = 3;
 }
 
-message ResultQ3 {
-  int64 benchmark_id = 1;
-  int64 batch_seq_id = 2;
-  //TODO: add stuff for query3
-}
 
 message BenchmarkConfiguration {
   string token = 1; //Token from the webapp for authentication
@@ -59,7 +73,6 @@ message BenchmarkConfiguration {
   enum Query {
     Q1 = 0;
     Q2 = 1;
-    Q3 = 2;
   }
   repeated Query queries = 5;
 }
@@ -78,8 +91,7 @@ service Challenger {
   //post the result
   rpc resultQ1(ResultQ1) returns (google.protobuf.Empty);
   rpc resultQ2(ResultQ2) returns (google.protobuf.Empty);
-  rpc resultQ3(ResultQ3) returns (google.protobuf.Empty);
-
+  
   //This marks the end of the throughput measurements
   rpc endBenchmark(Benchmark) returns (google.protobuf.Empty);
 }
