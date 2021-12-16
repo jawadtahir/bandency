@@ -8,13 +8,13 @@ option java_package = "de.tum.i13.bandency";
 
 package Challenger;
 
-message Event {
-  string symbolid = 1;
+enum SecType {
+  Equity = 0;
+  Index = 1;
+}
 
-  enum SecType {
-    Equity = 1;
-    Index = 2;
-  }
+message Event {
+  string symbol = 1;
   SecType sectype = 2;
   float lasttradeprice = 3;
   google.protobuf.Timestamp lastUpdate = 4;
@@ -47,12 +47,14 @@ message ResultQ1 {
 
 message CrossOverEvent {
   enum SignalType {
-    Buy = 1;
-    Sell = 2;
+    Buy = 0;
+    Sell = 1;
   }
 
-  google.protobuf.Timestamp ts = 0;
-  SignalType signal = 1;
+  google.protobuf.Timestamp ts = 1;
+  string symbol = 2;
+  SecType sectype = 3;
+  SignalType signal = 4;
 }
 
 message ResultQ2 {

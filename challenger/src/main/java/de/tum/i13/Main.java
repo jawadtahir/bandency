@@ -34,6 +34,9 @@ public class Main {
             int preloadEvaluation = 100;
             int durationEvaluationMinutes = 1;
 
+            //RDSA-export-week.csv => 6_903_594
+            
+
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 dataset = env.get("DATASET_PATH");
                 url = env.get("JDBC_DB_CONNECTION");
