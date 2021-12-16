@@ -61,30 +61,6 @@ benchmark = stub.createNewBenchmark(benchmarkconfiguration)
     </pre>
 
     <h4>Step 3</h4>
-    <p>Then, get the location data. The location data depends on the benchmark_type. The message can be bigger then the gRPC default configuration allows. Hence increase the max_receive_message_length.</p>
-    <pre>
-        <code>
-loc = stub.getLocations(benchmark) #get all the locations
-        </code>
-    </pre>
-
-
-    <h4>Step 4 (optional)</h4>
-    <p>Depending on your connectivity you might experience different latency and throughput. Optionally, we try to account for this by first measuring it.
-        The payload of a Ping corresponds roughly to the payload of a batch and the returning Pong roughly the payload of a Result
-        This kind of measurement is just for development and experimentation (since, well, it could be easily cheated ;-), how is a thought exercise for the participant).
-        We do not consider these measurements once you deploy your implementation on the VMs in our infrastructure.
-        The final evaluation will be run on VMs in our datacenter which assures level playing field.</p>
-    <pre>
-        <code>
-ping = stub.initializeLatencyMeasuring(benchmark)
-for i in range(10): #to get a reasonable average
-    ping = stub.measure(ping)
-stub.endMeasurement(ping)
-        </code>
-    </pre>
-
-    <h4>Step 5</h4>
     <p>First start the Benchmark. This sets the timestamp server side for the throughput measurments. Then process all the batches. The batches are correlated for the latency measurements.</p>
     <p>Once you called the endBenchmark RPC, we calculate the results. For testing, you can call endBenchmark early.</p>
 
