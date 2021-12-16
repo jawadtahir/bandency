@@ -54,7 +54,8 @@ AuthManager(app)
 # logging.basicConfig(level=logging.INFO)
 
 async def lastUpdate():
-    await flash("Last FAQ update - March 29th", "info")
+    #wait flash("Last FAQ update - March 29th", "info")
+    return
 
 @app.route('/')
 async def index():
@@ -178,6 +179,9 @@ async def profile():
             return redirect(url_for('profile'))
     else:
         group = await get_group_information(current_user.auth_id)
+        if group is None:
+            logout()
+            return redirect(url_for("index"))
         vms = await get_vms_of_group(group.id)
         return await render_template('profile.html', name="Profile", group=group, vms=vms,
                                      menu=helper.menu(profile=True))
@@ -355,7 +359,6 @@ async def systemstatus():
 async def leaderboard():
     await lastUpdate()
     res = await get_evaluation_results()
-    #g.id, g.groupname, br.q1_90percentile, br.q1_throughput, br.q2_throughput, br.q2_90percentile, avg90percentile, avgthroughput
     l = list()
 
     for a in res:

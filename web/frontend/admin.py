@@ -15,13 +15,13 @@ from aio_pika.robust_connection import connect_robust
 
 from frontend.models import db, Group, ChallengeGroup
 
-salt = 'qakLgEdhryvVyFHfR4vwQw'
+salt = 'qakLgEdljdsljertVyFHfR4vwQw'
 
 
 def create_msg(send_to, subject, message_text):
     message = MIMEText(message_text)
     message['to'] = send_to
-    message['from'] = "debschallange2021@gmail.com"
+    message['from'] = "debschallange2022@gmail.com"
     message['subject'] = subject
 
     return message
@@ -33,8 +33,8 @@ def send_mail_gmail(send_to, subject, message_plain):
     server.set_debuglevel(1)
     server.ehlo()
     server.starttls()
-    server.login("debschallenge2021@gmail.com", os.environ['EMAIL_PASSWORD'])
-    server.sendmail("debschallenge2021@gmail.com", send_to, msg.as_string())
+    server.login("debsgc2022@gmail.com", os.environ['EMAIL_PASSWORD'])
+    server.sendmail("debsgc2022@gmail.com", send_to, msg.as_string())
     server.quit()
 
 
@@ -70,7 +70,7 @@ async def create_group(group_name, email, skipmail):
         print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))
     else:
         message = """
-        Welcome to the DEBS 2021 - Challenge!
+        Welcome to the DEBS 2022 - Challenge!
         
         You are now registered. Please continue here:
         https://challenge.msrg.in.tum.de/
@@ -82,11 +82,11 @@ async def create_group(group_name, email, skipmail):
         
         We look all forward to your submission!
         
-        The DEBS Challenge 2021 Team
+        The DEBS Challenge 2022 Team
         """.format(group_name, default_pw)
 
         print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))
-        send_mail_gmail(email, "DEBS2021 - Challenge: Group registration", message)
+        send_mail_gmail(email, "DEBS2022 - Challenge: Group registration", message)
     return
 
 async def send_vm_request(group_name, forwarding_adrs):
