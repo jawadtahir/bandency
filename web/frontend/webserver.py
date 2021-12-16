@@ -180,8 +180,7 @@ async def profile():
     else:
         group = await get_group_information(current_user.auth_id)
         if group is None:
-            logout()
-            return redirect(url_for("index"))
+            return redirect(url_for("logout"))
         vms = await get_vms_of_group(group.id)
         return await render_template('profile.html', name="Profile", group=group, vms=vms,
                                      menu=helper.menu(profile=True))
