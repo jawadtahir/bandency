@@ -47,10 +47,10 @@ sourceSets {
 
 jar {
     
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
     manifest {
-        attributes "Main-Class": "$mainClassName"
+        attributes "Main-Class": "de.tum.i13.Main"
     }
 
     from {
