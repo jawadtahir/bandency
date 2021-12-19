@@ -33,8 +33,8 @@ def send_mail_gmail(send_to, subject, message_plain):
     server.set_debuglevel(1)
     server.ehlo()
     server.starttls()
-    server.login("debsgc2022@gmail.com", os.environ['EMAIL_PASSWORD'])
-    server.sendmail("debsgc2022@gmail.com", send_to, msg.as_string())
+    server.login("debsgc22@gmail.com", os.environ['EMAIL_PASSWORD'])
+    server.sendmail("debsgc22@gmail.com", send_to, msg.as_string())
     server.quit()
 
 

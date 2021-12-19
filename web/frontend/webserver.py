@@ -218,7 +218,7 @@ async def vms():
             print(e)
             print(traceback.format_exc())
             await flash(
-                "Error connecting to VM. Please inform the challenge organizers, debschallenge2021@gmail.com", "danger")
+                "Error connecting to VM. Please inform the challenge organizers, debsgc22@gmail.com", "danger")
 
         return redirect(url_for('vms'))
     else:
