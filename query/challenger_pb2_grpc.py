@@ -20,26 +20,6 @@ class ChallengerStub(object):
                 request_serializer=challenger__pb2.BenchmarkConfiguration.SerializeToString,
                 response_deserializer=challenger__pb2.Benchmark.FromString,
                 )
-        self.getLocations = channel.unary_unary(
-                '/Challenger.Challenger/getLocations',
-                request_serializer=challenger__pb2.Benchmark.SerializeToString,
-                response_deserializer=challenger__pb2.Locations.FromString,
-                )
-        self.initializeLatencyMeasuring = channel.unary_unary(
-                '/Challenger.Challenger/initializeLatencyMeasuring',
-                request_serializer=challenger__pb2.Benchmark.SerializeToString,
-                response_deserializer=challenger__pb2.Ping.FromString,
-                )
-        self.measure = channel.unary_unary(
-                '/Challenger.Challenger/measure',
-                request_serializer=challenger__pb2.Ping.SerializeToString,
-                response_deserializer=challenger__pb2.Ping.FromString,
-                )
-        self.endMeasurement = channel.unary_unary(
-                '/Challenger.Challenger/endMeasurement',
-                request_serializer=challenger__pb2.Ping.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
         self.startBenchmark = channel.unary_unary(
                 '/Challenger.Challenger/startBenchmark',
                 request_serializer=challenger__pb2.Benchmark.SerializeToString,
@@ -73,36 +53,6 @@ class ChallengerServicer(object):
     def createNewBenchmark(self, request, context):
         """Create a new Benchmark based on the configuration
         """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def getLocations(self, request, context):
-        """Get the polygons of all zip areas in germany based on the benchmarktype
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def initializeLatencyMeasuring(self, request, context):
-        """Depending on your connectivity you have a latency and throughput.
-        Optionally, we try to account for this by first measuring it.
-        The payload of a Ping corresponds roughly to the payload of a batch and the returning Pong roughly the payload of a Result
-        This kind of measurement is just for development and experimentation (since it could be easily cheated ;-))
-        We do not consider that once you deploy your implementation on the VMs in our infrastructure
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def measure(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def endMeasurement(self, request, context):
-        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -148,26 +98,6 @@ def add_ChallengerServicer_to_server(servicer, server):
                     servicer.createNewBenchmark,
                     request_deserializer=challenger__pb2.BenchmarkConfiguration.FromString,
                     response_serializer=challenger__pb2.Benchmark.SerializeToString,
-            ),
-            'getLocations': grpc.unary_unary_rpc_method_handler(
-                    servicer.getLocations,
-                    request_deserializer=challenger__pb2.Benchmark.FromString,
-                    response_serializer=challenger__pb2.Locations.SerializeToString,
-            ),
-            'initializeLatencyMeasuring': grpc.unary_unary_rpc_method_handler(
-                    servicer.initializeLatencyMeasuring,
-                    request_deserializer=challenger__pb2.Benchmark.FromString,
-                    response_serializer=challenger__pb2.Ping.SerializeToString,
-            ),
-            'measure': grpc.unary_unary_rpc_method_handler(
-                    servicer.measure,
-                    request_deserializer=challenger__pb2.Ping.FromString,
-                    response_serializer=challenger__pb2.Ping.SerializeToString,
-            ),
-            'endMeasurement': grpc.unary_unary_rpc_method_handler(
-                    servicer.endMeasurement,
-                    request_deserializer=challenger__pb2.Ping.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'startBenchmark': grpc.unary_unary_rpc_method_handler(
                     servicer.startBenchmark,
@@ -218,74 +148,6 @@ class Challenger(object):
         return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/createNewBenchmark',
             challenger__pb2.BenchmarkConfiguration.SerializeToString,
             challenger__pb2.Benchmark.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def getLocations(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/getLocations',
-            challenger__pb2.Benchmark.SerializeToString,
-            challenger__pb2.Locations.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def initializeLatencyMeasuring(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/initializeLatencyMeasuring',
-            challenger__pb2.Benchmark.SerializeToString,
-            challenger__pb2.Ping.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def measure(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/measure',
-            challenger__pb2.Ping.SerializeToString,
-            challenger__pb2.Ping.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def endMeasurement(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Challenger.Challenger/endMeasurement',
-            challenger__pb2.Ping.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

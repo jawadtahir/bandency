@@ -6,7 +6,6 @@ import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.cache.ObsoleteInMemoryDataset;
 import de.tum.i13.datasets.financial.BatchedEvents;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -52,21 +51,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
     @Override
     public void createNewBenchmark(BenchmarkConfiguration request, StreamObserver<Benchmark> responseObserver) {
-        //Verify the token that it is actually allowed to start a benchmark
-        //TODO: go to database, get groupname
         String token = request.getToken();
-
-        //Only a certain configuration for the batchsize is allowed, check if this is allowed
-        //TODO: precompute the batchsizes
-        int batchSize = request.getBatchSize();
-        if(batchSize > 20_000) {
-            Logger.info("batchsize to large: " + request.getToken());
-
-            Status status = Status.FAILED_PRECONDITION.withDescription("batchsize to large");
-            responseObserver.onError(status.asException());
-            responseObserver.onCompleted();
-            return;
-        }
 
         try {
             if(!q.checkIfGroupExists(token)) {
@@ -83,8 +68,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             responseObserver.onCompleted();
             return;
         }
-
-        batchSizeHistogram.observe(batchSize);
 
         if(request.getQueriesList().size() < 1) {
             Logger.info("no query selected: " + request.getToken());
@@ -114,23 +97,13 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             bt = BenchmarkType.Evaluation;
         }
 
-        if(bt == BenchmarkType.Evaluation && batchSize != 10_000) {
-            errorCounter.inc();
-
-            Status status = Status.FAILED_PRECONDITION.withDescription("Evaluation is only possible with batch size == 10_000");
-            responseObserver.onError(status.asException());
-            responseObserver.onCompleted();
-            return;
-        }
-
-
         //Save this benchmarkname to database
         String benchmarkName = request.getBenchmarkName();
         long benchmarkId = Math.abs(random.nextLong());
 
         try {
             UUID groupId = q.getGroupIdFromToken(token);
-            q.insertBenchmarkStarted(benchmarkId, groupId, benchmarkName, batchSize, bt);
+            q.insertBenchmarkStarted(benchmarkId, groupId, benchmarkName, 1000, bt);
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -146,7 +119,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setToken(token);
         bms.setBenchmarkId(benchmarkId);
         bms.setToken(token);
-        bms.setBatchSize(batchSize);
         bms.setBenchmarkType(bt);
         bms.setBenchmarkName(benchmarkName);
 
@@ -215,14 +187,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             .help("calls to nextMessage methods with validation")
             .register();
 
-    static final Histogram batchSizeHistogram = Histogram.build()
-            .name("batchsize")
-            .help("batchsize of benchmark")
-            .linearBuckets(0.0, 1_000.0, 21)
-            .create()
-            .register();
-
-
     @Override
     public void nextBatch(Benchmark request, StreamObserver<Batch> responseObserver) {
         if(!this.benchmark.containsKey(request.getId())) {
@@ -247,9 +211,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                 batchReadTimer.observeDuration();
                 nextBatchTest.inc();
             }
-            //Additionally record the batchsize to put the latency into perspective
-            batchSizeHistogram.observe(b.getBatchSize());
-
             return b;
         });
 

@@ -66,15 +66,14 @@ message ResultQ2 {
 
 message BenchmarkConfiguration {
   string token = 1; //Token from the webapp for authentication
-  int32 batch_size = 2; //Small batches might need different algorithms than large batches
-  string benchmark_name = 3; //chosen by the team, listed in the results
-  string benchmark_type = 4; //benchmark type, e.g., test
+  string benchmark_name = 2; //chosen by the team, listed in the results
+  string benchmark_type = 3; //benchmark type, e.g., test
 
   enum Query {
     Q1 = 0;
     Q2 = 1;
   }
-  repeated Query queries = 5;
+  repeated Query queries = 4;
 }
 
 service Challenger {
