@@ -5,16 +5,16 @@ import me.tongfei.progressbar.ProgressBar;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class InMemoryLoader<T> {
+public class ObsoleteInMemoryLoader<T> {
 
     private CloseableSource<T> batchDatasource;
 
-    public InMemoryLoader(CloseableSource<T> batchDatasource) {
+    public ObsoleteInMemoryLoader(CloseableSource<T> batchDatasource) {
 
         this.batchDatasource = batchDatasource;
     }
 
-    public InMemoryDataset<T> loadData(int batches) {
+    public ObsoleteInMemoryDataset<T> loadData(int batches) {
         try (ProgressBar pb = new ProgressBar("Loading data", batches)) {
             ArrayList<T> inMemoryBatches = new ArrayList<>(batches);
 
@@ -27,7 +27,7 @@ public class InMemoryLoader<T> {
                 pb.step();
             }
 
-            return new InMemoryDataset<T>(inMemoryBatches);
+            return new ObsoleteInMemoryDataset<T>(inMemoryBatches);
         }
     }
 }

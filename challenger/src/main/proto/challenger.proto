@@ -17,8 +17,7 @@ message Event {
   string symbol = 1;
   SecurityType security_type = 2;
   float last_trade_price = 3;
-  google.protobuf.Timestamp last_update = 4;
-  google.protobuf.Timestamp last_trade = 5;
+  google.protobuf.Timestamp last_trade = 4;
 }
 
 message Batch {

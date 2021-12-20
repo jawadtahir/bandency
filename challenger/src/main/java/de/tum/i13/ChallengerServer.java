@@ -6,7 +6,8 @@ import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.cache.InMemoryDataset;
+import de.tum.i13.datasets.cache.ObsoleteInMemoryDataset;
+import de.tum.i13.datasets.financial.BatchedEvents;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.Counter;
@@ -24,14 +25,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
-    private final InMemoryDataset<Batch> inMemoryDataset;
+    private final BatchedEvents inMemoryDataset;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
     private final int durationEvaluationMinutes;
     private final Random random;
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(InMemoryDataset<Batch> inMemoryDataset, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
+    public ChallengerServer(BatchedEvents inMemoryDataset, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
         this.inMemoryDataset = inMemoryDataset;
         this.dbInserter = dbInserter;
         this.q = q;
@@ -153,7 +154,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
 
         Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
-        bms.setDatasource(this.inMemoryDataset.getIterator(stopTime));
+        bms.setDatasource(this.inMemoryDataset.newIterator(stopTime));
                 
         Logger.info("Ready for benchmark: " + bms.toString());
 

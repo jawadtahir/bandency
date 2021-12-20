@@ -1,15 +1,13 @@
 package de.tum.i13;
 
-import de.tum.i13.bandency.Batch;
 import de.tum.i13.dal.DB;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ResultsVerifier;
 import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.airquality.StringZipFile;
 import de.tum.i13.datasets.airquality.StringZipFileIterator;
-import de.tum.i13.datasets.cache.InMemoryDataset;
-import de.tum.i13.datasets.cache.InMemoryLoader;
-import de.tum.i13.datasets.financial.FinancialDataLoader;
+import de.tum.i13.datasets.financial.BatchedEvents;
+import de.tum.i13.datasets.financial.FinancialEventLoader;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.prometheus.client.exporter.HTTPServer;
@@ -24,18 +22,14 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-
             Map<String, String> env = System.getenv();
 
-            String dataset = "/home/chris/data/challenge";
+            String dataset = "/home/chris/data/debs-2022-gc-test-set-trading.csv.zip";
             String hostName = InetAddress.getLocalHost().getHostName();
 
             String url = "jdbc:postgresql://127.0.0.1:5432/bandency?user=bandency&password=bandency";
             int preloadEvaluation = 100;
             int durationEvaluationMinutes = 1;
-
-            //RDSA-export-week.csv => 6_903_594
-            
 
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 dataset = env.get("DATASET_PATH");
@@ -44,26 +38,25 @@ public class Main {
                 durationEvaluationMinutes = 15;
             }
 
-            Logger.info("opening database connection: " + url);
-            DB db = DB.createDBConnection(url);
-
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
-            
 
             StringZipFile szf = new StringZipFile(Path.of(dataset).toFile());
             StringZipFileIterator szfi = szf.open();
-            FinancialDataLoader fdl = new FinancialDataLoader(szfi);
-            InMemoryLoader<Batch> iml = new InMemoryLoader<Batch>(fdl);
+            FinancialEventLoader fdl = new FinancialEventLoader(szfi);
 
+            BatchedEvents be = new BatchedEvents();
             Logger.info("Preloading data in memory: " + preloadEvaluation);
-            Logger.info("Evaluation duration in minutes: " + durationEvaluationMinutes);
-            InMemoryDataset<Batch> inMemoryData = iml.loadData(1);
+            be.loadData(fdl, 1000);
 
+            Logger.info("Evaluation duration in minutes: " + durationEvaluationMinutes);
+            
             ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
 
             Logger.info("Initializing Challenger Service");
+            Logger.info("opening database connection: " + url);
+            DB db = DB.createDBConnection(url);
             Queries q = new Queries(db.getConnection());
-            ChallengerServer cs = new ChallengerServer(inMemoryData, verificationQueue, q, durationEvaluationMinutes);
+            ChallengerServer cs = new ChallengerServer(be, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder
@@ -75,7 +68,7 @@ public class Main {
             server.start();
 
             Logger.info("Initilize Prometheus");
-            new HTTPServer(8023); //This starts already a background thread serving the default registry
+            var metrics = new HTTPServer(8023); //This starts already a background thread serving the default registry
 
             Logger.info("Starting Results verifier");
             ResultsVerifier rv = new ResultsVerifier(verificationQueue, db.getConnection());
@@ -88,6 +81,7 @@ public class Main {
 
             Logger.info("Serving");
             server.awaitTermination();
+            metrics.close();
 
         } catch (Exception ex) {
             Logger.error(ex);

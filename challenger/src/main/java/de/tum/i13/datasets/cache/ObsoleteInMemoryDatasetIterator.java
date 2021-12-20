@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
 
-public class InMemoryDatasetIterator<T> implements CloseableSource<T> {
+public class ObsoleteInMemoryDatasetIterator<T> implements CloseableSource<T> {
 
     private final Iterator<T> iter;
     private final Instant stopTime;
 
-    public InMemoryDatasetIterator(Iterator<T> iter, Instant stopTime) {
+    public ObsoleteInMemoryDatasetIterator(Iterator<T> iter, Instant stopTime) {
 
         this.iter = iter;
         this.stopTime = stopTime;
