@@ -17,6 +17,7 @@ public class BenchmarkState {
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private String token;
     private int batchSize;
+    private boolean isStarted;
     private HashMap<Long, Long> pingCorrelation;
     private ArrayList<Long> measurements;
 
@@ -40,6 +41,7 @@ public class BenchmarkState {
         this.dbInserter = dbInserter;
         this.averageLatency = 0.0;
         this.batchSize = -1;
+        this.isStarted = false;
 
         this.pingCorrelation = new HashMap<>();
         this.measurements = new ArrayList<>();
@@ -81,6 +83,14 @@ public class BenchmarkState {
 
     public int getBatchSize() {
         return batchSize;
+    }
+
+    public void setIsStarted(boolean istarted) {
+        this.isStarted = istarted;
+    }
+
+    public boolean getIsStarted() {
+        return this.isStarted;
     }
 
     public String getToken() {

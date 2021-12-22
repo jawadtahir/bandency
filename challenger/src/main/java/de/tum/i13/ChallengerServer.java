@@ -163,6 +163,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
 
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
+            b.setIsStarted(true);
             b.startBenchmark(System.nanoTime());
             return b;
         });
@@ -190,8 +191,15 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     @Override
     public void nextBatch(Benchmark request, StreamObserver<Batch> responseObserver) {
         if(!this.benchmark.containsKey(request.getId())) {
-            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
+            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not created");
 
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        if(!this.benchmark.get(request.getId()).getIsStarted()) {
+            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started, call startBenchmark first");
             responseObserver.onError(status.asException());
             responseObserver.onCompleted();
             return;
@@ -238,8 +246,15 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         long nanoTime = System.nanoTime();
 
         if(!this.benchmark.containsKey(request.getBenchmarkId())) {
-            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
+            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not created");
 
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        if(!this.benchmark.get(request.getBenchmarkId()).getIsStarted()) {
+            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started, call startBenchmark first");
             responseObserver.onError(status.asException());
             responseObserver.onCompleted();
             return;
@@ -273,6 +288,13 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             return;
         }
 
+        if(!this.benchmark.get(request.getBenchmarkId()).getIsStarted()) {
+            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started, call startBenchmark first");
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
+        }
+
         this.benchmark.computeIfPresent(request.getBenchmarkId(), (k, b) -> {
             b.resultsQ2(request, nanoTime);
             return b;
@@ -296,6 +318,13 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         if(!this.benchmark.containsKey(request.getId())) {
             Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
 
+            responseObserver.onError(status.asException());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        if(!this.benchmark.get(request.getId()).getIsStarted()) {
+            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started, call startBenchmark first");
             responseObserver.onError(status.asException());
             responseObserver.onCompleted();
             return;
