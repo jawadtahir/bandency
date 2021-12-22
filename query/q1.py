@@ -8,9 +8,9 @@ import challenger_pb2_grpc as api
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
 with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
+#with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
-    ch.BenchmarkConfiguration()
     benchmarkconfiguration = ch.BenchmarkConfiguration(
         token="vcgeajpqzwrfuwytvqyxypjuksgbraeg",
         benchmark_name="shows_up_in_dashboard",
@@ -20,12 +20,11 @@ with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
 
     stub.startBenchmark(benchmark)
 
+    event_count = 0
+
     while True:
         batch = stub.nextBatch(benchmark)
-        if batch.last:
-            print("received last batch")
-            stub.endBenchmark(benchmark)
-            break
+        event_count = event_count + len(batch.events)
 
         def queryResults(symbols:list[str]) -> list[ch.Indicator]:
             # Your part: calculate the indicators for the given symbols
@@ -46,3 +45,8 @@ with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
                             batch_seq_id=batch.seq_id, #The sequence id of the batch
                             crossover_events=crossoverEvents()) 
         stub.resultQ2(resultQ2)
+
+        if batch.last:
+            print(f"received last batch, total batches: {event_count}")
+            stub.endBenchmark(benchmark)
+            break
