@@ -1,12 +1,8 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <div class="alert alert-secondary">
-        Downloaded metrics are in Nanoseconds
-    </div>
     <div class="alert alert-danger">
-        Deactivation of benchmarks cannot be reversed!
-        Use case: You had a successful and fast run, but you screwed up the last run which would count. If this is the case, then you can deactivate the last run and the previous counts.
+        Deactivation of benchmarks? This can be useful for Evaluation runs. You had a successful and fast run, but you screwed up the last run which would count. If this is the case, then you can deactivate the last run and the previous counts in the dashboard.
     </div>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
         <a class="btn btn-primary" href="/querymetrics/{{ benchmark.id }}/">Download Metrics CSV</a>

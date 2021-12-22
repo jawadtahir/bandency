@@ -10,32 +10,37 @@ op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
 with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
-    ch.Query.Q1
-
     ch.BenchmarkConfiguration()
     benchmarkconfiguration = ch.BenchmarkConfiguration(
         token="vcgeajpqzwrfuwytvqyxypjuksgbraeg",
         benchmark_name="shows_up_in_dashboard",
         benchmark_type="test",
-        queries=[ch.Query.Q1])
+        queries=[ch.Query.Q1, ch.Query.Q2])
     benchmark = stub.createNewBenchmark(benchmarkconfiguration)
 
-    batch = stub.nextBatch(benchmark)
-    while batch:
-        #topkimproved = processTheBatchQ1(batch) #here is your implementation ;)
-        resultQ1 = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
-                            batch_seq_id=batch.seq_id)
-
-        stub.resultQ1(resultQ1)  # send the result of query 1, also send the result of Q2 in case you calculate both
-
-        # do the same for Q2
-        resultQ2 = ch.ResultQ1(benchmark_id=benchmark.id,  #The id of the benchmark
-                            batch_seq_id=batch.seq_id)
-        stub.resultQ2(resultQ2)
-
+    while True:
+        batch = stub.nextBatch(benchmark)
         if batch.last:
+            print("received last batch")
+            stub.endBenchmark(benchmark)
             break
 
-        batch = stub.nextMessage(benchmark)
+        def queryResults(symbols:list[str]) -> list[ch.Indicator]:
+            # Your part: calculate the indicators for the given symbols
+            return list()
 
-    stub.endBenchmark(benchmark)
+        #topkimproved = processTheBatchQ1(batch) #here is your implementation ;)
+        resultQ1 = ch.ResultQ1(benchmark_id=benchmark.id, #The id of the benchmark
+                            batch_seq_id=batch.seq_id, #The sequence id of the batch
+                            query_result=queryResults(batch.lookup_symbols))
+        stub.resultQ1(resultQ1)  # send the result of query 1 back
+
+        def crossoverEvents() -> list[ch.CrossoverEvent]:
+            #Your part: calculate the crossover events
+            return list()
+
+        # do the same for Q2
+        resultQ2 = ch.ResultQ1(benchmark_id=benchmark.id, #The id of the benchmark
+                            batch_seq_id=batch.seq_id, #The sequence id of the batch
+                            crossover_events=crossoverEvents()) 
+        stub.resultQ2(resultQ2)

@@ -31,7 +31,7 @@ message Benchmark {
   int64 id = 1;
 }
 
-message QueryResult {
+message Indicator {
   string symbol = 1;
   float ema_38 = 2;
   float ema_100 = 3;
@@ -41,7 +41,7 @@ message ResultQ1 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
 
-  repeated QueryResult query_results = 3;
+  repeated Indicator indicators = 3;
 }
 
 message CrossoverEvent {
