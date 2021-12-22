@@ -27,7 +27,7 @@ public class Main {
             String dataset = "/home/chris/data/debs-2022-gc-test-set-trading.csv.zip";
             String hostName = InetAddress.getLocalHost().getHostName();
 
-            String url = "jdbc:postgresql://127.0.0.1:5432/bandency?user=bandency&password=bandency";
+            String url = "jdbc:postgresql://winhost:5432/bandency?user=bandency&password=bandency";
             int preloadEvaluation = 100;
             int durationEvaluationMinutes = 1;
 

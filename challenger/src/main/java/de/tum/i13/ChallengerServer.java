@@ -155,7 +155,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     @Override
     public void startBenchmark(Benchmark request, StreamObserver<Empty> responseObserver) {
         if(!this.benchmark.containsKey(request.getId())) {
-            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not started");
+            Status status = Status.FAILED_PRECONDITION.withDescription("Benchmark not created");
 
             responseObserver.onError(status.asException());
             responseObserver.onCompleted();
@@ -164,7 +164,6 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
             b.startBenchmark(System.nanoTime());
-            // b.setDatasource(ad.newDataSource(b.getBenchmarkType(), b.getBatchSize()));
             return b;
         });
 
