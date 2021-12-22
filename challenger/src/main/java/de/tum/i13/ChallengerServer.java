@@ -2,6 +2,7 @@ package de.tum.i13;
 
 import com.google.protobuf.Empty;
 import de.tum.i13.bandency.*;
+import de.tum.i13.bandency.Query;
 import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
@@ -122,8 +123,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setBenchmarkType(bt);
         bms.setBenchmarkName(benchmarkName);
 
-        bms.setQ1(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q1));
-        bms.setQ2(request.getQueriesList().contains(BenchmarkConfiguration.Query.Q2));
+        bms.setQ1(request.getQueriesList().contains(Query.Q1));
+        bms.setQ2(request.getQueriesList().contains(Query.Q2));
 
         Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
         bms.setDatasource(this.inMemoryDataset.newIterator(stopTime));
