@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\023de.tum.i13.bandencyP\001',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x01\n\x05\x45vent\x12\x0e\n\x06symbol\x18\x01 \x01(\t\x12/\n\rsecurity_type\x18\x02 \x01(\x0e\x32\x18.Challenger.SecurityType\x12\x18\n\x10last_trade_price\x18\x03 \x01(\x02\x12.\n\nlast_trade\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"`\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12\x0c\n\x04last\x18\x02 \x01(\x08\x12\x16\n\x0elookup_symbols\x18\x03 \x03(\t\x12!\n\x06\x65vents\x18\x04 \x03(\x0b\x32\x11.Challenger.Event\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\">\n\x0bQueryResult\x12\x0e\n\x06symbol\x18\x01 \x01(\t\x12\x0e\n\x06\x65ma_38\x18\x02 \x01(\x02\x12\x0f\n\x07\x65ma_100\x18\x03 \x01(\x02\"f\n\x08ResultQ1\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x14\n\x0c\x62\x61tch_seq_id\x18\x02 \x01(\x03\x12.\n\rquery_results\x18\x03 \x03(\x0b\x32\x17.Challenger.QueryResult\"\xd6\x01\n\x0e\x43rossoverEvent\x12&\n\x02ts\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06symbol\x18\x02 \x01(\t\x12/\n\rsecurity_type\x18\x03 \x01(\x0e\x32\x18.Challenger.SecurityType\x12:\n\x0bsignal_type\x18\x04 \x01(\x0e\x32%.Challenger.CrossoverEvent.SignalType\"\x1f\n\nSignalType\x12\x07\n\x03\x42uy\x10\x00\x12\x08\n\x04Sell\x10\x01\"l\n\x08ResultQ2\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x14\n\x0c\x62\x61tch_seq_id\x18\x02 \x01(\x03\x12\x34\n\x10\x63rossover_events\x18\x03 \x03(\x0b\x32\x1a.Challenger.CrossoverEvent\"\xab\x01\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x16\n\x0e\x62\x65nchmark_name\x18\x02 \x01(\t\x12\x16\n\x0e\x62\x65nchmark_type\x18\x03 \x01(\t\x12\x39\n\x07queries\x18\x04 \x03(\x0e\x32(.Challenger.BenchmarkConfiguration.Query\"\x17\n\x05Query\x12\x06\n\x02Q1\x10\x00\x12\x06\n\x02Q2\x10\x01*%\n\x0cSecurityType\x12\n\n\x06\x45quity\x10\x00\x12\t\n\x05Index\x10\x01\x32\x88\x03\n\nChallenger\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x35\n\tnextBatch\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x38\n\x08resultQ1\x12\x14.Challenger.ResultQ1\x1a\x16.google.protobuf.Empty\x12\x38\n\x08resultQ2\x12\x14.Challenger.ResultQ2\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB\x17\n\x13\x64\x65.tum.i13.bandencyP\x01\x62\x06proto3'
+  serialized_pb=b'\n\x10\x63hallenger.proto\x12\nChallenger\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x01\n\x05\x45vent\x12\x0e\n\x06symbol\x18\x01 \x01(\t\x12/\n\rsecurity_type\x18\x02 \x01(\x0e\x32\x18.Challenger.SecurityType\x12\x18\n\x10last_trade_price\x18\x03 \x01(\x02\x12.\n\nlast_trade\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"`\n\x05\x42\x61tch\x12\x0e\n\x06seq_id\x18\x01 \x01(\x03\x12\x0c\n\x04last\x18\x02 \x01(\x08\x12\x16\n\x0elookup_symbols\x18\x03 \x03(\t\x12!\n\x06\x65vents\x18\x04 \x03(\x0b\x32\x11.Challenger.Event\"\x17\n\tBenchmark\x12\n\n\x02id\x18\x01 \x01(\x03\">\n\x0bQueryResult\x12\x0e\n\x06symbol\x18\x01 \x01(\t\x12\x0e\n\x06\x65ma_38\x18\x02 \x01(\x02\x12\x0f\n\x07\x65ma_100\x18\x03 \x01(\x02\"f\n\x08ResultQ1\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x14\n\x0c\x62\x61tch_seq_id\x18\x02 \x01(\x03\x12.\n\rquery_results\x18\x03 \x03(\x0b\x32\x17.Challenger.QueryResult\"\xd6\x01\n\x0e\x43rossoverEvent\x12&\n\x02ts\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06symbol\x18\x02 \x01(\t\x12/\n\rsecurity_type\x18\x03 \x01(\x0e\x32\x18.Challenger.SecurityType\x12:\n\x0bsignal_type\x18\x04 \x01(\x0e\x32%.Challenger.CrossoverEvent.SignalType\"\x1f\n\nSignalType\x12\x07\n\x03\x42uy\x10\x00\x12\x08\n\x04Sell\x10\x01\"l\n\x08ResultQ2\x12\x14\n\x0c\x62\x65nchmark_id\x18\x01 \x01(\x03\x12\x14\n\x0c\x62\x61tch_seq_id\x18\x02 \x01(\x03\x12\x34\n\x10\x63rossover_events\x18\x03 \x03(\x0b\x32\x1a.Challenger.CrossoverEvent\"{\n\x16\x42\x65nchmarkConfiguration\x12\r\n\x05token\x18\x01 \x01(\t\x12\x16\n\x0e\x62\x65nchmark_name\x18\x02 \x01(\t\x12\x16\n\x0e\x62\x65nchmark_type\x18\x03 \x01(\t\x12\"\n\x07queries\x18\x04 \x03(\x0e\x32\x11.Challenger.Query*%\n\x0cSecurityType\x12\n\n\x06\x45quity\x10\x00\x12\t\n\x05Index\x10\x01*\x17\n\x05Query\x12\x06\n\x02Q1\x10\x00\x12\x06\n\x02Q2\x10\x01\x32\x88\x03\n\nChallenger\x12O\n\x12\x63reateNewBenchmark\x12\".Challenger.BenchmarkConfiguration\x1a\x15.Challenger.Benchmark\x12?\n\x0estartBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.Empty\x12\x35\n\tnextBatch\x12\x15.Challenger.Benchmark\x1a\x11.Challenger.Batch\x12\x38\n\x08resultQ1\x12\x14.Challenger.ResultQ1\x1a\x16.google.protobuf.Empty\x12\x38\n\x08resultQ2\x12\x14.Challenger.ResultQ2\x1a\x16.google.protobuf.Empty\x12=\n\x0c\x65ndBenchmark\x12\x15.Challenger.Benchmark\x1a\x16.google.protobuf.EmptyB\x17\n\x13\x64\x65.tum.i13.bandencyP\x01\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -46,14 +46,42 @@ _SECURITYTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1035,
-  serialized_end=1072,
+  serialized_start=986,
+  serialized_end=1023,
 )
 _sym_db.RegisterEnumDescriptor(_SECURITYTYPE)
 
 SecurityType = enum_type_wrapper.EnumTypeWrapper(_SECURITYTYPE)
+_QUERY = _descriptor.EnumDescriptor(
+  name='Query',
+  full_name='Challenger.Query',
+  filename=None,
+  file=DESCRIPTOR,
+  create_key=_descriptor._internal_create_key,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='Q1', index=0, number=0,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='Q2', index=1, number=1,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=1025,
+  serialized_end=1048,
+)
+_sym_db.RegisterEnumDescriptor(_QUERY)
+
+Query = enum_type_wrapper.EnumTypeWrapper(_QUERY)
 Equity = 0
 Index = 1
+Q1 = 0
+Q2 = 1
 
 
 _CROSSOVEREVENT_SIGNALTYPE = _descriptor.EnumDescriptor(
@@ -80,31 +108,6 @@ _CROSSOVEREVENT_SIGNALTYPE = _descriptor.EnumDescriptor(
   serialized_end=749,
 )
 _sym_db.RegisterEnumDescriptor(_CROSSOVEREVENT_SIGNALTYPE)
-
-_BENCHMARKCONFIGURATION_QUERY = _descriptor.EnumDescriptor(
-  name='Query',
-  full_name='Challenger.BenchmarkConfiguration.Query',
-  filename=None,
-  file=DESCRIPTOR,
-  create_key=_descriptor._internal_create_key,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='Q1', index=0, number=0,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='Q2', index=1, number=1,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=1010,
-  serialized_end=1033,
-)
-_sym_db.RegisterEnumDescriptor(_BENCHMARKCONFIGURATION_QUERY)
 
 
 _EVENT = _descriptor.Descriptor(
@@ -478,7 +481,6 @@ _BENCHMARKCONFIGURATION = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
-    _BENCHMARKCONFIGURATION_QUERY,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -486,8 +488,8 @@ _BENCHMARKCONFIGURATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=862,
-  serialized_end=1033,
+  serialized_start=861,
+  serialized_end=984,
 )
 
 _EVENT.fields_by_name['security_type'].enum_type = _SECURITYTYPE
@@ -499,8 +501,7 @@ _CROSSOVEREVENT.fields_by_name['security_type'].enum_type = _SECURITYTYPE
 _CROSSOVEREVENT.fields_by_name['signal_type'].enum_type = _CROSSOVEREVENT_SIGNALTYPE
 _CROSSOVEREVENT_SIGNALTYPE.containing_type = _CROSSOVEREVENT
 _RESULTQ2.fields_by_name['crossover_events'].message_type = _CROSSOVEREVENT
-_BENCHMARKCONFIGURATION.fields_by_name['queries'].enum_type = _BENCHMARKCONFIGURATION_QUERY
-_BENCHMARKCONFIGURATION_QUERY.containing_type = _BENCHMARKCONFIGURATION
+_BENCHMARKCONFIGURATION.fields_by_name['queries'].enum_type = _QUERY
 DESCRIPTOR.message_types_by_name['Event'] = _EVENT
 DESCRIPTOR.message_types_by_name['Batch'] = _BATCH
 DESCRIPTOR.message_types_by_name['Benchmark'] = _BENCHMARK
@@ -510,6 +511,7 @@ DESCRIPTOR.message_types_by_name['CrossoverEvent'] = _CROSSOVEREVENT
 DESCRIPTOR.message_types_by_name['ResultQ2'] = _RESULTQ2
 DESCRIPTOR.message_types_by_name['BenchmarkConfiguration'] = _BENCHMARKCONFIGURATION
 DESCRIPTOR.enum_types_by_name['SecurityType'] = _SECURITYTYPE
+DESCRIPTOR.enum_types_by_name['Query'] = _QUERY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Event = _reflection.GeneratedProtocolMessageType('Event', (_message.Message,), {
@@ -578,8 +580,8 @@ _CHALLENGER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1075,
-  serialized_end=1467,
+  serialized_start=1051,
+  serialized_end=1443,
   methods=[
   _descriptor.MethodDescriptor(
     name='createNewBenchmark',

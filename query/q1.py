@@ -10,11 +10,14 @@ op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
 with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
+    ch.Query.Q1
+
+    ch.BenchmarkConfiguration()
     benchmarkconfiguration = ch.BenchmarkConfiguration(
         token="vcgeajpqzwrfuwytvqyxypjuksgbraeg",
         benchmark_name="shows_up_in_dashboard",
         benchmark_type="test",
-        queries=[ch.BenchmarkConfiguration.Query.Q1])
+        queries=[ch.Query.Q1])
     benchmark = stub.createNewBenchmark(benchmarkconfiguration)
 
     batch = stub.nextBatch(benchmark)
