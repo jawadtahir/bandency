@@ -24,8 +24,7 @@ public class BatchedEvents {
                 bb.addEvents(fel.nextElement());
             }
             bb.setSeqId(cnt);
-
-            bb.addLookupSymbols("todo");
+            bb.addAllLookupSymbols(this.sg.nextElement());
 
             batches.add(bb.build());
 
@@ -34,7 +33,6 @@ public class BatchedEvents {
 
         var last = this.batches.get(batches.size()-1);
         var newLast = Batch.newBuilder(last)
-            .addAllLookupSymbols(this.sg.nextElement())
             .setLast(true)
             .build();
         this.batches.set(batches.size()-1, newLast);
