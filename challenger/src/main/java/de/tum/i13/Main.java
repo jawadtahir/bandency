@@ -36,6 +36,7 @@ public class Main {
 
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 dataset = env.get("DATASET_PATH");
+                symbolDataset = env.get("SYMBOL_DATASET");
                 url = env.get("JDBC_DB_CONNECTION");
                 preloadEvaluation = 30_000;
                 durationEvaluationMinutes = 15;
@@ -47,19 +48,13 @@ public class Main {
             var symbols = sr.readAll();
             symbols.sort((l, r) -> Integer.compare(r.getOccurances(), l.getOccurances()));
 
-            SymbolsGenerator sg = new SymbolsGenerator(symbols);
-            var ne1 = sg.nextElement();
-            var ne2 = sg.nextElement();
-            var ne3 = sg.nextElement();
-            var ne4 = sg.nextElement();
-            var ne5 = sg.nextElement();
-
+            var sg = new SymbolsGenerator(symbols);
             
             StringZipFile szf = new StringZipFile(Path.of(dataset).toFile());
             StringZipFileIterator szfi = szf.open();
             FinancialEventLoader fdl = new FinancialEventLoader(szfi);
 
-            BatchedEvents be = new BatchedEvents();
+            BatchedEvents be = new BatchedEvents(sg);
             Logger.info("Preloading data in memory: " + preloadEvaluation);
             be.loadData(fdl, 1000);
 
