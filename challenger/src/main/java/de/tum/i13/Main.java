@@ -8,6 +8,8 @@ import de.tum.i13.datasets.airquality.StringZipFile;
 import de.tum.i13.datasets.airquality.StringZipFileIterator;
 import de.tum.i13.datasets.financial.BatchedEvents;
 import de.tum.i13.datasets.financial.FinancialEventLoader;
+import de.tum.i13.datasets.financial.SymbolsGenerator;
+import de.tum.i13.datasets.financial.SymbolsReader;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.prometheus.client.exporter.HTTPServer;
@@ -25,6 +27,7 @@ public class Main {
             Map<String, String> env = System.getenv();
 
             String dataset = "/home/chris/data/debs-2022-gc-test-set-trading.csv.zip";
+            String symbolDataset = "/home/chris/data/symbols-unique.txt";
             String hostName = InetAddress.getLocalHost().getHostName();
 
             String url = "jdbc:postgresql://winhost:5432/bandency?user=bandency&password=bandency";
@@ -40,6 +43,18 @@ public class Main {
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
 
+            SymbolsReader sr = new SymbolsReader(symbolDataset);
+            var symbols = sr.readAll();
+            symbols.sort((l, r) -> Integer.compare(r.getOccurances(), l.getOccurances()));
+
+            SymbolsGenerator sg = new SymbolsGenerator(symbols);
+            var ne1 = sg.nextElement();
+            var ne2 = sg.nextElement();
+            var ne3 = sg.nextElement();
+            var ne4 = sg.nextElement();
+            var ne5 = sg.nextElement();
+
+            
             StringZipFile szf = new StringZipFile(Path.of(dataset).toFile());
             StringZipFileIterator szfi = szf.open();
             FinancialEventLoader fdl = new FinancialEventLoader(szfi);

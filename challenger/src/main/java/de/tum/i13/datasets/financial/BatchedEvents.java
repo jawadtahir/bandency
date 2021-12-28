@@ -8,8 +8,10 @@ import de.tum.i13.bandency.Batch;
 public class BatchedEvents {
 
     private final ArrayList<Batch> batches;
+    private SymbolsGenerator sg;
     
-    public BatchedEvents() {
+    public BatchedEvents(SymbolsGenerator sg) {
+        this.sg = sg;
         this.batches = new ArrayList<>();
     }
 
@@ -31,7 +33,10 @@ public class BatchedEvents {
         }
 
         var last = this.batches.get(batches.size()-1);
-        var newLast = Batch.newBuilder(last).setLast(true).build();
+        var newLast = Batch.newBuilder(last)
+            .addAllLookupSymbols(this.sg.nextElement())
+            .setLast(true)
+            .build();
         this.batches.set(batches.size()-1, newLast);
     }
     
