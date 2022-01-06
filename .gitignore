@@ -9,5 +9,7 @@ group*/
 *.pyc
 vm/.idea/
 vm/focal-server-cloudimg-amd64.img
-
+.vscode/
+.settings/
+.gradle/
 

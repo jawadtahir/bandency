@@ -1,14 +1,20 @@
 package de.tum.i13;
 
-import com.google.protobuf.Empty;
-import io.grpc.CallOptions;
-import io.grpc.Grpc;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import de.tum.i13.challenge.Batch;
+import de.tum.i13.challenge.Benchmark;
+import de.tum.i13.challenge.BenchmarkConfiguration;
+import de.tum.i13.challenge.ChallengerGrpc;
+import de.tum.i13.challenge.CrossoverEvent;
+import de.tum.i13.challenge.Indicator;
+import de.tum.i13.challenge.Query;
+import de.tum.i13.challenge.ResultQ1;
+import de.tum.i13.challenge.ResultQ2;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 
 public class Main {
 
@@ -27,20 +33,15 @@ public class Main {
 
         BenchmarkConfiguration bc = BenchmarkConfiguration.newBuilder()
                 .setBenchmarkName("Testrun " + new Date().toString())
-                .setBatchSize(100)
-                .addQueries(BenchmarkConfiguration.Query.Q1)
-                .addQueries(BenchmarkConfiguration.Query.Q2)
-                .setToken("see API key in your Profile") //go to: https://challenge.msrg.in.tum.de/profile/
-                .setBenchmarkType("evaluation") //Benchmark Type for evaluation
-                //.setBenchmarkType("test") //Benchmark Type for testing
+                .addQueries(Query.Q1)
+                .addQueries(Query.Q2)
+                //.setToken("see API key in your Profile") //go to: https://challenge.msrg.in.tum.de/profile/
+                //.setBenchmarkType("evaluation") //Benchmark Type for evaluation
+                .setBenchmarkType("test") //Benchmark Type for testing
                 .build();
 
         //Create a new Benchmark
         Benchmark newBenchmark = challengeClient.createNewBenchmark(bc);
-
-        //Get the locations
-        Locations locations = challengeClient.getLocations(newBenchmark);
-
 
         //Start the benchmark
         challengeClient.startBenchmark(newBenchmark);
@@ -55,29 +56,31 @@ public class Main {
             }
 
             //process the batch of events we have
-            var topKImproved = calculateTopKImproved(batch);
+            var q1Results = calculateIndicators(batch);
 
             ResultQ1 q1Result = ResultQ1.newBuilder()
-                    .setBenchmarkId(newBenchmark.getId())
+                    .setBenchmarkId(newBenchmark.getId()) //set the benchmark id
                     .setBatchSeqId(batch.getSeqId()) //set the sequence number
-                    .addAllTopkimproved(topKImproved)
+                    .addAllIndicators(q1Results)
                     .build();
 
             //return the result of Q1
             challengeClient.resultQ1(q1Result);
 
-            var histogram = calculateHistogram(batch);
+
+            var crossOverevents = calculateCrossoverEvents(batch);
+
             ResultQ2 q2Result = ResultQ2.newBuilder()
-                    .setBenchmarkId(newBenchmark.getId())
+                    .setBenchmarkId(newBenchmark.getId()) //set the benchmark id
                     .setBatchSeqId(batch.getSeqId()) //set the sequence number
-                    .addAllHistogram(histogram)
+                    .addAllCrossoverEvents(crossOverevents)
                     .build();
 
             challengeClient.resultQ2(q2Result);
             System.out.println("Processed batch #" + cnt);
             ++cnt;
 
-            if(cnt > 100) { //for testing you can
+            if(cnt > 100) { //for testing you can stop early, in an evaluation run, run until getLast() is True.
                 break;
             }
         }
@@ -86,13 +89,13 @@ public class Main {
         System.out.println("ended Benchmark");
     }
 
-    private static List<TopKStreaks> calculateHistogram(Batch batch) {
+    private static List<Indicator> calculateIndicators(Batch batch) {
         //TODO: improve implementation
 
         return new ArrayList<>();
     }
 
-    private static List<TopKCities> calculateTopKImproved(Batch batch) {
+    private static List<CrossoverEvent> calculateCrossoverEvents(Batch batch) {
         //TODO: improve this implementation
 
         return new ArrayList<>();

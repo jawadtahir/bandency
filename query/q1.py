@@ -1,4 +1,3 @@
-
 from google.protobuf import empty_pb2
 import grpc
 
@@ -43,7 +42,7 @@ with grpc.insecure_channel('challenge.msrg.in.tum.de:5023', options=op) as chann
         # do the same for Q2
         resultQ2 = ch.ResultQ2(benchmark_id=benchmark.id, #The id of the benchmark
                             batch_seq_id=batch.seq_id, #The sequence id of the batch
-                            crossover_events=crossoverEvents()) 
+                            crossover_events=crossoverEvents())
         stub.resultQ2(resultQ2)
 
         if batch.last:
