@@ -33,7 +33,6 @@ public class Main {
             String hostName = InetAddress.getLocalHost().getHostName();
 
             String url = "jdbc:postgresql://winhost:5432/bandency?user=bandency&password=bandency";
-            int preloadEvaluation = 100;
             int durationEvaluationMinutes = 1;
 
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
@@ -41,7 +40,6 @@ public class Main {
                 datasetEvaluation = env.get("DATASET_PATH_EVALUATION");
                 symbolDataset = env.get("SYMBOL_DATASET");
                 url = env.get("JDBC_DB_CONNECTION");
-                preloadEvaluation = 30_000;
                 durationEvaluationMinutes = 15;
             }
 
@@ -58,7 +56,7 @@ public class Main {
             StringZipFileIterator szfiTest = szfTest.open();
             FinancialEventLoader fdlTest = new FinancialEventLoader(szfiTest);
             BatchedEvents beTest = new BatchedEvents(sg);
-            Logger.info("Preloading data in memory: " + datasetTest);
+            Logger.info("Preloading data in memory - Test: " + datasetTest);
             beTest.loadData(fdlTest, 1_000);
             Logger.info("Test Count - " + beTest.batchCount());
 
@@ -68,10 +66,10 @@ public class Main {
                 //Evaluation Dataset
                 StringZipFile szfEvaluation = new StringZipFile(Path.of(datasetTest).toFile());
                 StringZipFileIterator szfiEvaluation = szfEvaluation.open();
-                FinancialEventLoader fdlEvaluatoin = new FinancialEventLoader(szfiEvaluation);
+                FinancialEventLoader fdlEvaluation = new FinancialEventLoader(szfiEvaluation);
                 beEvaluation = new BatchedEvents(sg);
-                Logger.info("Preloading data in memory: " + datasetEvaluation);
-                beEvaluation.loadData(fdlEvaluatoin, 10_000);
+                Logger.info("Preloading data in memory - Evaluation: " + datasetEvaluation);
+                beEvaluation.loadData(fdlEvaluation, 1_000);
                 Logger.info("Evaluation Count - " + beEvaluation.batchCount());
             } else {
                 Logger.info("Using test set also for evaluation");
