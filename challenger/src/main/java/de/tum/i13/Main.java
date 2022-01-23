@@ -86,7 +86,7 @@ public class Main {
             Logger.info("opening database connection: " + url);
             DB db = DB.createDBConnection(url);
             Queries q = new Queries(db.getConnection());
-            ChallengerServer cs = new ChallengerServer(beTest, verificationQueue, q, durationEvaluationMinutes);
+            ChallengerServer cs = new ChallengerServer(beTest, beEvaluation, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder
