@@ -53,15 +53,30 @@ public class Main {
 
             var sg = new SymbolsGenerator(symbols);
             
-            StringZipFile szf = new StringZipFile(Path.of(datasetTest).toFile());
-            StringZipFileIterator szfi = szf.open();
-            FinancialEventLoader fdl = new FinancialEventLoader(szfi);
+            //Test Dataset
+            StringZipFile szfTest = new StringZipFile(Path.of(datasetTest).toFile());
+            StringZipFileIterator szfiTest = szfTest.open();
+            FinancialEventLoader fdlTest = new FinancialEventLoader(szfiTest);
+            BatchedEvents beTest = new BatchedEvents(sg);
+            Logger.info("Preloading data in memory: " + datasetTest);
+            beTest.loadData(fdlTest, 1_000);
+            Logger.info("Test Count - " + beTest.batchCount());
 
-            BatchedEvents beEvaluation = new BatchedEvents(sg);
-            Logger.info("Preloading data in memory: " + preloadEvaluation);
-            beEvaluation.loadData(fdl, 1000);
 
-            Logger.info("Test Count - " + beEvaluation.batchCount());
+            BatchedEvents beEvaluation = beTest;
+            if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
+                //Evaluation Dataset
+                StringZipFile szfEvaluation = new StringZipFile(Path.of(datasetTest).toFile());
+                StringZipFileIterator szfiEvaluation = szfEvaluation.open();
+                FinancialEventLoader fdlEvaluatoin = new FinancialEventLoader(szfiEvaluation);
+                beEvaluation = new BatchedEvents(sg);
+                Logger.info("Preloading data in memory: " + datasetEvaluation);
+                beEvaluation.loadData(fdlEvaluatoin, 10_000);
+                Logger.info("Evaluation Count - " + beEvaluation.batchCount());
+            } else {
+                Logger.info("Using test set also for evaluation");
+            }
+            
             
             Logger.info("Evaluation duration in minutes: " + durationEvaluationMinutes);
             
@@ -71,7 +86,7 @@ public class Main {
             Logger.info("opening database connection: " + url);
             DB db = DB.createDBConnection(url);
             Queries q = new Queries(db.getConnection());
-            ChallengerServer cs = new ChallengerServer(beEvaluation, verificationQueue, q, durationEvaluationMinutes);
+            ChallengerServer cs = new ChallengerServer(beTest, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder

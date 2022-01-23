@@ -26,14 +26,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     private final BatchedEvents inMemoryDatasetTest;
+    private BatchedEvents inMemoryDatasetEvaluation;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
     private final int durationEvaluationMinutes;
     private final Random random;
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(BatchedEvents inMemoryDatasetTest, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
+    public ChallengerServer(BatchedEvents inMemoryDatasetTest, BatchedEvents inMemoryDatasetEvaluation, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
         this.inMemoryDatasetTest = inMemoryDatasetTest;
+        this.inMemoryDatasetEvaluation = inMemoryDatasetEvaluation;
         this.dbInserter = dbInserter;
         this.q = q;
         this.durationEvaluationMinutes = durationEvaluationMinutes;
@@ -127,7 +129,12 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         bms.setQ2(request.getQueriesList().contains(Query.Q2));
 
         Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
-        bms.setDatasource(this.inMemoryDatasetTest.newIterator(stopTime));
+
+        if(bt == BenchmarkType.Evaluation) {
+            bms.setDatasource(this.inMemoryDatasetEvaluation.newIterator(stopTime));
+        } else {
+            bms.setDatasource(this.inMemoryDatasetTest.newIterator(stopTime));
+        }
                 
         Logger.info("Ready for benchmark: " + bms.toString());
 
