@@ -64,7 +64,7 @@ public class Main {
             BatchedEvents beEvaluation = beTest;
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 //Evaluation Dataset
-                StringZipFile szfEvaluation = new StringZipFile(Path.of(datasetTest).toFile());
+                StringZipFile szfEvaluation = new StringZipFile(Path.of(datasetEvaluation).toFile());
                 StringZipFileIterator szfiEvaluation = szfEvaluation.open();
                 FinancialEventLoader fdlEvaluation = new FinancialEventLoader(szfiEvaluation);
                 beEvaluation = new BatchedEvents(sg);
