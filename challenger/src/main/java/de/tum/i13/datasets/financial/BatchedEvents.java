@@ -37,6 +37,10 @@ public class BatchedEvents {
             .build();
         this.batches.set(batches.size()-1, newLast);
     }
+
+    public int batchCount() {
+        return this.batches.size();
+    }
     
     public FinancialBatchIterator newIterator(Instant stopTime) {
         return new FinancialBatchIterator(batches, stopTime);

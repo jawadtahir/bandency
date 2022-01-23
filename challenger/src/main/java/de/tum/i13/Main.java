@@ -26,7 +26,9 @@ public class Main {
         try {
             Map<String, String> env = System.getenv();
 
-            String dataset = "/home/chris/data/debs-gc-2022-test-data.zip";
+            String datasetTest = "/home/chris/data/debs-gc-2022-test-data.zip";
+            String datasetEvaluation = "/home/chris/data/trading-week-onecsv-purged.zip";
+
             String symbolDataset = "/home/chris/data/symbols-unique.txt";
             String hostName = InetAddress.getLocalHost().getHostName();
 
@@ -35,14 +37,15 @@ public class Main {
             int durationEvaluationMinutes = 1;
 
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
-                dataset = env.get("DATASET_PATH");
+                datasetTest = env.get("DATASET_PATH_TEST");
+                datasetEvaluation = env.get("DATASET_PATH_EVALUATION");
                 symbolDataset = env.get("SYMBOL_DATASET");
                 url = env.get("JDBC_DB_CONNECTION");
                 preloadEvaluation = 30_000;
                 durationEvaluationMinutes = 15;
             }
 
-            Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + dataset);
+            Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + datasetTest);
 
             SymbolsReader sr = new SymbolsReader(symbolDataset);
             var symbols = sr.readAll();
@@ -50,14 +53,16 @@ public class Main {
 
             var sg = new SymbolsGenerator(symbols);
             
-            StringZipFile szf = new StringZipFile(Path.of(dataset).toFile());
+            StringZipFile szf = new StringZipFile(Path.of(datasetTest).toFile());
             StringZipFileIterator szfi = szf.open();
             FinancialEventLoader fdl = new FinancialEventLoader(szfi);
 
-            BatchedEvents be = new BatchedEvents(sg);
+            BatchedEvents beEvaluation = new BatchedEvents(sg);
             Logger.info("Preloading data in memory: " + preloadEvaluation);
-            be.loadData(fdl, 1000);
+            beEvaluation.loadData(fdl, 1000);
 
+            Logger.info("Test Count - " + beEvaluation.batchCount());
+            
             Logger.info("Evaluation duration in minutes: " + durationEvaluationMinutes);
             
             ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
@@ -66,7 +71,7 @@ public class Main {
             Logger.info("opening database connection: " + url);
             DB db = DB.createDBConnection(url);
             Queries q = new Queries(db.getConnection());
-            ChallengerServer cs = new ChallengerServer(be, verificationQueue, q, durationEvaluationMinutes);
+            ChallengerServer cs = new ChallengerServer(beEvaluation, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder
