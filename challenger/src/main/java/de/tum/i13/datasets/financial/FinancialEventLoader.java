@@ -69,7 +69,16 @@ public class FinancialEventLoader implements CloseableSource<Event> {
         }
 
         String symbol = splitted[0];
-        String last = splitted[22];
+        String last = splitted[21];
+        if(last.equalsIgnoreCase("0")) {
+            return null;
+        }
+
+        float parsedLast = Float.parseFloat(last);
+        if(parsedLast == 0.0) {
+            return null;
+        }
+
         String date = splitted[26]; //08-11-2021
         if (date.isEmpty()) {
             date = splitted[2];
@@ -95,7 +104,7 @@ public class FinancialEventLoader implements CloseableSource<Event> {
             .setSymbol(symbol)
             .setSecurityType(secType)
             .setLastTrade(ts)
-            .setLastTradePrice(Float.parseFloat(last))
+            .setLastTradePrice(parsedLast)
             .build();
 
         return ev;

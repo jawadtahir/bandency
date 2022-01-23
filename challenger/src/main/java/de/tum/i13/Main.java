@@ -26,7 +26,7 @@ public class Main {
         try {
             Map<String, String> env = System.getenv();
 
-            String dataset = "/home/chris/data/debs-2022-gc-test-set-trading.csv.zip";
+            String dataset = "/home/chris/data/debs-gc-2022-test-data.zip";
             String symbolDataset = "/home/chris/data/symbols-unique.txt";
             String hostName = InetAddress.getLocalHost().getHostName();
 
