@@ -13,6 +13,7 @@ import uuid
 OS_IMG_PATH = os.environ.get("OS_IMG_PATH", "focal-server-cloudimg-amd64.img")
 TEMPLATE_DIR = os.environ.get("TEMPLATE_DIR", "temp")
 PUBLIC_KEY_PATH = os.environ.get("PUBLIC_KEY_PATH", "cochairs.pub")
+VM_DIR = os.environ.get("VM_DIR", "/mnt/hdd")
 
 KEY_SIZE_BITS = 4096
 PRIVATE_KEY_FILENAME = "{}_rsa"
@@ -32,8 +33,9 @@ def make_dir(team_name: str, ip_adrs:str) -> None:
     
     vm_no = ip_adrs.split(".")[-1]
     dir_name = "{}_{}".format(team_name, vm_no)
+    dir_name = os.path.join(VM_DIR, dir_name)
     if os.path.exists(dir_name):
-        return
+        return dir_name
 
     os.mkdir(dir_name)
     return dir_name
@@ -64,11 +66,11 @@ def create_key_pair(team_name: str) -> PKey:
     return key
 
 
-def make_config_files(team_name: str, ip_adrs: str, pub_key) -> None:
+def make_config_files(team_name: str, ip_adrs: str, pub_key, dir_name) -> None:
     cloud_cfg_text = ""
     net_cfg_text = ""
     vm_no = ip_adrs.split(".")[-1]
-    dir_name = "{}_{}".format(team_name, vm_no)
+    # dir_name = "{}_{}".format(team_name, vm_no)
 
     with open(CLOUD_CONFIG_TEMPLATE_FILE) as cloud_cfg_template_file:
         cloud_cfg_text = "".join(cloud_cfg_template_file.readlines())
@@ -90,11 +92,11 @@ def make_config_files(team_name: str, ip_adrs: str, pub_key) -> None:
         file.write(net_cfg_text)
 
 
-def run_cloud_init_cmds(team_name, ip_adrs):
+def run_cloud_init_cmds(team_name, ip_adrs, dir_name):
     # last block of IP adrs is the VM number (in case of multiple VMs by one group)
     vm_no = ip_adrs.split(".")[-1]
 
-    dir_name = "{}_{}".format(team_name, vm_no)
+    # dir_name = "{}_{}".format(team_name, vm_no)
 
     # Copy the base image to the directory
     new_os_img_path = copy(OS_IMG_PATH, dir_name)
@@ -141,11 +143,11 @@ async def createVM(team_name: str, ip_adrs: str, forwardingadrs:str) -> None:
     dir_name = make_dir(team_name, ip_adrs)
     # key = create_key_pair(team_name=team_name)
     pubkey = read_public_key()
-    make_config_files(team_name, ip_adrs, pubkey)
-    run_cloud_init_cmds(team_name, ip_adrs)
+    make_config_files(team_name, ip_adrs, pubkey, dir_name)
+    run_cloud_init_cmds(team_name, ip_adrs, dir_name)
     await insert_in_db(team_name, ip_adrs,forwardingadrs)
 
 
 if __name__ == "__main__":
     asyncio.run(createVM(sys.argv[1], sys.argv[2], sys.argv[3]))
-    #asyncio.run(createVM("group-0", "192.168.122.28", ""))
+    #asyncio.run(createVM("group-0", "192.168.1.11", "challenge.msrg.in.tum.de:10001"))
