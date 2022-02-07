@@ -1,18 +1,17 @@
 package de.tum.i13;
 
-import de.tum.i13.dal.DB;
 import de.tum.i13.dal.ResultsVerifier;
 import io.grpc.Server;
 import org.tinylog.Logger;
 
-import java.sql.SQLException;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class ShutDown extends Thread {
     private final ResultsVerifier rv;
     private final Server server;
-    private final DB db;
+    private final HikariDataSource db;
 
-    public ShutDown(ResultsVerifier rv, Server server, DB db) {
+    public ShutDown(ResultsVerifier rv, Server server, HikariDataSource db) {
         this.rv = rv;
         this.server = server;
         this.db = db;
@@ -24,11 +23,7 @@ public class ShutDown extends Thread {
         Logger.info("Server shutdown");
         rv.shutdown();
         Logger.info("ResultsVerifier shutdown");
-        try {
-            db.getConnection().close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        db.close();
         Logger.info("Disconnect DB");
     }
 }

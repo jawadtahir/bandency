@@ -1,24 +1,15 @@
 package de.tum.i13.dal;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class DB {
-    private Connection connection;
-    private DB(Connection connection) throws SQLException {
-        this.connection = connection;
-    }
-
-    public static DB createDBConnection(String url) throws ClassNotFoundException, SQLException {
+    public static HikariDataSource getConnectionPool(String url) throws ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
-        Connection connection = DriverManager.getConnection(url);
-        System.out.println("createDBConnection: " + url);
+        HikariDataSource ds = new HikariDataSource();
+        ds.setJdbcUrl(url);
+        ds.setMaximumPoolSize(10);
+        ds.setKeepaliveTime(30_001);
 
-        return new DB(connection);
-    }
-
-    public Connection getConnection() {
-        return connection;
+        return ds;        
     }
 }

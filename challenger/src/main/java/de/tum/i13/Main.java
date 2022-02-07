@@ -82,8 +82,9 @@ public class Main {
 
             Logger.info("Initializing Challenger Service");
             Logger.info("opening database connection: " + url);
-            DB db = DB.createDBConnection(url);
-            Queries q = new Queries(db.getConnection());
+            var connectionPool = DB.getConnectionPool(url);
+            var connection = connectionPool.getConnection();
+            Queries q = new Queries(connectionPool);
             ChallengerServer cs = new ChallengerServer(beTest, beEvaluation, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
@@ -99,13 +100,13 @@ public class Main {
             var metrics = new HTTPServer(8023); //This starts already a background thread serving the default registry
 
             Logger.info("Starting Results verifier");
-            ResultsVerifier rv = new ResultsVerifier(verificationQueue, db.getConnection());
+            ResultsVerifier rv = new ResultsVerifier(verificationQueue, q);
             Thread th = new Thread(rv);
             th.start();
 
 
             Runtime current = Runtime.getRuntime();
-            current.addShutdownHook(new ShutDown(rv, server, db));
+            current.addShutdownHook(new ShutDown(rv, server, connectionPool));
 
             Logger.info("Serving");
             server.awaitTermination();

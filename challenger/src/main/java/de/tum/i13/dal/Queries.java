@@ -8,16 +8,19 @@ import java.sql.*;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 public class Queries {
-    private final Connection conn;
+    private final HikariDataSource conn;
 
-    public Queries(Connection conn) {
-
-        this.conn = conn;
+    public Queries(HikariDataSource connectionPool) {
+        this.conn = connectionPool;
     }
 
     public boolean checkIfGroupExists(String token) throws SQLException {
-        try(PreparedStatement preparedStatement = this.conn.prepareStatement("SELECT count(*) AS rowcount FROM groups where groupapikey = ?")) {
+        try(PreparedStatement preparedStatement = this.conn
+                .getConnection()
+                .prepareStatement("SELECT count(*) AS rowcount FROM groups where groupapikey = ?")) {
             preparedStatement.setString(1, token);
             try(ResultSet r = preparedStatement.executeQuery()) {
                 r.next();
@@ -29,6 +32,7 @@ public class Queries {
 
     public UUID getGroupIdFromToken(String token) throws SQLException {
         try(PreparedStatement preparedStatement = this.conn
+                .getConnection()
                 .prepareStatement("SELECT id AS group_id FROM groups where groupapikey = ?")) {
             preparedStatement.setString(1, token);
             try(ResultSet r = preparedStatement.executeQuery()) {
@@ -40,6 +44,7 @@ public class Queries {
 
     public void insertBenchmarkStarted(long benchmarkId, UUID groupId, String benchmarkName, int batchSize, BenchmarkType bt) throws SQLException {
         try(PreparedStatement pStmt = this.conn
+                .getConnection()
                 .prepareStatement("INSERT INTO benchmarks(" +
                         "id, group_id, \"timestamp\", benchmark_name, benchmark_type, batchsize) " +
                         "VALUES (?, ?, ?, ?, ?, ?)")) {
@@ -58,13 +63,16 @@ public class Queries {
     public void insertLatencyMeasurementStats(long benchmarkId, double averageLatency) throws SQLException {
 
         //delete in case there is already a measurement
-        try(PreparedStatement pStmt = this.conn.prepareStatement("DELETE FROM latencymeasurement where benchmark_id = ?")) {
+        try(PreparedStatement pStmt = this.conn
+                .getConnection()
+                .prepareStatement("DELETE FROM latencymeasurement where benchmark_id = ?")) {
             pStmt.setLong(1, benchmarkId);
             pStmt.execute();
         }
 
         //insert new metrics
         try(PreparedStatement pStmt = this.conn
+                .getConnection()
                 .prepareStatement("INSERT INTO latencymeasurement(" +
                                 "benchmark_id, \"timestamp\", avglatency) " +
                                 "VALUES (?, ?, ?)")) {
@@ -79,6 +87,7 @@ public class Queries {
     public void insertLatency(LatencyMeasurement lm) throws SQLException {
 
         try(PreparedStatement pStmt = this.conn
+                .getConnection()
                 .prepareStatement("INSERT INTO querymetrics(" +
                                 "benchmark_id, batch_id, starttime, q1resulttime, q1latency, q2resulttime, q2latency) " +
                                 "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
@@ -116,6 +125,7 @@ public class Queries {
     public void insertBenchmarkResult(BenchmarkResult br, String s) throws SQLException {
 
         try(PreparedStatement pStmt = this.conn
+                .getConnection()
                 .prepareStatement("INSERT INTO public.benchmarkresults(" +
                 "id, duration_sec, q1_count, q1_throughput, q1_90percentile, q2_count, q2_throughput, q2_90percentile, summary) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {

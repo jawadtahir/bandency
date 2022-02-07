@@ -6,10 +6,8 @@ import de.tum.i13.dal.dto.BenchmarkResult;
 import de.tum.i13.dal.dto.PercentileResult;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
-import org.HdrHistogram.HistogramIterationValue;
 import org.tinylog.Logger;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -18,15 +16,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ResultsVerifier implements Runnable{
     private final ArrayBlockingQueue<ToVerify> verificationQueue;
-    private final Connection db;
     private final Queries q;
     private AtomicReference<Boolean> shutdown;
     private AtomicReference<Boolean> shuttingDown;
 
-    public ResultsVerifier(ArrayBlockingQueue<ToVerify> verificationQueue, Connection db) {
+    public ResultsVerifier(ArrayBlockingQueue<ToVerify> verificationQueue, Queries q) {
         this.verificationQueue = verificationQueue;
-        this.db = db;
-        this.q = new Queries(db);
+        this.q = q;
         this.shuttingDown = new AtomicReference<Boolean>(false);
         this.shutdown = new AtomicReference<Boolean>(true);
     }
