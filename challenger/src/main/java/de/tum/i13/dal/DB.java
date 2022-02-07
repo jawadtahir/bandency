@@ -8,7 +8,6 @@ public class DB {
         HikariDataSource ds = new HikariDataSource();
         ds.setJdbcUrl(url);
         ds.setMaximumPoolSize(10);
-        ds.setKeepaliveTime(30_001);
 
         return ds;        
     }
