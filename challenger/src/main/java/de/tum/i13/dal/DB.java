@@ -7,7 +7,8 @@ public class DB {
         Class.forName("org.postgresql.Driver");
         HikariDataSource ds = new HikariDataSource();
         ds.setJdbcUrl(url);
-        ds.setMaximumPoolSize(10);
+        ds.setMaximumPoolSize(30);
+        ds.setConnectionTimeout(10*60*1000); //10 minutes, in case DB lags behind
 
         return ds;        
     }
