@@ -231,7 +231,7 @@ async def vms():
         return await render_template('vms.html',
                                      vms=vms,
                                      ssh=ssh,
-                                     name="VMs",
+                                     name="Virtual machine",
                                      group=group,
                                      menu=helper.menu(vms=True))
 
