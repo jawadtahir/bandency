@@ -202,7 +202,7 @@ async def vms():
             await flash('No VM selected', "danger")
             err = True
         if 'sshpubkey' not in form or len(form['sshpubkey'].strip()) <= 30:
-            await flash('No sshpukey or invalid sshpubkey added', "danger")
+            await flash('No sshpubkey or invalid sshpubkey added', "danger")
             err = True
 
         if err:

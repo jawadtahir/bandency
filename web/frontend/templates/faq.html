@@ -31,6 +31,17 @@
 
     <h4>Should all the windows be aligned or should each window be started with the first event?</h4>
     <p>All the windows should be aligned.</p>
+    <p></p>
+
+    <h4>Are the timestamps monotonically increasing?</h4>
+    <p>Dataset is ordered by the arrival of events but as the dataset is coming 
+        from multiple sources, the monotonicity of dataset cannot be claimed.
+    </p>
+    <p></p>
+
+    <h4>What are the internal IPs for the VMs?</h4>
+    <p>VMs are connected over a virtual network. If you are developing a distributed solution you can "connect" multiple VMs using internal IPs.</p>
+    <p></p>
 
 
 {% endblock %}
