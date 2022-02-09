@@ -29,6 +29,7 @@ public class BatchedEvents {
             batches.add(bb.build());
 
             ++cnt;
+            break;
         }
 
         var last = this.batches.get(batches.size()-1);

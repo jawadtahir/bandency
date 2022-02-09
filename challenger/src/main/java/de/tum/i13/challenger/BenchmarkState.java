@@ -159,6 +159,9 @@ public class BenchmarkState {
     }
 
     public Batch getNextBatch(long benchmarkId) {
+        if(this.datasource == null) { //when participants ignore the last flag
+            return Batch.newBuilder().setLast(true).build();
+        }
         if(this.datasource.hasMoreElements()) {
             Batch batch = this.datasource.nextElement();
             LatencyMeasurement lm = new LatencyMeasurement(benchmarkId, batch.getSeqId(), System.nanoTime());
