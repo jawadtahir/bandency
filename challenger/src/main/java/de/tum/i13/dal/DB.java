@@ -25,14 +25,14 @@ public class DB {
 
     public Connection getConnection() throws InterruptedException, ClassNotFoundException {
         try { //happy path, return the connection if valid
-            if(!this.connection.isClosed()) {
+            if(this.connection.isValid(1)) {
                 return this.connection;
             }
         } catch (SQLException ex) {
             synchronized(this.lock) {
                 //Double reentrant should return immediately
                 try {
-                    if(!this.connection.isClosed()) {
+                    if(this.connection.isValid(1)) {
                         return this.connection;
                     }    
                 } catch(SQLException innerEx) {
@@ -40,7 +40,7 @@ public class DB {
                     for(int i = 1; i < 31; ++i) {
                         try {
                             this.connection = newConnection();
-                            if(!this.connection.isClosed()) {
+                            if(this.connection.isValid(1)) {
                                 return this.connection;
                             }
                         } catch(SQLException innerInnerEx) {
