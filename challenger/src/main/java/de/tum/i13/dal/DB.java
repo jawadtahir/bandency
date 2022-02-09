@@ -2,6 +2,7 @@ package de.tum.i13.dal;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.tinylog.Logger;
@@ -11,6 +12,8 @@ public class DB {
     private String url;
 
     private final Object lock = new Object();
+    private final String checkQuery = "SELECT 1";
+    
 
 
     public DB(String url) throws SQLException, ClassNotFoundException {
@@ -23,16 +26,22 @@ public class DB {
         return DriverManager.getConnection(url);
     }
 
+    private Boolean testConnection() throws SQLException {
+        try(PreparedStatement prepareStatement = this.connection.prepareStatement(this.checkQuery)) {
+            return true;
+        }
+    }
+
     public Connection getConnection() throws InterruptedException, ClassNotFoundException {
         try { //happy path, return the connection if valid
-            if(this.connection.isValid(1)) {
+            if(this.testConnection()) {
                 return this.connection;
             }
         } catch (SQLException ex) {
             synchronized(this.lock) {
                 //Double reentrant should return immediately
                 try {
-                    if(this.connection.isValid(1)) {
+                    if(testConnection()) {
                         return this.connection;
                     }    
                 } catch(SQLException innerEx) {
@@ -40,7 +49,7 @@ public class DB {
                     for(int i = 1; i < 31; ++i) {
                         try {
                             this.connection = newConnection();
-                            if(this.connection.isValid(1)) {
+                            if(testConnection()) {
                                 return this.connection;
                             }
                         } catch(SQLException innerInnerEx) {
