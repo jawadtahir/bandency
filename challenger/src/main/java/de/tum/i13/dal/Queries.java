@@ -8,16 +8,14 @@ import java.sql.*;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.zaxxer.hikari.HikariDataSource;
-
 public class Queries {
-    private final HikariDataSource conn;
+    private final DB conn;
 
-    public Queries(HikariDataSource connectionPool) {
+    public Queries(DB connectionPool) {
         this.conn = connectionPool;
     }
 
-    public boolean checkIfGroupExists(String token) throws SQLException {
+    public boolean checkIfGroupExists(String token) throws SQLException, ClassNotFoundException, InterruptedException {
         try(PreparedStatement preparedStatement = this.conn
                 .getConnection()
                 .prepareStatement("SELECT count(*) AS rowcount FROM groups where groupapikey = ?")) {
@@ -30,7 +28,7 @@ public class Queries {
         }
     }
 
-    public UUID getGroupIdFromToken(String token) throws SQLException {
+    public UUID getGroupIdFromToken(String token) throws SQLException, ClassNotFoundException, InterruptedException {
         try(PreparedStatement preparedStatement = this.conn
                 .getConnection()
                 .prepareStatement("SELECT id AS group_id FROM groups where groupapikey = ?")) {
@@ -42,7 +40,7 @@ public class Queries {
         }
     }
 
-    public void insertBenchmarkStarted(long benchmarkId, UUID groupId, String benchmarkName, int batchSize, BenchmarkType bt) throws SQLException {
+    public void insertBenchmarkStarted(long benchmarkId, UUID groupId, String benchmarkName, int batchSize, BenchmarkType bt) throws SQLException, ClassNotFoundException, InterruptedException {
         try(PreparedStatement pStmt = this.conn
                 .getConnection()
                 .prepareStatement("INSERT INTO benchmarks(" +
@@ -60,7 +58,7 @@ public class Queries {
         }
     }
 
-    public void insertLatencyMeasurementStats(long benchmarkId, double averageLatency) throws SQLException {
+    public void insertLatencyMeasurementStats(long benchmarkId, double averageLatency) throws SQLException, ClassNotFoundException, InterruptedException {
 
         //delete in case there is already a measurement
         try(PreparedStatement pStmt = this.conn
@@ -84,7 +82,7 @@ public class Queries {
         }
     }
 
-    public void insertLatency(LatencyMeasurement lm) throws SQLException {
+    public void insertLatency(LatencyMeasurement lm) throws SQLException, ClassNotFoundException, InterruptedException {
 
         try(PreparedStatement pStmt = this.conn
                 .getConnection()
@@ -122,7 +120,7 @@ public class Queries {
         }
     }
 
-    public void insertBenchmarkResult(BenchmarkResult br, String s) throws SQLException {
+    public void insertBenchmarkResult(BenchmarkResult br, String s) throws SQLException, ClassNotFoundException, InterruptedException {
 
         try(PreparedStatement pStmt = this.conn
                 .getConnection()

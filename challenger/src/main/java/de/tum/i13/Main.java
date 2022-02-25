@@ -82,7 +82,7 @@ public class Main {
 
             Logger.info("Initializing Challenger Service");
             Logger.info("opening database connection: " + url);
-            var connectionPool = DB.getConnectionPool(url);
+            var connectionPool = new DB(url);
             var connection = connectionPool.getConnection();
             Queries q = new Queries(connectionPool);
             ChallengerServer cs = new ChallengerServer(beTest, beEvaluation, verificationQueue, q, durationEvaluationMinutes);

@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
     private final BatchedEvents inMemoryDatasetTest;
-    private BatchedEvents inMemoryDatasetEvaluation;
+    private final BatchedEvents inMemoryDatasetEvaluation;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
     private final int durationEvaluationMinutes;
@@ -63,7 +63,8 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
                 responseObserver.onCompleted();
                 return;
             }
-        } catch (SQLException throwables) {
+        } catch (SQLException | ClassNotFoundException | InterruptedException throwables) {
+            Logger.error(throwables);
             errorCounter.inc();
 
             Status status = Status.INTERNAL.withDescription("database offline - plz. inform the challenge organizers");
@@ -108,11 +109,11 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             UUID groupId = q.getGroupIdFromToken(token);
             q.insertBenchmarkStarted(benchmarkId, groupId, benchmarkName, 1000, bt);
 
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException | ClassNotFoundException | InterruptedException throwables) {
+            Logger.error(throwables);
             errorCounter.inc();
 
-            Status status = Status.FAILED_PRECONDITION.withDescription("plz. inform the challenge organisers - database not reachable");
+            Status status = Status.INTERNAL.withDescription("plz. inform the challenge organisers - database not reachable");
             responseObserver.onError(status.asException());
             responseObserver.onCompleted();
             return;

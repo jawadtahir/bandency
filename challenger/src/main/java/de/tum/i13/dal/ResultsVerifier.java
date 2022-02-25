@@ -63,7 +63,7 @@ public class ResultsVerifier implements Runnable{
                         LatencyMeasurement lm = poll.getLatencyMeasurement();
                         try {
                             q.insertLatency(lm);
-                        } catch (SQLException throwables) {
+                        } catch (SQLException | ClassNotFoundException throwables) {
                             //We have to handle that gracefully
                             throwables.printStackTrace();
 
@@ -119,7 +119,7 @@ public class ResultsVerifier implements Runnable{
 
                         try {
                             q.insertBenchmarkResult(br, s);
-                        } catch (SQLException throwables) {
+                        } catch (SQLException | ClassNotFoundException throwables) {
                             throwables.printStackTrace();
                             Logger.error(throwables, "Insert of Benchmarkresult failed");
                             resultVerificationErrors.inc();
