@@ -133,7 +133,7 @@ async def get_evaluation_results():
                            on br.id = b.id
                            join groups as g
                            on g.id = b.group_id
-                           where b.benchmark_type like 'Evaluation' and br.q1_count > 100 and br.q2_count > 100 and b.is_active is True 
+                           where b.benchmark_type like 'Evaluation' and br.q1_count > 100 and br.q2_count > 100 and b.is_active is True and b.timestamp > '2022-03-17 19:40:04.382088'
                            order by g.id, timestamp desc""")
 
 
