@@ -69,7 +69,7 @@ public class Main {
                 FinancialEventLoader fdlEvaluation = new FinancialEventLoader(szfiEvaluation);
                 beEvaluation = new BatchedEvents(sg);
                 Logger.info("Preloading data in memory - Evaluation: " + datasetEvaluation);
-                beEvaluation.loadData(fdlEvaluation, 1_000);
+                beEvaluation.loadData(fdlEvaluation, 10_000);
                 Logger.info("Evaluation Count - " + beEvaluation.batchCount());
             } else {
                 Logger.info("Using test set also for evaluation");
