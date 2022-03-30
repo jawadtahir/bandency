@@ -92,13 +92,16 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         }
 
         BenchmarkType bt = BenchmarkType.Test;
+        int batchSize = 1_000;
 
         if(request.getBenchmarkType().equalsIgnoreCase("test")) {
             bt = BenchmarkType.Test;
+            batchSize = 1_000;
         }else if (request.getBenchmarkType().equalsIgnoreCase("verification")) {
             bt = BenchmarkType.Verification;
         } else if (request.getBenchmarkType().equalsIgnoreCase("evaluation")){
             bt = BenchmarkType.Evaluation;
+            batchSize = 10_000;
         }
 
         //Save this benchmarkname to database
@@ -107,7 +110,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
 
         try {
             UUID groupId = q.getGroupIdFromToken(token);
-            q.insertBenchmarkStarted(benchmarkId, groupId, benchmarkName, 1000, bt);
+            q.insertBenchmarkStarted(benchmarkId, groupId, benchmarkName, batchSize, bt);
 
         } catch (SQLException | ClassNotFoundException | InterruptedException throwables) {
             Logger.error(throwables);
