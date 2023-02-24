@@ -3,6 +3,8 @@ import os
 from os.path import isfile
 
 import aiohttp as ai
+from aiofile import async_open
+
 import tqdm
 
 
@@ -17,13 +19,11 @@ async def download(url: str, target: str) -> None:
         async with ai.ClientSession() as session:
             async with session.get(url) as resp:
                 size = int(resp.headers.get('Content-Length', 0)) or None
-                pb = tqdm.tqdm(desc=f"Download for {target}", total=size)
-
-                with open(temp_name, mode="wb") as f, pb:
-                    async for chunk in resp.content.iter_chunked(1024):
-                        # to bad there is still no async file io library in python in 2023 ...
-                        f.write(chunk)
-                        pb.update(len(chunk))
+                with tqdm.tqdm(desc=f"Download for {target}", total=size) as pb:
+                    async with async_open(temp_name, mode="wb") as f:
+                        async for chunk in resp.content.iter_chunked(1024*10):
+                            await f.write(chunk)
+                            pb.update(len(chunk))
 
                 # we don't want halve files, only rename after everything downloaded
                 os.rename(temp_name, final_name)
