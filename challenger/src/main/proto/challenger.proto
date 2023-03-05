@@ -20,47 +20,40 @@ message Event {
   google.protobuf.Timestamp last_trade = 4;
 }
 
+message DriveState {
+  google.protobuf.Timestamp date = 1;
+  string serial_number = 2;
+  string model = 3;
+  int64 capacity_bytes = 4;
+  int32 failure = 5;
+  // All values, len(255)
+  repeated int32 normalized = 6;
+  // All values, len(255)
+  repeated int32 raw = 7;
+}
+
 message Batch {
   int64 seq_id = 1;
   bool last = 2;
-  repeated string lookup_symbols = 3;
-  repeated Event events = 4;
+  repeated DriveState states = 3;
 }
 
 message Benchmark {
   int64 id = 1;
 }
 
-message Indicator {
-  string symbol = 1;
-  float ema_38 = 2;
-  float ema_100 = 3;
-}
-
 message ResultQ1 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
 
-  repeated Indicator indicators = 3;
-}
-
-message CrossoverEvent {
-  enum SignalType {
-    Buy = 0;
-    Sell = 1;
-  }
-
-  google.protobuf.Timestamp ts = 1;
-  string symbol = 2;
-  SecurityType security_type = 3;
-  SignalType signal_type = 4;
+  // TODO: more fields for Q1
 }
 
 message ResultQ2 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
-  
-  repeated CrossoverEvent crossover_events = 3;
+
+  // TODO: more fields for Q2
 }
 
 enum Query {
@@ -69,10 +62,10 @@ enum Query {
 }
 
 message BenchmarkConfiguration {
-  string token = 1; //Token from the webapp for authentication
-  string benchmark_name = 2; //chosen by the team, listed in the results
-  string benchmark_type = 3; //benchmark type, e.g., test
-  repeated Query queries = 4;
+  string token = 1; // Token from the webapp for authentication
+  string benchmark_name = 2; // chosen by the team, listed in the results
+  string benchmark_type = 3; // benchmark type, e.g., test
+  repeated Query queries = 4; // Specify which queries to run
 }
 
 service Challenger {
