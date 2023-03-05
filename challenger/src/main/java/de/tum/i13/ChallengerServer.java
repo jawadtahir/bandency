@@ -7,7 +7,7 @@ import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.financial.BatchedEvents;
+import de.tum.i13.datasets.hdd.BatchedEvents;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.Counter;
@@ -135,9 +135,9 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
 
         if(bt == BenchmarkType.Evaluation) {
-            bms.setDatasource(this.inMemoryDatasetEvaluation.newIterator(stopTime));
+            // bms.setDatasource(this.inMemoryDatasetEvaluation.newIterator(stopTime));
         } else {
-            bms.setDatasource(this.inMemoryDatasetTest.newIterator(stopTime));
+            // bms.setDatasource(this.inMemoryDatasetTest.newIterator(stopTime));
         }
                 
         Logger.info("Ready for benchmark: " + bms.toString());

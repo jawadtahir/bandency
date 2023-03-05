@@ -7,8 +7,8 @@ import java.time.format.DateTimeFormatter;
 
 import de.tum.i13.bandency.Event;
 import de.tum.i13.bandency.SecurityType;
-import de.tum.i13.datasets.airquality.StringZipFileIterator;
 import de.tum.i13.datasets.cache.CloseableSource;
+import de.tum.i13.datasets.hdd.StringZipFileIterator;
 
 public class FinancialEventLoader implements CloseableSource<Event> {
 

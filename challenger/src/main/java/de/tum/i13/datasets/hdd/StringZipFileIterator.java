@@ -1,4 +1,4 @@
-package de.tum.i13.datasets.airquality;
+package de.tum.i13.datasets.hdd;
 
 import java.io.*;
 import java.util.zip.ZipEntry;

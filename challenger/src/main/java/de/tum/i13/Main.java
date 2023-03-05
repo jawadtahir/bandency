@@ -4,19 +4,12 @@ import de.tum.i13.dal.DB;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ResultsVerifier;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.airquality.StringZipFile;
-import de.tum.i13.datasets.airquality.StringZipFileIterator;
-import de.tum.i13.datasets.financial.BatchedEvents;
-import de.tum.i13.datasets.financial.FinancialEventLoader;
-import de.tum.i13.datasets.financial.SymbolsGenerator;
-import de.tum.i13.datasets.financial.SymbolsReader;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.prometheus.client.exporter.HTTPServer;
 import org.tinylog.Logger;
 
 import java.net.InetAddress;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -44,33 +37,27 @@ public class Main {
             }
 
             Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + datasetTest);
-
-            SymbolsReader sr = new SymbolsReader(symbolDataset);
-            var symbols = sr.readAll();
-            symbols.sort((l, r) -> Integer.compare(r.getOccurances(), l.getOccurances()));
-
-            var sg = new SymbolsGenerator(symbols);
             
             //Test Dataset
-            StringZipFile szfTest = new StringZipFile(Path.of(datasetTest).toFile());
-            StringZipFileIterator szfiTest = szfTest.open();
-            FinancialEventLoader fdlTest = new FinancialEventLoader(szfiTest);
-            BatchedEvents beTest = new BatchedEvents(sg);
+            // StringZipFile szfTest = new StringZipFile(Path.of(datasetTest).toFile());
+            //StringZipFileIterator szfiTest = szfTest.open();
+            // FinancialEventLoader fdlTest = new FinancialEventLoader(szfiTest);
+            // BatchedEvents beTest = new BatchedEvents(sg);
             Logger.info("Preloading data in memory - Test: " + datasetTest);
-            beTest.loadData(fdlTest, 1_000);
-            Logger.info("Test Count - " + beTest.batchCount());
+            // beTest.loadData(fdlTest, 1_000);
+            // Logger.info("Test Count - " + beTest.batchCount());
 
 
-            BatchedEvents beEvaluation = beTest;
+            // BatchedEvents beEvaluation = beTest;
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
                 //Evaluation Dataset
-                StringZipFile szfEvaluation = new StringZipFile(Path.of(datasetEvaluation).toFile());
-                StringZipFileIterator szfiEvaluation = szfEvaluation.open();
-                FinancialEventLoader fdlEvaluation = new FinancialEventLoader(szfiEvaluation);
-                beEvaluation = new BatchedEvents(sg);
+                //StringZipFile szfEvaluation = new StringZipFile(Path.of(datasetEvaluation).toFile());
+                //StringZipFileIterator szfiEvaluation = szfEvaluation.open();
+                // FinancialEventLoader fdlEvaluation = new FinancialEventLoader(szfiEvaluation);
+                // beEvaluation = new BatchedEvents(sg);
                 Logger.info("Preloading data in memory - Evaluation: " + datasetEvaluation);
-                beEvaluation.loadData(fdlEvaluation, 10_000);
-                Logger.info("Evaluation Count - " + beEvaluation.batchCount());
+                // beEvaluation.loadData(fdlEvaluation, 10_000);
+                // Logger.info("Evaluation Count - " + beEvaluation.batchCount());
             } else {
                 Logger.info("Using test set also for evaluation");
             }
@@ -85,12 +72,12 @@ public class Main {
             var connectionPool = new DB(url);
             var connection = connectionPool.getConnection();
             Queries q = new Queries(connectionPool);
-            ChallengerServer cs = new ChallengerServer(beTest, beEvaluation, verificationQueue, q, durationEvaluationMinutes);
+            // ChallengerServer cs = new ChallengerServer(beTest, beEvaluation, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder
                     .forPort(8081)
-                    .addService(cs)
+            //        .addService(cs)
                     .maxInboundMessageSize(10 * 1024 * 1024)
                     .build();
 

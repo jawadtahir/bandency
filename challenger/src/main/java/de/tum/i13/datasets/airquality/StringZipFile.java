@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import de.tum.i13.datasets.hdd.StringZipFileIterator;
+
 public class StringZipFile {
 
     private final File file;

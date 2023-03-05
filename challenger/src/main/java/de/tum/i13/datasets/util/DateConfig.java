@@ -1,4 +1,4 @@
-package de.tum.i13.datasets.airquality;
+package de.tum.i13.datasets.util;
 
 import com.google.protobuf.Timestamp;
 
