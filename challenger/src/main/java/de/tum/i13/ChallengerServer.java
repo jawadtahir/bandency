@@ -7,7 +7,7 @@ import de.tum.i13.challenger.BenchmarkState;
 import de.tum.i13.challenger.BenchmarkType;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ToVerify;
-import de.tum.i13.datasets.hdd.BatchedEvents;
+import de.tum.i13.datasets.hdd.BatchedCollector;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.Counter;
@@ -25,15 +25,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
-    private final BatchedEvents inMemoryDatasetTest;
-    private final BatchedEvents inMemoryDatasetEvaluation;
+    private final BatchedCollector inMemoryDatasetTest;
+    private final BatchedCollector inMemoryDatasetEvaluation;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
     private final int durationEvaluationMinutes;
     private final Random random;
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(BatchedEvents inMemoryDatasetTest, BatchedEvents inMemoryDatasetEvaluation, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
+    public ChallengerServer(BatchedCollector inMemoryDatasetTest, BatchedCollector inMemoryDatasetEvaluation, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
         this.inMemoryDatasetTest = inMemoryDatasetTest;
         this.inMemoryDatasetEvaluation = inMemoryDatasetEvaluation;
         this.dbInserter = dbInserter;

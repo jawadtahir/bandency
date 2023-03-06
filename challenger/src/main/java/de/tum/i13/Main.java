@@ -4,12 +4,17 @@ import de.tum.i13.dal.DB;
 import de.tum.i13.dal.Queries;
 import de.tum.i13.dal.ResultsVerifier;
 import de.tum.i13.dal.ToVerify;
+import de.tum.i13.datasets.hdd.BatchedCollector;
+import de.tum.i13.datasets.hdd.HddLoader;
+import de.tum.i13.datasets.util.Utils;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.prometheus.client.exporter.HTTPServer;
 import org.tinylog.Logger;
 
+import java.io.File;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -17,33 +22,41 @@ public class Main {
 
     public static void main(String[] args) {
         try {
+            String hostName = InetAddress.getLocalHost().getHostName();
             Map<String, String> env = System.getenv();
 
-            String datasetTest = "/home/chris/data/debs-gc-2022-test-data.zip";
-            String datasetEvaluation = "/home/chris/data/trading-week-onecsv-purged.zip";
-
-            String symbolDataset = "/home/chris/data/symbols-unique.txt";
-            String hostName = InetAddress.getLocalHost().getHostName();
-
+            // Default values
+            File datasetDirectory = new File("/home/chris/source/bandency/web/fetchdata");
             String url = "jdbc:postgresql://winhost:5432/bandency?user=bandency&password=bandency";
             int durationEvaluationMinutes = 1;
 
+            // Override default values
             if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
-                datasetTest = env.get("DATASET_PATH_TEST");
-                datasetEvaluation = env.get("DATASET_PATH_EVALUATION");
-                symbolDataset = env.get("SYMBOL_DATASET");
+                datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
                 url = env.get("JDBC_DB_CONNECTION");
                 durationEvaluationMinutes = 15;
             }
 
-            Logger.info("Challenger Service: hostname: " + hostName + " datasetsfolder: " + datasetTest);
+            ArrayList<File> datasetFiles = Utils.getFiles(datasetDirectory);
+            datasetFiles.stream().forEach(f -> Logger.info("Using the following datasets: " + f.getName()));
+
+            var bl = new BatchedCollector(100);
+
+            var hl = new HddLoader(bl, datasetFiles.get(1));
+            hl.load();
+
+
+
+
+
+
             
             //Test Dataset
             // StringZipFile szfTest = new StringZipFile(Path.of(datasetTest).toFile());
             //StringZipFileIterator szfiTest = szfTest.open();
             // FinancialEventLoader fdlTest = new FinancialEventLoader(szfiTest);
             // BatchedEvents beTest = new BatchedEvents(sg);
-            Logger.info("Preloading data in memory - Test: " + datasetTest);
+            //Logger.info("Preloading data in memory - Test: " + datasetTest);
             // beTest.loadData(fdlTest, 1_000);
             // Logger.info("Test Count - " + beTest.batchCount());
 
@@ -55,7 +68,7 @@ public class Main {
                 //StringZipFileIterator szfiEvaluation = szfEvaluation.open();
                 // FinancialEventLoader fdlEvaluation = new FinancialEventLoader(szfiEvaluation);
                 // beEvaluation = new BatchedEvents(sg);
-                Logger.info("Preloading data in memory - Evaluation: " + datasetEvaluation);
+              //  Logger.info("Preloading data in memory - Evaluation: " + datasetEvaluation);
                 // beEvaluation.loadData(fdlEvaluation, 10_000);
                 // Logger.info("Evaluation Count - " + beEvaluation.batchCount());
             } else {
