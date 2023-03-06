@@ -12,4 +12,4 @@ vm/focal-server-cloudimg-amd64.img
 .vscode/
 .settings/
 .gradle/
-
+web/fetchdata/*.zip
