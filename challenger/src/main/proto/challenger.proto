@@ -27,9 +27,9 @@ message DriveState {
   int64 capacity_bytes = 4;
   int32 failure = 5;
   // Normalized values
-  map<int32, int32> normalized = 6;
+  map<int32, int64> normalized = 6;
   // Raw values
-  map<int32, int32> raw = 7;
+  map<int32, int64> raw = 7;
 }
 
 message Batch {
