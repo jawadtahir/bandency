@@ -73,7 +73,7 @@ async def create_group(group_name, email, skipmail):
         Welcome to the DEBS 2022 - Challenge!
         
         You are now registered. Please continue here:
-        https://challenge.msrg.in.tum.de/
+        https://challenge2023.debs.org/
         
         Group ID: {}
         Password: {}
