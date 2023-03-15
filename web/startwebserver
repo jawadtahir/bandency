@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 echo "Copy the current proto"
 cp ../challenger/src/main/proto/challenger.proto frontend/static/challenger.proto

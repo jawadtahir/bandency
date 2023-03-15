@@ -10,7 +10,7 @@ import tqdm
 
 async def download(url: str, target: str) -> None:
     temp_name = f"downloading_{target}.zip"
-    final_name = f"{target}.zip"
+    final_name = f"fetchdata/{target}.zip"
     if os.path.isfile(final_name):
         print(f"Already downloaded - {final_name}")
     else:
