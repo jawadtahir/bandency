@@ -21,7 +21,7 @@ salt = 'qakLgEdljdsljertVyFHfR4vwQw'
 def create_msg(send_to, subject, message_text):
     message = MIMEText(message_text)
     message['to'] = send_to
-    message['from'] = "debschallange2022@gmail.com"
+    message['from'] = "debschallange2023@gmail.com"
     message['subject'] = subject
 
     return message
@@ -70,7 +70,7 @@ async def create_group(group_name, email, skipmail):
         print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))
     else:
         message = """
-        Welcome to the DEBS 2022 - Challenge!
+        Welcome to the DEBS 2023 - Challenge!
         
         You are now registered. Please continue here:
         https://challenge2023.debs.org/
@@ -82,7 +82,7 @@ async def create_group(group_name, email, skipmail):
         
         We look all forward to your submission!
         
-        The DEBS Challenge 2022 Team
+        The DEBS Challenge 2023 Team
         """.format(group_name, default_pw)
 
         print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))
