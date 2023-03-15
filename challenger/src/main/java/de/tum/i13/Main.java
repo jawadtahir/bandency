@@ -40,10 +40,21 @@ public class Main {
             ArrayList<File> datasetFiles = Utils.getFiles(datasetDirectory);
             datasetFiles.stream().forEach(f -> Logger.info("Using the following datasets: " + f.getName()));
 
-            var bl = new BatchedCollector(100);
+            var bl = new BatchedCollector(1000);
 
-            var hl = new HddLoader(bl, datasetFiles.get(1));
-            hl.load();
+            Logger.info("Preloading data in memory");
+            if(hostName.equalsIgnoreCase("cervino-1")) {
+                //Load the full dataset
+                for (File f : datasetFiles) {
+                    var hl = new HddLoader(bl, f);
+                    hl.load();
+                }
+            } else {
+                var hl = new HddLoader(bl, datasetFiles.get(0));
+                hl.load();    
+            }
+
+            Logger.info("Loaded " + bl.batchCount() + " batches");
 
 
 
