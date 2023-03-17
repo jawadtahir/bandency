@@ -29,17 +29,21 @@ public class Main {
             File datasetDirectory = new File(env.get("HOME") + "/source/bandency/web/fetchdata");
             String url = "jdbc:postgresql://localhost:5432/bandency?user=bandency&password=bandency";
             int durationEvaluationMinutes = 1;
+            int maxBatches = 100;
 
-            // Override default values
+            // Override default values on the big machine with slightly more ram than my laptop
             if(hostName.equalsIgnoreCase("cervino-1")) {
                 datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
                 url = env.get("JDBC_DB_CONNECTION");
                 durationEvaluationMinutes = 15;
+                maxBatches = 10_0000;
             }
 
             Logger.info("Initializing Challenger Service");
             Logger.info("opening database connection: " + url);
             var connectionPool = new DB(url);
+
+            // We do this here to test the DB connection
             var connection = connectionPool.getConnection();
             Queries q = new Queries(connectionPool);
 
@@ -47,7 +51,7 @@ public class Main {
             ArrayList<File> datasetFiles = Utils.getFiles(datasetDirectory);
             datasetFiles.stream().forEach(f -> Logger.info("Using the following datasets: " + f.getName()));
 
-            var bl = new BatchedCollector(1000, 100);
+            var bl = new BatchedCollector(1000, maxBatches);
 
             Logger.info("Preloading data in memory");
             if(hostName.equalsIgnoreCase("cervino-1")) {

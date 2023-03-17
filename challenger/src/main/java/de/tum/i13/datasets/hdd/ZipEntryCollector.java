@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
 
+import org.tinylog.Logger;
+
 import com.google.protobuf.Timestamp;
 
 import de.tum.i13.bandency.DriveState;
@@ -38,8 +40,8 @@ public class ZipEntryCollector {
         var cnt = 0;
         String line = br.readLine();
         while(line != null) {
-            if(cnt % 1000 == 0) {
-                System.out.println("Processed " + cnt + " lines");
+            if(cnt % 10_000 == 0) {
+                Logger.info("Imported " + cnt + " lines");
             }
             
             if(first) {
