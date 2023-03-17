@@ -12,8 +12,10 @@ public class BatchedCollector {
     private int currentBatchSize;
     private Batch.Builder bb;
     private int batchCount;
+    private int maxBatches;
     
-    public BatchedCollector(int maxBatchSize) {
+    public BatchedCollector(int maxBatchSize, int maxBatches) {
+        this.maxBatches = maxBatches;
         this.batches = new ArrayList<>();
         this.maxBatchSize = maxBatchSize;
         this.currentBatchSize = 0;
@@ -27,17 +29,23 @@ public class BatchedCollector {
         }
     }
 
-    public void collectState(DriveState state) {
+    // Returns true if we can continue collecting, false if we should stop
+    public boolean collectState(DriveState.Builder state) {
         if (currentBatchSize >= maxBatchSize) {
             bb.setLast(false);
             batches.add(bb.build());
             bb = null;
             ++this.batchCount;
             currentBatchSize = 0;
+            if (this.maxBatches > 0 && this.batchCount >= maxBatches) {
+                return false;
+            }
         }
         ensureBatch();
         bb.addStates(state);
         ++currentBatchSize;
+
+        return true;
     }
 
     public void close() {

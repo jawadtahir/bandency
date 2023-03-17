@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.tinylog.Logger;
+
 import de.tum.i13.bandency.DriveState;
 import de.tum.i13.datasets.cache.CloseableSource;
 
@@ -25,19 +27,29 @@ public class HddLoader {
         this.file = file;
     }
 
-    public void load() throws Exception {
-        ZipFile zipFile = new ZipFile(this.file);
-        var entries = Collections.list(zipFile.entries());
-        for(ZipEntry zipEntry : entries) {
-            if(zipEntry.getName().endsWith(".csv")) {
-                InputStream stream = zipFile.getInputStream(zipEntry);
-                InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
-                BufferedReader br = new BufferedReader(isr, 10*1024*1024);
-
-                var zec = new ZipEntryCollector(bl, br);
-                zec.collect();
-            }
+    public boolean load() throws Exception {
+        try(
+            ZipFile zipFile = new ZipFile(this.file);
+        ) {
+            var entries = Collections.list(zipFile.entries());
+            for(ZipEntry zipEntry : entries) {
+                var filename = zipEntry.getName();
+                if(!filename.contains("MACOSX") && filename.endsWith(".csv")) {                
+                    Logger.info("Loading file: " + zipEntry.getName());
+    
+                    try (
+                        InputStream stream = zipFile.getInputStream(zipEntry);
+                        InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
+                        BufferedReader br = new BufferedReader(isr, 10*1024*1024);
+                    ) {
+                        var zec = new ZipEntryCollector(bl, br);
+                        if (!zec.collect()){
+                            return false;
+                        }
+                    }
+                }
+            }    
         }
-        zipFile.close();        
+        return true;
     }
 }

@@ -26,82 +26,56 @@ public class Main {
             Map<String, String> env = System.getenv();
 
             // Default values
-            File datasetDirectory = new File("/home/chris/source/bandency/web/fetchdata");
-            String url = "jdbc:postgresql://winhost:5432/bandency?user=bandency&password=bandency";
+            File datasetDirectory = new File(env.get("HOME") + "/source/bandency/web/fetchdata");
+            String url = "jdbc:postgresql://localhost:5432/bandency?user=bandency&password=bandency";
             int durationEvaluationMinutes = 1;
 
             // Override default values
-            if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
+            if(hostName.equalsIgnoreCase("cervino-1")) {
                 datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
                 url = env.get("JDBC_DB_CONNECTION");
                 durationEvaluationMinutes = 15;
             }
-
-            ArrayList<File> datasetFiles = Utils.getFiles(datasetDirectory);
-            datasetFiles.stream().forEach(f -> Logger.info("Using the following datasets: " + f.getName()));
-
-            var bl = new BatchedCollector(1000);
-
-            Logger.info("Preloading data in memory");
-            if(hostName.equalsIgnoreCase("cervino-1")) {
-                //Load the full dataset
-                for (File f : datasetFiles) {
-                    var hl = new HddLoader(bl, f);
-                    hl.load();
-                }
-            } else {
-                var hl = new HddLoader(bl, datasetFiles.get(0));
-                hl.load();    
-            }
-
-            Logger.info("Loaded " + bl.batchCount() + " batches");
-
-
-
-
-
-
-            
-            //Test Dataset
-            // StringZipFile szfTest = new StringZipFile(Path.of(datasetTest).toFile());
-            //StringZipFileIterator szfiTest = szfTest.open();
-            // FinancialEventLoader fdlTest = new FinancialEventLoader(szfiTest);
-            // BatchedEvents beTest = new BatchedEvents(sg);
-            //Logger.info("Preloading data in memory - Test: " + datasetTest);
-            // beTest.loadData(fdlTest, 1_000);
-            // Logger.info("Test Count - " + beTest.batchCount());
-
-
-            // BatchedEvents beEvaluation = beTest;
-            if(hostName.equalsIgnoreCase("node-22") || hostName.equalsIgnoreCase("node-11")) {
-                //Evaluation Dataset
-                //StringZipFile szfEvaluation = new StringZipFile(Path.of(datasetEvaluation).toFile());
-                //StringZipFileIterator szfiEvaluation = szfEvaluation.open();
-                // FinancialEventLoader fdlEvaluation = new FinancialEventLoader(szfiEvaluation);
-                // beEvaluation = new BatchedEvents(sg);
-              //  Logger.info("Preloading data in memory - Evaluation: " + datasetEvaluation);
-                // beEvaluation.loadData(fdlEvaluation, 10_000);
-                // Logger.info("Evaluation Count - " + beEvaluation.batchCount());
-            } else {
-                Logger.info("Using test set also for evaluation");
-            }
-            
-            
-            Logger.info("Evaluation duration in minutes: " + durationEvaluationMinutes);
-            
-            ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
 
             Logger.info("Initializing Challenger Service");
             Logger.info("opening database connection: " + url);
             var connectionPool = new DB(url);
             var connection = connectionPool.getConnection();
             Queries q = new Queries(connectionPool);
-            // ChallengerServer cs = new ChallengerServer(beTest, beEvaluation, verificationQueue, q, durationEvaluationMinutes);
+
+
+            ArrayList<File> datasetFiles = Utils.getFiles(datasetDirectory);
+            datasetFiles.stream().forEach(f -> Logger.info("Using the following datasets: " + f.getName()));
+
+            var bl = new BatchedCollector(1000, 100);
+
+            Logger.info("Preloading data in memory");
+            if(hostName.equalsIgnoreCase("cervino-1")) {
+                //Load the full dataset
+                for (File f : datasetFiles) {
+                    var hl = new HddLoader(bl, f); // -1 means load all
+                    if(!hl.load()) {
+                        break;
+                    }
+                }
+            } else {
+                var hl = new HddLoader(bl, datasetFiles.get(0));
+                hl.load();
+            }
+
+            Logger.info("Loaded " + bl.batchCount() + " batches");            
+            
+            Logger.info("Evaluation duration in minutes: " + durationEvaluationMinutes);
+            
+            ArrayBlockingQueue<ToVerify> verificationQueue = new ArrayBlockingQueue<>(1_000_000, false);
+
+            // To kick it off, currently TEST and Evaluation are the same
+            ChallengerServer cs = new ChallengerServer(bl, bl, verificationQueue, q, durationEvaluationMinutes);
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder
                     .forPort(8081)
-            //        .addService(cs)
+                    .addService(cs)
                     .maxInboundMessageSize(10 * 1024 * 1024)
                     .build();
 
