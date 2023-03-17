@@ -78,7 +78,7 @@ public class Main {
 
             Logger.info("Initializing Service");
             Server server = ServerBuilder
-                    .forPort(8081)
+                    .forPort(5023)
                     .addService(cs)
                     .maxInboundMessageSize(10 * 1024 * 1024)
                     .build();
