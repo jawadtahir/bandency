@@ -7,7 +7,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.tinylog.Logger;
@@ -27,18 +29,29 @@ public class HddLoader {
         this.file = file;
     }
 
-    public boolean load() throws Exception {
+    private List<String> getCsVs() throws ZipException, IOException {
         try(
             ZipFile zipFile = new ZipFile(this.file);
         ) {
             var entries = Collections.list(zipFile.entries());
-            Collections.sort(entries, (a, b) -> a.getName().compareTo(b.getName()));
+            var csvs = entries.stream()
+                .filter(a -> !a.getName().contains("MACOSX") && a.getName().endsWith(".csv"))
+                .sorted((b,c) -> b.getName().compareTo(c.getName()))
+                .map(a -> a.getName()).toList();
+            return csvs;
+        }
+    }
 
-            for(ZipEntry zipEntry : entries) {
+    public boolean load() throws Exception {
+
+        for (var entry : this.getCsVs()) {
+            try(
+                ZipFile zipFile = new ZipFile(this.file);
+            ) {
+                var zipEntry = zipFile.getEntry(entry);
                 var filename = zipEntry.getName();
                 if(!filename.contains("MACOSX") && filename.endsWith(".csv")) {                
                     Logger.info("Loading file: " + zipEntry.getName());
-    
                     try (
                         InputStream stream = zipFile.getInputStream(zipEntry);
                         InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
@@ -50,7 +63,7 @@ public class HddLoader {
                         }
                     }
                 }
-            }    
+            }                
         }
         return true;
     }
