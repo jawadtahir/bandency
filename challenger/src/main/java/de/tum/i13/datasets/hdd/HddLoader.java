@@ -32,6 +32,8 @@ public class HddLoader {
             ZipFile zipFile = new ZipFile(this.file);
         ) {
             var entries = Collections.list(zipFile.entries());
+            Collections.sort(entries, (a, b) -> a.getName().compareTo(b.getName()));
+
             for(ZipEntry zipEntry : entries) {
                 var filename = zipEntry.getName();
                 if(!filename.contains("MACOSX") && filename.endsWith(".csv")) {                
