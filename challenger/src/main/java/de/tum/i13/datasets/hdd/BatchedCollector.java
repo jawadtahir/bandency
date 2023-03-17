@@ -3,6 +3,8 @@ package de.tum.i13.datasets.hdd;
 import java.time.Instant;
 import java.util.ArrayList;
 
+import org.tinylog.Logger;
+
 import de.tum.i13.bandency.Batch;
 import de.tum.i13.bandency.DriveState;
 
@@ -37,6 +39,11 @@ public class BatchedCollector {
             bb = null;
             ++this.batchCount;
             currentBatchSize = 0;
+
+            if(this.batchCount % 100 == 0) {
+                Logger.info("Collected batches: " + this.batchCount);
+            }
+
             if (this.maxBatches > 0 && this.batchCount >= maxBatches) {
                 return false;
             }
