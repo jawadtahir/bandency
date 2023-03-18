@@ -7,7 +7,7 @@ import challenger_pb2_grpc as api
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
 #with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
-with grpc.insecure_channel('localhost:5023', options=op) as channel:
+with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
     benchmarkconfiguration = ch.BenchmarkConfiguration(
@@ -24,20 +24,20 @@ with grpc.insecure_channel('localhost:5023', options=op) as channel:
     while True:
         batch = stub.nextBatch(benchmark)
         states_count = states_count + len(batch.states)
-        print(f"Got some states: {len(batch.states)}")
-
-        print(f"Serial number: {batch.states[0].serial_number}")
+        print(f"Got some states: {len(batch.states)}, so far: {states_count}")
+        if len(batch.states) > 0:
+            print(f"First Serial number: {batch.states[0].serial_number}")
         
-        resultQ1 = ch.ResultQ1(benchmark_id=benchmark.id, #The id of the benchmark
-                               batch_seq_id=batch.seq_id) # Todo add more interesting query results
-        stub.resultQ1(resultQ1)  # send the result of query 1 back
+            resultQ1 = ch.ResultQ1(benchmark_id=benchmark.id, #The id of the benchmark
+                                batch_seq_id=batch.seq_id) # Todo add more interesting query results
+            stub.resultQ1(resultQ1)  # send the result of query 1 back
 
-        # do the same for Q2
-        resultQ2 = ch.ResultQ2(benchmark_id=benchmark.id, #The id of the benchmark
-                            batch_seq_id=batch.seq_id, #The sequence id of the batch
-                            # Todo add more interesting query results
-                            )
-        stub.resultQ2(resultQ2)
+            # do the same for Q2
+            resultQ2 = ch.ResultQ2(benchmark_id=benchmark.id, #The id of the benchmark
+                                batch_seq_id=batch.seq_id, #The sequence id of the batch
+                                # Todo add more interesting query results
+                                )
+            stub.resultQ2(resultQ2)
 
         if batch.last:
             print(f"received last batch, total batches: {states_count}")
