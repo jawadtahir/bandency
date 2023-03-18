@@ -101,7 +101,7 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
             bt = BenchmarkType.Verification;
         } else if (request.getBenchmarkType().equalsIgnoreCase("evaluation")){
             bt = BenchmarkType.Evaluation;
-            batchSize = 10_000;
+            batchSize = 1_000;
         }
 
         //Save this benchmarkname to database
@@ -135,9 +135,9 @@ public class ChallengerServer extends ChallengerGrpc.ChallengerImplBase {
         Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
 
         if(bt == BenchmarkType.Evaluation) {
-            // bms.setDatasource(this.inMemoryDatasetEvaluation.newIterator(stopTime));
+            bms.setDatasource(this.inMemoryDatasetEvaluation.newIterator(stopTime));
         } else {
-            // bms.setDatasource(this.inMemoryDatasetTest.newIterator(stopTime));
+            bms.setDatasource(this.inMemoryDatasetTest.newIterator(stopTime));
         }
                 
         Logger.info("Ready for benchmark: " + bms.toString());
