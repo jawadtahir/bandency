@@ -26,7 +26,11 @@ with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel
         states_count = states_count + len(batch.states)
         print(f"Got some states: {len(batch.states)}, so far: {states_count}")
         if len(batch.states) > 0:
-            print(f"First Serial number: {batch.states[0].serial_number}")
+            first = batch.states[0]
+            print(f"First Serial number: {first.serial_number}, normalized: {first.normalized}")
+
+            
+
         
             resultQ1 = ch.ResultQ1(benchmark_id=benchmark.id, #The id of the benchmark
                                 batch_seq_id=batch.seq_id) # Todo add more interesting query results
