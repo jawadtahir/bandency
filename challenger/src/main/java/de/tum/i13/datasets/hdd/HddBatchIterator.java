@@ -20,12 +20,13 @@ public class HddBatchIterator implements CloseableSource<Batch> {
 
     @Override
     public boolean hasMoreElements() {
-        if (Instant.now().isAfter(stopTime)) {
-            return false;
-        } 
-        else {
-            return this.batches.size() > this.pointer;
-        }
+        // Ignoring that temporary
+        //if (Instant.now().isAfter(stopTime)) {
+        //    return false;
+        //} 
+        //else {
+        return this.batches.size() > this.pointer;
+        //}
     }
 
     @Override
