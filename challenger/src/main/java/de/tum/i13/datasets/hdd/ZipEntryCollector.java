@@ -112,27 +112,47 @@ public class ZipEntryCollector {
         ds.setCapacityBytes(Long.parseLong(parts[3]));
         ds.setFailure(Integer.parseInt(parts[4]));
 
+        var sbNormalized = new StringBuilder();
+        var sbRaw = new StringBuilder();
+        Long smartvalue = -1l;
+
         for(int index = 5; index < parts.length; ++index) {
             var smartnumber = indexToSmart.get(index);
 
-            Long smartvalue = -1l;
+            smartvalue = -1l;
             if (!parts[index].isEmpty()) {
                 smartvalue = Long.parseLong(parts[index]);
             }
 
+            // skip empty values
+            if(smartvalue == -1l) {
+                continue;
+            }
+
             if(smartnumber > 0) {
-                normalized.put(Integer.valueOf(smartnumber.intValue()), smartvalue);
+                //normalized.put(Integer.valueOf(smartnumber.intValue()), smartvalue);
                 //ds.putNormalized(smartnumber, smartvalue);
                 //ds.getNormalizedMap().put(smartnumber, smartvalue)
+                sbNormalized.append(smartnumber);
+                sbNormalized.append(':');
+                sbNormalized.append(smartvalue);
+                sbNormalized.append(',');
             }
             else {
-                raw.put(Integer.valueOf(-(smartnumber.intValue())), smartvalue);
+                //raw.put(Integer.valueOf(-(smartnumber.intValue())), smartvalue);
                 //ds.putRaw(-smartnumber, smartvalue);
+                sbNormalized.append(-smartnumber);
+                sbNormalized.append(':');
+                sbNormalized.append(smartvalue);
+                sbNormalized.append(',');
             }
         }
 
-        ds.putAllNormalized(normalized);
-        ds.putAllRaw(raw);
+        ds.setNormalized(sbNormalized.toString());
+        ds.setRaw(sbRaw.toString());
+
+        //ds.putAllNormalized(normalized);
+        //ds.putAllRaw(raw);
 
         // leaving this for now, but we need either a generic mapping for normalized/raw values or we need to type all this.
 

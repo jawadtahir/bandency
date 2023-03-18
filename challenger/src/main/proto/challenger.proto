@@ -26,10 +26,10 @@ message DriveState {
   string model = 3;
   int64 capacity_bytes = 4;
   int32 failure = 5;
-  // Normalized values
-  map<int32, int64> normalized = 6;
-  // Raw values
-  map<int32, int64> raw = 7;
+  // Normalized values, key:value, key:value
+  string normalized = 6;
+  // Raw values, key:value, key:value
+  string raw = 7;
 }
 
 message Batch {
