@@ -8,6 +8,7 @@ import de.tum.i13.dal.ToVerify;
 import de.tum.i13.datasets.cache.CloseableSource;
 
 import org.HdrHistogram.Histogram;
+import org.tinylog.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -163,11 +164,13 @@ public class BenchmarkState {
             return Batch.newBuilder().setLast(true).build();
         }
         if(this.datasource.hasMoreElements()) {
+            Logger.info("Has more elements: " + benchmarkId);
             Batch batch = this.datasource.nextElement();
             LatencyMeasurement lm = new LatencyMeasurement(benchmarkId, batch.getSeqId(), System.nanoTime());
             this.latencyCorrelation.put(batch.getSeqId(), lm);
             return batch;
         } else {
+            Logger.info("No more elements" + benchmarkId);
             try {
                 this.datasource.close();
             } catch (Exception e) {
