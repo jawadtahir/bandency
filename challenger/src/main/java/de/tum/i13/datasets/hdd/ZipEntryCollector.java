@@ -121,12 +121,12 @@ public class ZipEntryCollector {
             }
 
             if(smartnumber > 0) {
-                normalized.put(smartnumber.intValue(), smartvalue);
+                normalized.put(Integer.valueOf(smartnumber.intValue()), smartvalue);
                 //ds.putNormalized(smartnumber, smartvalue);
                 //ds.getNormalizedMap().put(smartnumber, smartvalue)
             }
             else {
-                raw.put(-(smartnumber.intValue()), smartvalue);
+                raw.put(Integer.valueOf(-(smartnumber.intValue())), smartvalue);
                 //ds.putRaw(-smartnumber, smartvalue);
             }
         }
