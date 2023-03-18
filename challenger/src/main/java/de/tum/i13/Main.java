@@ -36,7 +36,7 @@ public class Main {
                 datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
                 url = env.get("JDBC_DB_CONNECTION");
                 durationEvaluationMinutes = 15;
-                maxBatches = 50_000;
+                maxBatches = 7_000;
             }
 
             Logger.info("Initializing Challenger Service");
