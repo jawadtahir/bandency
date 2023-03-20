@@ -43,7 +43,7 @@ with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel
                                 )
             stub.resultQ2(resultQ2)
 
-        if batch.last:
+        if batch.last or states_count > 10000:
             print(f"received last batch, total batches: {states_count}")
             stub.endBenchmark(benchmark)
             break
