@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.stream.Collector;
 
 import org.tinylog.Logger;
 
@@ -43,7 +44,7 @@ public class BatchedCollector {
         if (currentBatchSize >= maxBatchSize) {
             bb.setLast(false);
 
-            var modelArr = models.stream().toList();
+            var modelArr = new ArrayList<String>(models);
             Collections.shuffle(modelArr, this.random);
 
             if(this.batchCount % 100 == 0) {
