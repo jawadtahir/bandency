@@ -24,7 +24,7 @@ with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel
     while True:
         batch = stub.nextBatch(benchmark)
         states_count = states_count + len(batch.states)
-        print(f"Got some states: {len(batch.states)}, so far: {states_count}")
+        print(f"Got some states: {len(batch.states)}, so far: {states_count}, models: {batch.models}")
         if len(batch.states) > 0:
             first = batch.states[0]
             print(f"First Serial number: {first.serial_number}, normalized: {first.normalized}")
