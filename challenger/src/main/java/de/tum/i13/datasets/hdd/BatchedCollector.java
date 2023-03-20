@@ -2,6 +2,10 @@ package de.tum.i13.datasets.hdd;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Random;
 
 import org.tinylog.Logger;
 
@@ -15,6 +19,7 @@ public class BatchedCollector {
     private Batch.Builder bb;
     private int batchCount;
     private int maxBatches;
+    private Random random;
     
     public BatchedCollector(int maxBatchSize, int maxBatches) {
         this.maxBatches = maxBatches;
@@ -22,6 +27,8 @@ public class BatchedCollector {
         this.maxBatchSize = maxBatchSize;
         this.currentBatchSize = 0;
         this.batchCount = 0;
+
+        this.random = new Random(42);
     }
 
     private void ensureBatch() {
@@ -32,17 +39,25 @@ public class BatchedCollector {
     }
 
     // Returns true if we can continue collecting, false if we should stop
-    public boolean collectState(DriveState.Builder state) {
+    public boolean collectState(DriveState.Builder state, HashSet<String> models) {
         if (currentBatchSize >= maxBatchSize) {
             bb.setLast(false);
-            batches.add(bb.build());
-            bb = null;
-            ++this.batchCount;
-            currentBatchSize = 0;
+
+            var modelArr = models.stream().toList();
+            Collections.shuffle(modelArr, this.random);
 
             if(this.batchCount % 100 == 0) {
                 Logger.info("Collected batches: " + this.batchCount);
             }
+
+            for(int i = 0; i < Math.min(5, modelArr.size()); ++i) {
+                bb.addModels(modelArr.get(i));
+            }
+
+            batches.add(bb.build());
+            bb = null;
+            ++this.batchCount;
+            currentBatchSize = 0;
 
             if (this.maxBatches > 0 && this.batchCount >= maxBatches) {
                 return false;

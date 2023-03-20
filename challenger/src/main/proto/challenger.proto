@@ -8,27 +8,15 @@ option java_package = "de.tum.i13.bandency";
 
 package Challenger;
 
-enum SecurityType {
-  Equity = 0;
-  Index = 1;
-}
-
-message Event {
-  string symbol = 1;
-  SecurityType security_type = 2;
-  float last_trade_price = 3;
-  google.protobuf.Timestamp last_trade = 4;
-}
-
 message DriveState {
   google.protobuf.Timestamp date = 1;
   string serial_number = 2;
   string model = 3;
   int64 capacity_bytes = 4;
   int32 failure = 5;
-  // Normalized values, key:value, key:value
+  // Normalized values, key:value,key:value
   string normalized = 6;
-  // Raw values, key:value, key:value
+  // Raw values, key:value,key:value
   string raw = 7;
 }
 
@@ -36,24 +24,33 @@ message Batch {
   int64 seq_id = 1;
   bool last = 2;
   repeated DriveState states = 3;
+  repeated string models = 4;
 }
 
 message Benchmark {
   int64 id = 1;
 }
 
+message Outliers {
+  string model = 1;
+  repeated string intervals = 2;
+}
+
 message ResultQ1 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
 
-  // TODO: more fields for Q1
+  repeated Outliers entries = 3;
 }
 
 message ResultQ2 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
 
-  // TODO: more fields for Q2
+  // For each centroid c, the number of intervals for which c was the closest centroid in the previous batch but not now
+  repeated int64 centroids_out = 3;
+  // For each centroid c, the number of intervals for which c is the closest centroid now, but was not in the previous batch
+  repeated int64 centroids_in = 4;
 }
 
 enum Query {
