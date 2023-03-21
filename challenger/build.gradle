@@ -17,7 +17,7 @@ version '1.0-SNAPSHOT'
 //apply plugin : "java"
 
 application {
-    mainClass.set("de.tum.i13.Main")
+    mainClass.set("org.debs.gc2023.Main")
 }
 
 protobuf {
@@ -50,7 +50,7 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
     manifest {
-        attributes "Main-Class": "de.tum.i13.Main"
+        attributes "Main-Class": "org.debs.gc2023.Main"
     }
 
     from {
