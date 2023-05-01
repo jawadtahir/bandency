@@ -17,7 +17,7 @@ import org.debs.gc2023.challenger.BenchmarkState;
 import org.debs.gc2023.challenger.BenchmarkType;
 import org.debs.gc2023.dal.Queries;
 import org.debs.gc2023.dal.ToVerify;
-import org.debs.gc2023.datasets.hdd.BatchedCollector;
+import org.debs.gc2023.datasets.inmemory.InMemoryBatchedCollector;
 import org.tinylog.Logger;
 
 import java.sql.SQLException;
@@ -31,15 +31,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerImplBase {
-    private final BatchedCollector inMemoryDatasetTest;
-    private final BatchedCollector inMemoryDatasetEvaluation;
+    private final InMemoryBatchedCollector inMemoryDatasetTest;
+    private final InMemoryBatchedCollector inMemoryDatasetEvaluation;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private final Queries q;
     private final int durationEvaluationMinutes;
     private final Random random;
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
 
-    public ChallengerServer(BatchedCollector inMemoryDatasetTest, BatchedCollector inMemoryDatasetEvaluation, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
+    public ChallengerServer(InMemoryBatchedCollector inMemoryDatasetTest, InMemoryBatchedCollector inMemoryDatasetEvaluation, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
         this.inMemoryDatasetTest = inMemoryDatasetTest;
         this.inMemoryDatasetEvaluation = inMemoryDatasetEvaluation;
         this.dbInserter = dbInserter;

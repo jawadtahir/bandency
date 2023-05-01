@@ -1,4 +1,4 @@
-package org.debs.gc2023.datasets.hdd;
+package org.debs.gc2023.datasets.inmemory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,9 +18,9 @@ import org.tinylog.Logger;
 public class HddLoader {
 
     private File file;
-    private BatchedCollector bl;
+    private InMemoryBatchedCollector bl;
 
-    public HddLoader(BatchedCollector bl, java.io.File file) {
+    public HddLoader(InMemoryBatchedCollector bl, java.io.File file) {
         this.bl = bl;
         this.file = file;
     }

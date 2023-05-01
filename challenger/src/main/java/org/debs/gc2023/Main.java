@@ -8,8 +8,8 @@ import org.debs.gc2023.dal.DB;
 import org.debs.gc2023.dal.Queries;
 import org.debs.gc2023.dal.ResultsVerifier;
 import org.debs.gc2023.dal.ToVerify;
-import org.debs.gc2023.datasets.hdd.BatchedCollector;
-import org.debs.gc2023.datasets.hdd.HddLoader;
+import org.debs.gc2023.datasets.inmemory.InMemoryBatchedCollector;
+import org.debs.gc2023.datasets.inmemory.HddLoader;
 import org.debs.gc2023.datasets.util.Utils;
 import org.tinylog.Logger;
 
@@ -28,16 +28,35 @@ public class Main {
 
             // Default values
             File datasetDirectory = new File(env.get("HOME") + "/source/bandency/web/fetchdata");
-            String url = "jdbc:postgresql://localhost:5432/bandency?user=bandency&password=bandency";
+            String url = "jdbc:postgresql://127.0.0.1:5432/bandency?user=bandency&password=bandency";
             int durationEvaluationMinutes = 1;
             int maxBatches = 100;
+            Boolean inMemoryDataset = true;
 
             // Override default values on the big machine with slightly more ram than my laptop
-            if(hostName.equalsIgnoreCase("cervino-1")) {
+            if(hostName.equalsIgnoreCase("L3-37")) {
+                datasetDirectory = new File(env.get("HOME") + "/source/bandency/web/fetchdata");
+                url = "jdbc:postgresql://172.22.80.1:5432/bandency?user=bandency&password=bandency";
+                durationEvaluationMinutes = 15;
+                maxBatches = 100_000;
+                inMemoryDataset = false;
+            }
+            else if(hostName.equalsIgnoreCase("cervino-1")) {
                 datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
                 url = env.get("JDBC_DB_CONNECTION");
                 durationEvaluationMinutes = 15;
                 maxBatches = 100_000;
+                inMemoryDataset = true;
+            } else {
+                if (env.containsKey("DATASET_DIRECTORY")) {
+                    datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
+                }
+                if (env.containsKey("JDBC_DB_CONNECTION")) {
+                    url = env.get("JDBC_DB_CONNECTION");
+                }
+                if(env.containsKey("INMEMORY_DATASET")) {
+                    inMemoryDataset = Boolean.parseBoolean(env.get("INMEMORY_DATASET"));
+                }
             }
 
             Logger.info("Initializing Challenger Service");
@@ -52,20 +71,24 @@ public class Main {
             ArrayList<File> datasetFiles = Utils.getFiles(datasetDirectory);
             datasetFiles.stream().forEach(f -> Logger.info("Using the following datasets: " + f.getName()));
 
-            var bl = new BatchedCollector(1000, maxBatches);
+            var bl = new InMemoryBatchedCollector(1000, maxBatches);
 
-            Logger.info("Preloading data in memory");
-            if(hostName.equalsIgnoreCase("cervino-1")) {
-                //Load the full dataset
-                for (File f : datasetFiles) {
-                    var hl = new HddLoader(bl, f); // -1 means load all
-                    if(!hl.load()) {
-                        break;
+            if(inMemoryDataset) {
+                Logger.info("Preloading data in memory");
+                if(hostName.equalsIgnoreCase("cervino-1")) {
+                    //Load the full dataset
+                    for (File f : datasetFiles) {
+                        var hl = new HddLoader(bl, f); // -1 means load all
+                        if(!hl.load()) {
+                            break;
+                        }
                     }
+                } else {
+                    var hl = new HddLoader(bl, datasetFiles.get(0));
+                    hl.load();
                 }
-            } else {
-                var hl = new HddLoader(bl, datasetFiles.get(0));
-                hl.load();
+            } else{
+
             }
 
             Logger.info("Loaded " + bl.batchCount() + " batches");            

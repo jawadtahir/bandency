@@ -1,4 +1,4 @@
-package org.debs.gc2023.datasets.hdd;
+package org.debs.gc2023.datasets.inmemory;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -8,12 +8,12 @@ import org.debs.gc2023.datasets.cache.CloseableSource;
 
 import org.debs.gc2023.bandency.Batch;
 
-public class HddBatchIterator implements CloseableSource<Batch> {
+public class InMemoryHddBatchIterator implements CloseableSource<Batch> {
     private ArrayList<Batch> batches;
     private int pointer;
     private Instant stopTime;
 
-    public HddBatchIterator(ArrayList<Batch> batches, Instant stopTime) {
+    public InMemoryHddBatchIterator(ArrayList<Batch> batches, Instant stopTime) {
         this.batches = batches;
         this.pointer = 0;
         this.stopTime = stopTime;

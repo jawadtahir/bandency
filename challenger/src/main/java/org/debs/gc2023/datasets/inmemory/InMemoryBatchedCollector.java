@@ -1,4 +1,4 @@
-package org.debs.gc2023.datasets.hdd;
+package org.debs.gc2023.datasets.inmemory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -8,12 +8,13 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.stream.Collector;
 
+import org.debs.gc2023.datasets.cache.CloseableSource;
 import org.tinylog.Logger;
 
 import org.debs.gc2023.bandency.Batch;
 import org.debs.gc2023.bandency.DriveState;
 
-public class BatchedCollector {
+public class InMemoryBatchedCollector implements BatchedIterator {
     private final ArrayList<Batch> batches;
     private int maxBatchSize;
     private int currentBatchSize;
@@ -22,7 +23,7 @@ public class BatchedCollector {
     private int maxBatches;
     private Random random;
     
-    public BatchedCollector(int maxBatchSize, int maxBatches) {
+    public InMemoryBatchedCollector(int maxBatchSize, int maxBatches) {
         this.maxBatches = maxBatches;
         this.batches = new ArrayList<>();
         this.maxBatchSize = maxBatchSize;
@@ -84,7 +85,7 @@ public class BatchedCollector {
         return this.batches.size();
     }
     
-    public HddBatchIterator newIterator(Instant stopTime) {
-        return new HddBatchIterator(batches, stopTime);
+    public CloseableSource<Batch> newIterator(Instant stopTime) {
+        return new InMemoryHddBatchIterator(batches, stopTime);
     }
 }

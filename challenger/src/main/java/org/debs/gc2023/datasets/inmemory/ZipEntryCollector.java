@@ -1,4 +1,4 @@
-package org.debs.gc2023.datasets.hdd;
+package org.debs.gc2023.datasets.inmemory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,13 +21,13 @@ import org.debs.gc2023.bandency.DriveState;
 
 public class ZipEntryCollector {
 
-    private final BatchedCollector bl;
+    private final InMemoryBatchedCollector bl;
     private final BufferedReader br;
 
     private DateTimeFormatter dateTimeParser = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 2022-10-01
     private final HashMap<String, Timestamp> dateCache;
 
-    public ZipEntryCollector(BatchedCollector bl, BufferedReader br) {
+    public ZipEntryCollector(InMemoryBatchedCollector bl, BufferedReader br) {
         this.bl = bl;
         this.br = br;
         this.dateCache = new HashMap<>();
