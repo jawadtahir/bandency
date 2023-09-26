@@ -1,31 +1,29 @@
 package org.debs.gc2023.datasets.inmemory;
 
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
-import java.util.stream.Collector;
 
-import org.debs.gc2023.datasets.cache.CloseableSource;
+import org.debs.gc2023.datasets.IDataStore;
+import org.rocksdb.RocksDBException;
 import org.tinylog.Logger;
 
 import org.debs.gc2023.bandency.Batch;
 import org.debs.gc2023.bandency.DriveState;
 
-public class InMemoryBatchedCollector implements BatchedIterator {
-    private final ArrayList<Batch> batches;
+public class BatchedCollector {
     private int maxBatchSize;
     private int currentBatchSize;
     private Batch.Builder bb;
     private int batchCount;
     private int maxBatches;
     private Random random;
+    private IDataStore store;
     
-    public InMemoryBatchedCollector(int maxBatchSize, int maxBatches) {
+    public BatchedCollector(IDataStore store, int maxBatchSize, int maxBatches) {
+        this.store = store;
         this.maxBatches = maxBatches;
-        this.batches = new ArrayList<>();
         this.maxBatchSize = maxBatchSize;
         this.currentBatchSize = 0;
         this.batchCount = 0;
@@ -41,7 +39,7 @@ public class InMemoryBatchedCollector implements BatchedIterator {
     }
 
     // Returns true if we can continue collecting, false if we should stop
-    public boolean collectState(DriveState.Builder state, HashSet<String> models) {
+    public boolean collectState(DriveState.Builder state, HashSet<String> models) throws RocksDBException {
         if (currentBatchSize >= maxBatchSize) {
             bb.setLast(false);
 
@@ -56,12 +54,13 @@ public class InMemoryBatchedCollector implements BatchedIterator {
                 bb.addModels(modelArr.get(i));
             }
 
-            batches.add(bb.build());
+            store.AddBatch(this.batchCount, bb.build());
             bb = null;
             ++this.batchCount;
             currentBatchSize = 0;
 
             if (this.maxBatches > 0 && this.batchCount >= maxBatches) {
+                store.SetBatchCount(this.batchCount);
                 return false;
             }
         }
@@ -72,20 +71,16 @@ public class InMemoryBatchedCollector implements BatchedIterator {
         return true;
     }
 
-    public void close() {
+    public void close() throws RocksDBException {
         if(bb != null) {
             bb.setLast(true);
-            batches.add(bb.build());
+            this.store.AddBatch(this.batchCount, bb.build());
             bb = null;
             currentBatchSize = 0;
         }
     }
 
-    public int batchCount() {
-        return this.batches.size();
-    }
-    
-    public CloseableSource<Batch> newIterator(Instant stopTime) {
-        return new InMemoryHddBatchIterator(batches, stopTime);
-    }
+    public int batchCount() throws RocksDBException, InterruptedException {
+        return this.store.BatchCount();
+    }    
 }

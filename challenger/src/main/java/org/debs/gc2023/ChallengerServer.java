@@ -1,6 +1,8 @@
 package org.debs.gc2023;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.Counter;
@@ -15,9 +17,12 @@ import org.debs.gc2023.bandency.ResultQ2;
 import org.debs.gc2023.bandency.ChallengerGrpc.ChallengerImplBase;
 import org.debs.gc2023.challenger.BenchmarkState;
 import org.debs.gc2023.challenger.BenchmarkType;
-import org.debs.gc2023.dal.Queries;
+import org.debs.gc2023.dal.IQueries;
 import org.debs.gc2023.dal.ToVerify;
-import org.debs.gc2023.datasets.inmemory.InMemoryBatchedCollector;
+import org.debs.gc2023.datasets.BatchIterator;
+import org.debs.gc2023.datasets.IDataStore;
+import org.debs.gc2023.datasets.inmemory.BatchedCollector;
+import org.rocksdb.RocksDBException;
 import org.tinylog.Logger;
 
 import java.sql.SQLException;
@@ -31,17 +36,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChallengerServer extends ChallengerImplBase {
-    private final InMemoryBatchedCollector inMemoryDatasetTest;
-    private final InMemoryBatchedCollector inMemoryDatasetEvaluation;
     private final ArrayBlockingQueue<ToVerify> dbInserter;
-    private final Queries q;
+    private final IQueries q;
     private final int durationEvaluationMinutes;
     private final Random random;
     final private ConcurrentHashMap<Long, BenchmarkState> benchmark;
+    private IDataStore store;
 
-    public ChallengerServer(InMemoryBatchedCollector inMemoryDatasetTest, InMemoryBatchedCollector inMemoryDatasetEvaluation, ArrayBlockingQueue<ToVerify> dbInserter, Queries q, int durationEvaluationMinutes) {
-        this.inMemoryDatasetTest = inMemoryDatasetTest;
-        this.inMemoryDatasetEvaluation = inMemoryDatasetEvaluation;
+    public ChallengerServer(IDataStore store, ArrayBlockingQueue<ToVerify> dbInserter, IQueries q, int durationEvaluationMinutes) {
+        this.store = store;
         this.dbInserter = dbInserter;
         this.q = q;
         this.durationEvaluationMinutes = durationEvaluationMinutes;
@@ -141,9 +144,12 @@ public class ChallengerServer extends ChallengerImplBase {
         Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
 
         if(bt == BenchmarkType.Evaluation) {
-            bms.setDatasource(this.inMemoryDatasetEvaluation.newIterator(stopTime));
+            var bi = new BatchIterator(this.store, stopTime);
+            bms.setDatasource(bi);
         } else {
-            bms.setDatasource(this.inMemoryDatasetTest.newIterator(stopTime));
+            // for the time being, there is no difference in the dataset
+            var bi = new BatchIterator(this.store, stopTime);
+            bms.setDatasource(bi);
         }
                 
         Logger.info("Ready for benchmark: " + bms.toString());
@@ -224,17 +230,33 @@ public class ChallengerServer extends ChallengerImplBase {
 
         AtomicReference<Batch> batchRef = new AtomicReference<>();;
         this.benchmark.computeIfPresent(request.getId(), (k, b) -> {
+            try {
+                if(b.getBenchmarkType() == BenchmarkType.Evaluation) { //this comes from memory and is too fast
+                        batchRef.set(b.getNextBatch(request.getId()));
+                    nextBatchValidation.inc();
+                } else {
+                    Histogram.Timer batchReadTimer = batchReadLatency.startTimer();
 
-            if(b.getBenchmarkType() == BenchmarkType.Evaluation) { //this comes from memory and is too fast
-                batchRef.set(b.getNextBatch(request.getId()));
-                nextBatchValidation.inc();
-            } else {
-                Histogram.Timer batchReadTimer = batchReadLatency.startTimer();
+                    batchRef.set(b.getNextBatch(request.getId()));
 
-                batchRef.set(b.getNextBatch(request.getId()));
-
-                batchReadTimer.observeDuration();
-                nextBatchTest.inc();
+                    batchReadTimer.observeDuration();
+                    nextBatchTest.inc();
+                }
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+                Status status = Status.INTERNAL.withDescription("Could not get next batch, plz. let the DEBS challenge organizers know that they should fix this bug, .. IMMEDIATELY. thanks!");
+                responseObserver.onError(status.asException());
+                responseObserver.onCompleted();
+            } catch (RocksDBException e) {
+                e.printStackTrace();
+                Status status = Status.INTERNAL.withDescription("Could not get next batch, plz. let the DEBS challenge organizers know that they should fix this bug, .. IMMEDIATELY. thanks!");
+                responseObserver.onError(status.asException());
+                responseObserver.onCompleted();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Status status = Status.INTERNAL.withDescription("Could not get next batch, plz. let the DEBS challenge organizers know that they should fix this bug, .. IMMEDIATELY. thanks!");
+                responseObserver.onError(status.asException());
+                responseObserver.onCompleted();
             }
             return b;
         });

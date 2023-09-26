@@ -7,8 +7,11 @@ import org.debs.gc2023.bandency.ResultQ2;
 import org.HdrHistogram.Histogram;
 import org.debs.gc2023.dal.BenchmarkDuration;
 import org.debs.gc2023.dal.ToVerify;
-import org.debs.gc2023.datasets.cache.CloseableSource;
+import org.debs.gc2023.datasets.BatchIterator;
+import org.rocksdb.RocksDBException;
 import org.tinylog.Logger;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +33,7 @@ public class BenchmarkState {
 
     private double averageLatency;
     private long startNanoTime;
-    private CloseableSource<Batch> datasource;
+    private BatchIterator datasource;
     private boolean q1Active;
     private boolean q2Active;
     private long benchmarkId;
@@ -151,15 +154,15 @@ public class BenchmarkState {
         this.startNanoTime = startNanoTime;
     }
 
-    public void setDatasource(CloseableSource<Batch> newDataSource) {
+    public void setDatasource(BatchIterator newDataSource) {
         this.datasource = newDataSource;
     }
 
-    public CloseableSource<Batch> getDatasource() {
+    public BatchIterator getDatasource() {
         return this.datasource;
     }
 
-    public Batch getNextBatch(long benchmarkId) {
+    public Batch getNextBatch(long benchmarkId) throws InvalidProtocolBufferException, RocksDBException, InterruptedException {
         if(this.datasource == null) { //when participants ignore the last flag
             return Batch.newBuilder().setLast(true).build();
         }
@@ -171,11 +174,6 @@ public class BenchmarkState {
             return batch;
         } else {
             Logger.info("No more elements" + benchmarkId);
-            try {
-                this.datasource.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             this.datasource = null;
             return Batch.newBuilder().setLast(true).build();
         }

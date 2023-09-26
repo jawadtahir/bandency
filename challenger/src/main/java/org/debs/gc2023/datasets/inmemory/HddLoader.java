@@ -18,9 +18,9 @@ import org.tinylog.Logger;
 public class HddLoader {
 
     private File file;
-    private InMemoryBatchedCollector bl;
+    private BatchedCollector bl;
 
-    public HddLoader(InMemoryBatchedCollector bl, java.io.File file) {
+    public HddLoader(BatchedCollector bl, java.io.File file) {
         this.bl = bl;
         this.file = file;
     }

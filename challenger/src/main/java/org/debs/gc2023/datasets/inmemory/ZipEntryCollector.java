@@ -1,33 +1,24 @@
 package org.debs.gc2023.datasets.inmemory;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-
-import org.postgresql.core.SetupQueryRunner;
-import org.tinylog.Logger;
-
 import com.google.protobuf.Timestamp;
 
 import org.debs.gc2023.bandency.DriveState;
 
 public class ZipEntryCollector {
 
-    private final InMemoryBatchedCollector bl;
+    private final BatchedCollector bl;
     private final BufferedReader br;
 
     private DateTimeFormatter dateTimeParser = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 2022-10-01
     private final HashMap<String, Timestamp> dateCache;
 
-    public ZipEntryCollector(InMemoryBatchedCollector bl, BufferedReader br) {
+    public ZipEntryCollector(BatchedCollector bl, BufferedReader br) {
         this.bl = bl;
         this.br = br;
         this.dateCache = new HashMap<>();
@@ -47,11 +38,7 @@ public class ZipEntryCollector {
         var first = true;
         var cnt = 0;
         String line = br.readLine();
-        while(line != null) {
-            if(cnt % 10_000 == 0) {
-                Logger.info("Imported " + cnt + " lines");
-            }
-            
+        while(line != null) {            
             if(first) {
                 first = false;
                 String[] parts = line.split(",", -1);
