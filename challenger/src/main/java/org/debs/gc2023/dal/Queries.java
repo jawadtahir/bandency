@@ -8,13 +8,19 @@ import org.debs.gc2023.challenger.BenchmarkType;
 import org.debs.gc2023.challenger.LatencyMeasurement;
 import org.debs.gc2023.dal.dto.BenchmarkResult;
 
-public class Queries {
+public class Queries implements IQueries {
     private final DB conn;
 
     public Queries(DB connectionPool) {
         this.conn = connectionPool;
     }
 
+    @Override
+    public DB getDb() {
+        return this.conn;
+    }
+
+    @Override
     public boolean checkIfGroupExists(String token) throws SQLException, ClassNotFoundException, InterruptedException {
         try(PreparedStatement preparedStatement = this.conn
                 .getConnection()
@@ -28,6 +34,7 @@ public class Queries {
         }
     }
 
+    @Override
     public UUID getGroupIdFromToken(String token) throws SQLException, ClassNotFoundException, InterruptedException {
         try(PreparedStatement preparedStatement = this.conn
                 .getConnection()
@@ -40,6 +47,7 @@ public class Queries {
         }
     }
 
+    @Override
     public void insertBenchmarkStarted(long benchmarkId, UUID groupId, String benchmarkName, int batchSize, BenchmarkType bt) throws SQLException, ClassNotFoundException, InterruptedException {
         try(PreparedStatement pStmt = this.conn
                 .getConnection()
@@ -58,6 +66,7 @@ public class Queries {
         }
     }
 
+    @Override
     public void insertLatencyMeasurementStats(long benchmarkId, double averageLatency) throws SQLException, ClassNotFoundException, InterruptedException {
 
         //delete in case there is already a measurement
@@ -82,6 +91,7 @@ public class Queries {
         }
     }
 
+    @Override
     public void insertLatency(LatencyMeasurement lm) throws SQLException, ClassNotFoundException, InterruptedException {
 
         try(PreparedStatement pStmt = this.conn
@@ -120,6 +130,7 @@ public class Queries {
         }
     }
 
+    @Override
     public void insertBenchmarkResult(BenchmarkResult br, String s) throws SQLException, ClassNotFoundException, InterruptedException {
 
         try(PreparedStatement pStmt = this.conn

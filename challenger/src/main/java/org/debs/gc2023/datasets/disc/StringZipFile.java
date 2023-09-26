@@ -1,14 +1,10 @@
-package org.debs.gc2023.datasets.airquality;
+package org.debs.gc2023.datasets.disc;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import org.debs.gc2023.datasets.hdd.StringZipFileIterator;
 
 public class StringZipFile {
 

@@ -6,8 +6,8 @@ import challenger_pb2_grpc as api
 
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-#with grpc.insecure_channel('127.0.0.1:8081', options=op) as channel:
-with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel:
+with grpc.insecure_channel('127.0.0.1:5023', options=op) as channel:
+#with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
     benchmarkconfiguration = ch.BenchmarkConfiguration(
@@ -24,10 +24,10 @@ with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel
     while True:
         batch = stub.nextBatch(benchmark)
         states_count = states_count + len(batch.states)
-        print(f"Got some states: {len(batch.states)}, so far: {states_count}, models: {batch.models}")
+        #print(f"Got some states: {len(batch.states)}, so far: {states_count}, models: {batch.models}")
         if len(batch.states) > 0:
             first = batch.states[0]
-            print(f"First Serial number: {first.serial_number}, normalized: {first.normalized}")
+            #print(f"First Serial number: {first.serial_number}, normalized: {first.normalized}")
 
             
 
@@ -43,7 +43,7 @@ with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel
                                 )
             stub.resultQ2(resultQ2)
 
-        if batch.last or states_count > 10000:
+        if batch.last:
             print(f"received last batch, total batches: {states_count}")
             stub.endBenchmark(benchmark)
             break

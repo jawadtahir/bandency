@@ -3,20 +3,23 @@ package org.debs.gc2023;
 import io.grpc.Server;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
-import org.debs.gc2023.dal.DB;
+import org.debs.gc2023.dal.IQueries;
 import org.debs.gc2023.dal.ResultsVerifier;
 import org.tinylog.Logger;
 
 public class ShutDown extends Thread {
     private final ResultsVerifier rv;
     private final Server server;
-    private final DB db;
+    private final IQueries q;
+    private ArrayList<AutoCloseable> toclose;
 
-    public ShutDown(ResultsVerifier rv, Server server, DB db) {
+    public ShutDown(ResultsVerifier rv, Server server, IQueries q, ArrayList<AutoCloseable> toclose) {
         this.rv = rv;
         this.server = server;
-        this.db = db;
+        this.q = q;
+        this.toclose = toclose;
     }
 
     @Override
@@ -26,7 +29,11 @@ public class ShutDown extends Thread {
         rv.shutdown();
         Logger.info("ResultsVerifier shutdown");
         try {
-            db.getConnection().close();
+            if(q != null) {
+                if(q.getDb() != null) {
+                    q.getDb().getConnection().close();
+                }
+            }
         } catch (ClassNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -38,5 +45,14 @@ public class ShutDown extends Thread {
             e.printStackTrace();
         }
         Logger.info("Disconnect DB");
+
+        for (AutoCloseable autoCloseable : toclose) {
+            try {
+                autoCloseable.close();
+            }
+            catch(Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 }

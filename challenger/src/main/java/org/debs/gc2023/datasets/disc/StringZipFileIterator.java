@@ -1,4 +1,4 @@
-package org.debs.gc2023.datasets.hdd;
+package org.debs.gc2023.datasets.disc;
 
 import java.io.*;
 import java.util.zip.ZipEntry;

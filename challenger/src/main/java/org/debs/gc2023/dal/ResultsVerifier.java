@@ -18,11 +18,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ResultsVerifier implements Runnable{
     private final ArrayBlockingQueue<ToVerify> verificationQueue;
-    private final Queries q;
+    private final IQueries q;
     private AtomicReference<Boolean> shutdown;
     private AtomicReference<Boolean> shuttingDown;
 
-    public ResultsVerifier(ArrayBlockingQueue<ToVerify> verificationQueue, Queries q) {
+    public ResultsVerifier(ArrayBlockingQueue<ToVerify> verificationQueue, IQueries q) {
         this.verificationQueue = verificationQueue;
         this.q = q;
         this.shuttingDown = new AtomicReference<Boolean>(false);
