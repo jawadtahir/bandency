@@ -59,7 +59,8 @@ public class Main {
                 url = env.get("JDBC_DB_CONNECTION");
                 durationEvaluationMinutes = 15;
                 maxBatches = 100_000;
-                inMemoryDataset = true;
+                inMemoryDataset = false;
+                useDatabase = true;
             }
             else if(hostName.equalsIgnoreCase("2-1B")) {
                 url = "";
