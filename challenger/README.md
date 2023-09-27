@@ -14,6 +14,7 @@ https://www.postgresql.org/download/linux/ubuntu/
 
 ## Create a new database for user bandency
 
+'''bash
 export DB_USER="bandency"
 export DB_PASSWORD="bandency-high-5"
 export DB_DBNAME="bandency"
@@ -24,6 +25,36 @@ sudo -u postgres psql -c "CREATE DATABASE $DB_DBNAME;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_DBNAME TO $DB_USER;"
 
 echo "User '$DB_USER' and database '$DB_DBNAME' created successfully."
+'''
+
+## Initialize DB
+
+Install pyenv, using pyenv install python, create new environment, install dependencies in the environment
+
+
+'''bash
+
+# Install pyenv
+curl https://pyenv.run | bash
+
+# Install the dependencies to build a python version
+sudo apt update
+sudo apt install build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev curl \
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+
+# Needed for python postgresql driver and libvirt
+sudo apt install libpq-dev libvirt-dev
+
+# Install python and create virtualenv
+pyenv install 3.11.5
+pyenv virtualenv 3.11.5 bandency
+
+
+
+
+'''
+
 
 # Reverse proxy for caddy
 
