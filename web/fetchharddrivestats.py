@@ -35,7 +35,9 @@ async def main():
     urls = [(baseurl + "data_Q1_2022.zip", "202201"),
             (baseurl + "data_Q2_2022.zip", "202202"),
             (baseurl + "data_Q3_2022.zip", "202203"),
-            (baseurl + "data_Q4_2022.zip", "202204")
+            (baseurl + "data_Q4_2022.zip", "202204"),
+            (baseurl + "data_Q1_2023.zip", "202301"),
+            (baseurl + "data_Q2_2023.zip", "202302")
             ]
     for url, target in urls:
         await download(url, target)

@@ -13,3 +13,6 @@ vm/focal-server-cloudimg-amd64.img
 .settings/
 .gradle/
 web/fetchdata/*.zip
+web/frontend/static/challenger.proto
+challenger/local.db/
+

@@ -13,7 +13,7 @@ from typing import Any, Callable, Awaitable
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
 from quart import Quart, websocket, render_template, redirect, url_for, request, flash, make_response
-from quart_auth import AuthManager, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
+from quart_auth import QuartAuth, login_required, Unauthorized, login_user, AuthUser, logout_user, current_user
 
 from sshpubkeys import SSHKey, InvalidKeyError
 import frontend.helper as helper
@@ -47,8 +47,8 @@ dictConfig({
 # serving_handler.setFormatter(logging.Formatter('%(message)s'))
 
 app = Quart(__name__)
-app.secret_key = "-9jMkQIvmU2dksWTtpih2w"
-AuthManager(app)
+app.secret_key = "-9jMkQIvmUeo832dksWTtpih2w"
+QuartAuth(app)
 
 
 # logging.basicConfig(level=logging.INFO)

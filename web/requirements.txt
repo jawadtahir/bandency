@@ -21,3 +21,4 @@ aio-pika
 psutil
 paramiko
 sshpubkeys
+quart-auth
