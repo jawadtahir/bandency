@@ -70,10 +70,10 @@ async def create_group(group_name, email, skipmail):
         print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))
     else:
         message = """
-        Welcome to the DEBS 2023 - Challenge!
+        Welcome to the DEBS 2024 - Challenge!
         
         You are now registered. Please continue here:
-        https://challenge2023.debs.org/
+        https://challenge2024.debs.org/
         
         Group ID: {}
         Password: {}
@@ -82,7 +82,7 @@ async def create_group(group_name, email, skipmail):
         
         We look all forward to your submission!
         
-        The DEBS Challenge 2023 Team
+        The DEBS Challenge 2024 Team
         """.format(group_name, default_pw)
 
         print("New group: {}, email: {}, password: {}".format(group_name, email, default_pw))

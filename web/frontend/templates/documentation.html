@@ -38,7 +38,7 @@ import challenger_pb2_grpc as api
 
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel:
+with grpc.insecure_channel('challenge2024.debs.org:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
         </code>
     </pre>
@@ -51,8 +51,8 @@ with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel
     <pre>
         <code>
 benchmarkconfiguration = ch.BenchmarkConfiguration(
-                token="get profile", #The api token is available in the profile, see here: https://challenge2023.debs.org/profile/
-                benchmark_name="shows_up_in_dashboard", #This name is used here: https://challenge2023.debs.org/benchmarks/
+                token="get profile", #The api token is available in the profile, see here: https://challenge2024.debs.org/profile/
+                benchmark_name="shows_up_in_dashboard", #This name is used here: https://challenge2024.debs.org/benchmarks/
                 benchmark_type="test", #Test or Evaluation, Evaluation will be available end of January. Test can be used to start implementing
                 queries=[ch.Query.Q1, ch.Query.Q2])
 benchmark = stub.createNewBenchmark(benchmarkconfiguration)
@@ -99,7 +99,7 @@ while True:
     stub.resultQ2(resultQ2) # submit the results of Q2
     
     # Step 4 - once the last event is received, stop the clock
-    # See the statistics within ~5min here: https://challenge2023.debs.org/benchmarks/
+    # See the statistics within ~5min here: https://challenge2024.debs.org/benchmarks/
     if batch.last:
         print(f"received last batch, total batches: {event_count}")
         stub.endBenchmark(benchmark)
