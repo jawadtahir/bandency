@@ -1,0 +1,33 @@
+[package]
+name = "httprpc"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.73"
+axum = "0.6.20"
+axum-server = { version = "0.5.1", features = ["tls-rustls"] }
+deadpool = "0.10.0"
+once_cell = "1.18.0"
+prost = "0.12.1"
+prost-types = "0.12.1"
+prost-wkt-types = "0.4.2"
+rustls = "0.21.7"
+serde = { version = "1.0.188", features = ["derive"] }
+tokio = { version = "1.32.0", features = ["full"] }
+tonic = "0.10.1"
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.17", features = ["fmt", "env-filter"] }
+
+[build-dependencies]
+tonic-build = "0.10.1"
+
+[[bin]]
+name = "server"
+path = "src/server.rs"
+
+[[bin]]
+name = "proxy"
+path = "src/proxy.rs"
