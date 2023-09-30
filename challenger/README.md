@@ -23,6 +23,10 @@ sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
 
 sudo -u postgres psql -c "CREATE DATABASE $DB_DBNAME;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_DBNAME TO $DB_USER;"
+sudo -u postgres psql -c "GRANT ALL ON SCHEMA public TO '$DB_USER';"
+sudo -u postgres psql -c "ALTER DATABASE $DB_DBNAME OWNER TO $DB_USER;"
+
+sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"";
 
 echo "User '$DB_USER' and database '$DB_DBNAME' created successfully."
 '''
@@ -56,12 +60,17 @@ pyenv virtualenv 3.11.5 bandency
 '''
 
 
-# Reverse proxy for caddy
+# Reverse proxy for website
+
+## Install Caddy
+https://caddyserver.com/docs/install#debian-ubuntu-raspbian
+
+## Create a caddy file
 
 
 
 
-# Install envoy proxy
+# Reverse proxy for grpc
 
 Follow instruction here, take latest
 https://www.envoyproxy.io/docs/envoy/latest/start/install#install-envoy-on-ubuntu-linux
@@ -86,5 +95,18 @@ WantedBy=multi-user.target
 
 -------------
 
+## Enable it and autostart
+
+'''bash
+sudo mkdir /etc/envoy/
+sudo vim /etc/envoy/envoy.yaml
+
+
+
+sudo systemctl enable envoy
+sudo systemctl start envoy
+
+
+'''
 
 

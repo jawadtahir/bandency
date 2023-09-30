@@ -6,12 +6,12 @@ import challenger_pb2_grpc as api
 
 op = [('grpc.max_send_message_length', 10 * 1024 * 1024),
       ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
-with grpc.insecure_channel('127.0.0.1:5023', options=op) as channel:
-#with grpc.insecure_channel('challenge2023.debs.org:5023', options=op) as channel:
+#with grpc.insecure_channel('127.0.0.1:5023', options=op) as channel:
+with grpc.insecure_channel('challenge2024.debs.org:5023', options=op) as channel:
     stub = api.ChallengerStub(channel)
 
     benchmarkconfiguration = ch.BenchmarkConfiguration(
-        token="cufanwkvykebknmdmoxlqpfhiwoirgkt",
+        token="mfoyelxsrpcroimhrlhiypfxyezvyhbm",
         benchmark_name="shows_up_in_dashboard",
         benchmark_type="test",
         queries=[ch.Query.Q1, ch.Query.Q2])
@@ -27,7 +27,7 @@ with grpc.insecure_channel('127.0.0.1:5023', options=op) as channel:
         #print(f"Got some states: {len(batch.states)}, so far: {states_count}, models: {batch.models}")
         if len(batch.states) > 0:
             first = batch.states[0]
-            #print(f"First Serial number: {first.serial_number}, normalized: {first.normalized}")
+            print(f"First Serial number: {first.serial_number}, normalized: {first.normalized}")
 
             
 
