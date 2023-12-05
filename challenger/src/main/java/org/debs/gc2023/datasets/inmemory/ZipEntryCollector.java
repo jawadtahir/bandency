@@ -104,8 +104,18 @@ public class ZipEntryCollector {
             models.add(model);
         }
         ds.setModel(model);
-        ds.setCapacityBytes(Long.parseLong(parts[3]));
-        ds.setFailure(Integer.parseInt(parts[4]));
+        
+        // We don´t need those below
+        // ds.setCapacityBytes(Long.parseLong(parts[3]));
+        
+        // TODO - Failure is a bool, which failure denots a failure?
+        //ds.setFailure(Integer.parseInt(parts[4]));
+        ds.setFailure(false);
+
+        // TODO set vault_id
+        ds.setVaultId(0);
+
+        /* Raw and normalized not needed for challenge
 
         var sbNormalized = new StringBuilder();
         var sbRaw = new StringBuilder();
@@ -142,9 +152,10 @@ public class ZipEntryCollector {
                 sbNormalized.append(',');
             }
         }
-
+        
         ds.setNormalized(sbNormalized.toString());
         ds.setRaw(sbRaw.toString());
+        */
 
         //ds.putAllNormalized(normalized);
         //ds.putAllRaw(raw);

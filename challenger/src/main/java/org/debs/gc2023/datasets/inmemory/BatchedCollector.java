@@ -20,6 +20,7 @@ public class BatchedCollector {
     private int maxBatches;
     private Random random;
     private IDataStore store;
+    private long nextDate;
     
     public BatchedCollector(IDataStore store, int maxBatchSize, int maxBatches) {
         this.store = store;
@@ -29,12 +30,14 @@ public class BatchedCollector {
         this.batchCount = 0;
 
         this.random = new Random(42);
+        this.nextDate = -1;
     }
 
     private void ensureBatch() {
         if(bb == null) {
             bb = Batch.newBuilder();
             bb.setSeqId(this.batchCount);
+            bb.setDayEnd(false); // default false
         }
     }
 
@@ -50,9 +53,18 @@ public class BatchedCollector {
                 Logger.info("Collected batches: " + this.batchCount);
             }
 
+            /*
             for(int i = 0; i < Math.min(5, modelArr.size()); ++i) {
                 bb.addModels(modelArr.get(i));
             }
+            */
+
+            // TODO: populate vault_ids, how to create?
+            bb.addVaultIds(1);
+
+
+            // TODO: populate cluster_ids
+            bb.addClusterIds(1);
 
             store.AddBatch(this.batchCount, bb.build());
             bb = null;
@@ -64,9 +76,23 @@ public class BatchedCollector {
                 return false;
             }
         }
+        // ensure the batch is initialized
         ensureBatch();
+
+        // ensure the next day treshold is set to mark batches with end of day
+        if(nextDate == -1) {
+            nextDate = state.getDate().getSeconds() + 24 * 60 * 60;
+        }
+
+        // usual operation
         bb.addStates(state);
         ++currentBatchSize;
+
+        // set dayend to true if we are at the end of the day
+        if (nextDate > state.getDate().getSeconds()) {
+            bb.setDayEnd(true);
+            nextDate = state.getDate().getSeconds() + 24 * 60 * 60;
+        }
 
         return true;
     }
