@@ -108,12 +108,12 @@ public class ZipEntryCollector {
         // We don´t need those below
         // ds.setCapacityBytes(Long.parseLong(parts[3]));
         
-        // TODO - Failure is a bool, which failure denots a failure?
-        //ds.setFailure(Integer.parseInt(parts[4]));
-        ds.setFailure(false);
+        // If failure is 0, then it is not a failure, otherwise set it to true
+        var failure = Integer.parseInt(parts[4]);
+        ds.setFailure(!(failure == 0));
 
-        // TODO set vault_id
-        ds.setVaultId(0);
+        // TODO VaultId, seems to depend on the year the file is from, need to take one from 2023
+        ds.setVaultId(Integer.parseInt(parts[4]));
 
         /* Raw and normalized not needed for challenge
 
