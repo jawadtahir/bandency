@@ -54,9 +54,7 @@ public class HddLoader {
                         BufferedReader br = new BufferedReader(isr, 10*1024*1024);
                     ) {
                         var zec = new ZipEntryCollector(bl, br);
-                        if (!zec.collect()){
-                            return false;
-                        }
+                        zec.collect();
                     }
                 }
             }                

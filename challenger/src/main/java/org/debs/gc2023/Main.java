@@ -21,10 +21,8 @@ import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.tinylog.Logger;
 
-import java.io.Closeable;
 import java.io.File;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -109,7 +107,7 @@ public class Main {
                 Logger.info("Preloading data in memory");
                 //Load the full dataset
                 for (File f : datasetFiles) {
-                    var hl = new HddLoader(bl, f); // -1 means load all
+                    var hl = new HddLoader(bl, f);
                     if(!hl.load()) {
                         break;
                     }

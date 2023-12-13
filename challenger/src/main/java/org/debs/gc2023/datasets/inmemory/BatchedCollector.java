@@ -74,12 +74,12 @@ public class BatchedCollector {
             random.ints(50, 0, 50).distinct().limit(5).forEach(i -> bb.addClusterIds(i));
 
             store.AddBatch(this.batchCount, bb.build());
+            store.SetBatchCount(this.batchCount);
             bb = null;
             ++this.batchCount;
             currentBatchSize = 0;
 
             if (this.maxBatches > 0 && this.batchCount >= maxBatches) {
-                store.SetBatchCount(this.batchCount);
                 return false;
             }
         }

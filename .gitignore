@@ -15,4 +15,4 @@ vm/focal-server-cloudimg-amd64.img
 web/fetchdata/*.zip
 web/frontend/static/challenger.proto
 challenger/local.db/
-
+rchallenger/target/*
