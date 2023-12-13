@@ -47,7 +47,7 @@ dictConfig({
 # serving_handler.setFormatter(logging.Formatter('%(message)s'))
 
 app = Quart(__name__)
-app.secret_key = "-9jMkQIvmUeo832dksWTtpih2w"
+app.secret_key = "-9jMkQIvmUeoasdfwksWTtpih2w"
 QuartAuth(app)
 
 

@@ -26,7 +26,7 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_DBNAME TO $DB_USE
 sudo -u postgres psql -c "GRANT ALL ON SCHEMA public TO '$DB_USER';"
 sudo -u postgres psql -c "ALTER DATABASE $DB_DBNAME OWNER TO $DB_USER;"
 
-sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"";
+sudo -u postgres psql $DB_NAME -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"";
 
 echo "User '$DB_USER' and database '$DB_DBNAME' created successfully."
 '''
@@ -34,7 +34,6 @@ echo "User '$DB_USER' and database '$DB_DBNAME' created successfully."
 ## Initialize DB
 
 Install pyenv, using pyenv install python, create new environment, install dependencies in the environment
-
 
 '''bash
 
@@ -54,9 +53,13 @@ sudo apt install libpq-dev libvirt-dev
 pyenv install 3.11.5
 pyenv virtualenv 3.11.5 bandency
 
+# Activate the python environment
 
+pyenv activate bandency
 
+# Initialize the database
 
+./setupdb.sh
 '''
 
 
@@ -68,6 +71,38 @@ https://caddyserver.com/docs/install#debian-ubuntu-raspbian
 ## Create a caddy file
 
 
+'''bash
+
+#:80 {
+        # Set this path to your site's directory.
+#       root * /usr/share/caddy
+
+        # Enable the static file server.
+#       file_server
+
+        # Another common task is to set up a reverse proxy:
+        # reverse_proxy localhost:8080
+
+        # Or serve a PHP site through php-fpm:
+        # php_fastcgi localhost:9000
+#}
+
+https://challenge2024.debs.org {
+  reverse_proxy 127.0.0.1:8000
+}
+
+'''
+
+# Run challenger
+
+To install gradle, latest version, easiest way is to use sdkman
+
+'''bash
+curl -s "https://get.sdkman.io" | bash
+
+sdk install gradle
+
+'''
 
 
 # Reverse proxy for grpc

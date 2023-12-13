@@ -32,12 +32,10 @@ async def download(url: str, target: str) -> None:
 async def main():
     baseurl = "https://f001.backblazeb2.com/file/Backblaze-Hard-Drive-Data/"
 
-    urls = [(baseurl + "data_Q1_2022.zip", "202201"),
-            (baseurl + "data_Q2_2022.zip", "202202"),
-            (baseurl + "data_Q3_2022.zip", "202203"),
-            (baseurl + "data_Q4_2022.zip", "202204"),
-            (baseurl + "data_Q1_2023.zip", "202301"),
-            (baseurl + "data_Q2_2023.zip", "202302")
+    urls = [(baseurl + "data_Q1_2023.zip", "202301"),
+            (baseurl + "data_Q2_2023.zip", "202302"),
+            (baseurl + "data_Q3_2023.zip", "202303"),
+            (baseurl + "data_Q4_2023.zip", "202304"),
             ]
     for url, target in urls:
         await download(url, target)
