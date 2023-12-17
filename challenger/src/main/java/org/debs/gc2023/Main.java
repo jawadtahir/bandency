@@ -61,7 +61,6 @@ public class Main {
                 useDatabase = true;
             }
             else if(hostName.equalsIgnoreCase("disvm4")) {
-                datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
                 url = env.get("JDBC_DB_CONNECTION");
                 durationEvaluationMinutes = 15;
                 maxBatches = 100_000;
