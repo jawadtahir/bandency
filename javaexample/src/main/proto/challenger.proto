@@ -21,11 +21,24 @@ message Event {
   google.protobuf.Timestamp last_trade = 4;
 }
 
+message DriveState {
+  google.protobuf.Timestamp
+      date = 1;
+  string serial_number = 2;
+  string model = 3;
+  int64 capacity_bytes = 4;
+  int32 failure = 5;
+  // Normalized values, key:value,key:value
+  string normalized = 6;
+  // Raw values, key:value,key:value
+  string raw = 7;
+}
+
 message Batch {
   int64 seq_id = 1;
   bool last = 2;
-  repeated string lookup_symbols = 3;
-  repeated Event events = 4;
+  repeated DriveState lookup_symbols = 3;
+  repeated string events = 4;
 }
 
 message Benchmark {

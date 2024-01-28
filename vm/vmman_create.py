@@ -1,3 +1,5 @@
+#!/usr/bin/python3 python3
+#move getting automated forwarding adresses right here
 import os
 import asyncio
 import sys
@@ -13,7 +15,7 @@ import uuid
 OS_IMG_PATH = os.environ.get("OS_IMG_PATH", "focal-server-cloudimg-amd64.img")
 TEMPLATE_DIR = os.environ.get("TEMPLATE_DIR", "temp")
 PUBLIC_KEY_PATH = os.environ.get("PUBLIC_KEY_PATH", "cochairs.pub")
-VM_DIR = os.environ.get("VM_DIR", "/mnt/hdd")
+VM_DIR = os.environ.get("VM_DIR", "/home/ubuntu/bandency")
 
 KEY_SIZE_BITS = 4096
 PRIVATE_KEY_FILENAME = "{}_rsa"
@@ -92,7 +94,7 @@ def make_config_files(team_name: str, ip_adrs: str, pub_key, dir_name) -> None:
         file.write(net_cfg_text)
 
 
-def run_cloud_init_cmds(team_name, ip_adrs, dir_name):
+def run_cloud_init_cmds(team_name, ip_adrs, dir_name, forwardingadrs):
     # last block of IP adrs is the VM number (in case of multiple VMs by one group)
     vm_no = ip_adrs.split(".")[-1]
 
@@ -109,7 +111,8 @@ def run_cloud_init_cmds(team_name, ip_adrs, dir_name):
     
 
     sh_script_text = sh_script_text.format(
-        os_img_path=os.path.abspath(new_os_img_path), team=team_name, vm_number=vm_no)
+
+        os_img_path=os.path.abspath(new_os_img_path), team=team_name, vm_number=vm_no, ip=ip_adrs, forwardingport=forwardingadrs.split(":")[1])
 
     script_path = os.path.join(dir_name, CREATE_SCRIPT_FILE)
     with open(script_path, "w") as file:
@@ -129,22 +132,22 @@ async def insert_in_db(team_name, ip_adrs, forwardingadrs):
     await db.set_bind(connection)
     await db.gino.create_all()
     group = await ChallengeGroup.query.where(ChallengeGroup.groupname == team_name).gino.first()
+    
     await VirtualMachines.create(id=uuid.uuid4(),
-                            group_id=group.id,
-                            internaladrs=ip_adrs,
-                            forwardingadrs=forwardingadrs)
-    print ("value inserted")
-
-
-
+                                     group_id=group.id,
+                                     internaladrs=ip_adrs,
+                                     forwardingadrs=forwardingadrs)
+    #logging.info("Value inserted")
+   
 
 
 async def createVM(team_name: str, ip_adrs: str, forwardingadrs:str) -> None:
+    print("forwarding adr 2 : " + forwardingadrs)
     dir_name = make_dir(team_name, ip_adrs)
-    # key = create_key_pair(team_name=team_name)
+     #key = create_key_pair(team_name=team_name)
     pubkey = read_public_key()
     make_config_files(team_name, ip_adrs, pubkey, dir_name)
-    run_cloud_init_cmds(team_name, ip_adrs, dir_name)
+    run_cloud_init_cmds(team_name, ip_adrs, dir_name, forwardingadrs)
     await insert_in_db(team_name, ip_adrs,forwardingadrs)
 
 

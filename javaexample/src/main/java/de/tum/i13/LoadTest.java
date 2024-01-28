@@ -26,29 +26,26 @@ public class LoadTest {
     }
 
     public void run() throws ExecutionException, InterruptedException {
-        ManagedChannel channel = ManagedChannelBuilder
-                .forAddress("challenge.msrg.in.tum.de", 5023) //from external
-                //.forAddress("192.168.1.4", 5023)// internal API call
-                .usePlaintext()
-                .maxRetryAttempts(1000)
-                .keepAliveTime(30, TimeUnit.SECONDS)
-                .keepAliveTimeout(15, TimeUnit.SECONDS)
-                .keepAliveWithoutCalls(false)
-                .enableRetry()
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("challenge.msrg.in.tum.de", 5023) // from
+                                                                                                    // external
+                // .forAddress("192.168.1.4", 5023)// internal API call
+                .usePlaintext().maxRetryAttempts(1000).keepAliveTime(30, TimeUnit.SECONDS)
+                .keepAliveTimeout(15, TimeUnit.SECONDS).keepAliveWithoutCalls(false).enableRetry()
                 .build();
 
-        var challengeClient = ChallengerGrpc.newFutureStub(channel)
-                .withMaxInboundMessageSize(100 * 1024 * 1024)
-                .withMaxOutboundMessageSize(100 * 1024 * 1024);
+        var challengeClient =
+                ChallengerGrpc.newFutureStub(channel).withMaxInboundMessageSize(100 * 1024 * 1024)
+                        .withMaxOutboundMessageSize(100 * 1024 * 1024);
 
         BenchmarkConfiguration bc = BenchmarkConfiguration.newBuilder()
-                .setBenchmarkName("Testrun " + new Date().toString())
-                .addQueries(Query.Q1)
+                .setBenchmarkName("Testrun " + new Date().toString()).addQueries(Query.Q1)
                 .addQueries(Query.Q2)
-                //.setToken(System.getenv().get("API_TOKEN")) //go to: https://challenge.msrg.in.tum.de/profile/
-                .setToken("vcgeajpqzwrfuwytvqyxypjuksgbraeg")
-                .setBenchmarkType("test") //Benchmark Type for testing
-                //.setBenchmarkType("evaluation") //Benchmark Type for testing
+                // .setToken(System.getenv().get("API_TOKEN")) //go to:
+                // https://challenge.msrg.in.tum.de/profile/
+                .setToken("vcgeajpqzwrfuwytvqyxypjuksgbraeg").setBenchmarkType("test") // Benchmark
+                                                                                       // Type for
+                                                                                       // testing
+                // .setBenchmarkType("evaluation") //Benchmark Type for testing
                 .build();
 
 
@@ -67,7 +64,7 @@ public class LoadTest {
         StopWatch sw = new StopWatch();
         sw.reset();
         sw.start();
-        for(int i = 0; i < forTestingBatchCount; ++i) {
+        for (int i = 0; i < forTestingBatchCount; ++i) {
             executorService.submit(() -> {
                 try {
                     var batch = challengeClient.nextBatch(newBenchmark).get();
@@ -83,7 +80,7 @@ public class LoadTest {
         }
 
         long expectedSumOfSeqIds = 0;
-        for(int i = 0; i < forTestingBatchCount; ++i) {
+        for (int i = 0; i < forTestingBatchCount; ++i) {
             expectedSumOfSeqIds += i;
         }
         latch.await();
@@ -95,8 +92,10 @@ public class LoadTest {
         System.out.println("Received all batches: " + (expectedSumOfSeqIds == al.get()));
         System.out.println("Amount of batches: " + forTestingBatchCount);
 
-        System.out.format("batches per second throughput: %.2f\n", (double)forTestingBatchCount/(double)sw.getNanoTime()*1_000_000_000.0);
-        System.out.format("events per second throughput: %.2f\n", (double)messageCount.get()/(double)sw.getNanoTime()*1_000_000_000.0);
+        System.out.format("batches per second throughput: %.2f\n",
+                (double) forTestingBatchCount / (double) sw.getNanoTime() * 1_000_000_000.0);
+        System.out.format("events per second throughput: %.2f\n",
+                (double) messageCount.get() / (double) sw.getNanoTime() * 1_000_000_000.0);
         System.out.println("finished: " + sw.formatTime());
         System.out.println("cnt: " + expectedSumOfSeqIds + " al: " + al.get());
 

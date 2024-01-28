@@ -21,8 +21,7 @@ public class BatchIterator {
     public boolean hasMoreElements() throws RocksDBException, InterruptedException {
         if (Instant.now().isAfter(this.stopTime)) {
             return false;
-        } 
-        else {
+        } else {
             return this.store.BatchCount() > this.pointer;
         }
     }

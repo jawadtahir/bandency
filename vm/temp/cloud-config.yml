@@ -1,0 +1,75 @@
+runcmd:
+  - sudo apt-get update
+  - sudo apt-get install -y prometheus
+
+write_files:
+  - content: |
+      [Unit]
+      Description=Prometheus
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/bin/prometheus --config.file=/etc/prometheus/prometheus.yml
+      Restart=always
+      User=prometheus
+      Group=prometheus
+      Environment="TZ=UTC"
+
+      [Install]
+      WantedBy=multi-user.target
+    path: /etc/systemd/system/prometheus.service
+    permissions: '0644'
+
+  - content: |
+      global:
+        scrape_interval:     15s
+        evaluation_interval: 15s
+      scrape_configs:
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: ['localhost:9090']
+    path: /etc/prometheus/prometheus.yml
+    permissions: '0644'
+
+  - content: |
+      [Unit]
+      Description=Prometheus Node Exporter
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/bin/node_exporter
+      Restart=always
+      User=node_exporter
+      Environment="TZ=UTC"
+
+      [Install]
+      WantedBy=multi-user.target
+    path: /etc/systemd/system/node_exporter.service
+    permissions: '0644'
+
+  - content: |
+      # Prometheus user
+      sudo useradd --no-create-home --shell /bin/false prometheus
+      sudo useradd --no-create-home --shell /bin/false node_exporter
+    path: /etc/systemd/system/create_users.sh
+    permissions: '0755'
+
+  - content: |
+      * * * * * root curl -fsSL https://raw.githubusercontent.com/prometheus/prometheus/master/scripts/create_users.sh | bash
+      * * * * * root systemctl start prometheus
+      * * * * * root systemctl start node_exporter
+    path: /etc/cron.d/prometheus
+    permissions: '0644'
+
+  - content: |
+      PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+    path: /etc/environment
+    permissions: '0644'
+
+runcmd:
+  - /etc/systemd/system/create_users.sh
+  - systemctl daemon-reload
+  - systemctl enable prometheus
+  - systemctl start prometheus
+  - systemctl enable node_exporter
+  - systemctl start node_exporter

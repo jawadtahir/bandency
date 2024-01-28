@@ -1,7 +1,9 @@
 package org.debs.gc2023;
 
+import eu.rekawek.toxiproxy.Proxy;
 import io.grpc.Server;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -15,7 +17,8 @@ public class ShutDown extends Thread {
     private final IQueries q;
     private ArrayList<AutoCloseable> toclose;
 
-    public ShutDown(ResultsVerifier rv, Server server, IQueries q, ArrayList<AutoCloseable> toclose) {
+    public ShutDown(ResultsVerifier rv, Server server, IQueries q,
+            ArrayList<AutoCloseable> toclose) {
         this.rv = rv;
         this.server = server;
         this.q = q;
@@ -29,8 +32,8 @@ public class ShutDown extends Thread {
         rv.shutdown();
         Logger.info("ResultsVerifier shutdown");
         try {
-            if(q != null) {
-                if(q.getDb() != null) {
+            if (q != null) {
+                if (q.getDb() != null) {
                     q.getDb().getConnection().close();
                 }
             }
@@ -49,8 +52,7 @@ public class ShutDown extends Thread {
         for (AutoCloseable autoCloseable : toclose) {
             try {
                 autoCloseable.close();
-            }
-            catch(Exception ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }

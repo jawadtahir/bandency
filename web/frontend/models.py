@@ -100,6 +100,17 @@ class Benchmarks(db.Model):
     benchmark_type = db.Column(db.Unicode())
     batchsize = db.Column(BigInteger)
 
+class Bonus(db.Model):
+    __tablename__ = 'Bonus'
+
+    id = db.Column(BigInteger, primary_key=True)
+    is_active = db.Column(Boolean)
+    group_id = db.Column(UUID)
+    timestamp = db.Column(TIMESTAMP)
+    benchmark_name = db.Column(db.Unicode())
+    benchmark_type = db.Column(db.Unicode())
+    batchsize = db.Column(BigInteger)
+
 
 class BenchmarkResults(db.Model):
     __tablename__ = 'benchmarkresults'
@@ -114,6 +125,31 @@ class BenchmarkResults(db.Model):
     q2_90percentile = db.Column(db.Float())
     summary = db.Column(db.Unicode())
 
+class BenchmarkResults1(db.Model):
+    __tablename__ = 'benchmarkresults1'
+
+    id = db.Column(BigInteger(), primary_key=True)
+    duration_sec = db.Column(db.Float())
+    q1_count = db.Column(BigInteger())
+    q1_failurecount = db.Column(BigInteger())
+    q1_postfailurecount = db.Column(BigInteger())
+    q1_throughput = db.Column(db.Float())
+    q1_failurethroughput = db.Column(db.Float())
+    q1_postfailurethroughput = db.Column(db.Float())
+    q1_90percentile = db.Column(db.Float())
+    q1_failure90percentile = db.Column(db.Float())
+    q1_postfailure90percentile = db.Column(db.Float())
+    q2_count = db.Column(BigInteger())
+    q2_failurecount = db.Column(BigInteger())
+    q2_postfailurecount = db.Column(BigInteger())
+    q2_throughput = db.Column(db.Float())
+    q2_failurethroughput = db.Column(db.Float())
+    q2_postfailurethroughtput = db.Column(db.Float())
+    q2_90percentile = db.Column(db.Float())
+    q2failure90percentile = db.Column(db.Float())
+    q2postfailure90percentile = db.Column(db.Float())
+    summary = db.Column(db.Unicode())
+
 
 class Quermetrics(db.Model):
     __tablename__ = 'querymetrics'
@@ -126,6 +162,26 @@ class Quermetrics(db.Model):
     q2resulttime = db.Column(BigInteger())
     q2latency = db.Column(BigInteger())
 
+class Quermetrics1(db.Model):
+    __tablename__ = 'querymetrics1'
+
+    benchmark_id = db.Column(BigInteger())
+    batch_id = db.Column(BigInteger())
+    starttime = db.Column(BigInteger())
+    q1resulttime = db.Column(BigInteger())
+    q1latency = db.Column(BigInteger())
+    q1failureresulttime = db.Column(BigInteger())
+    q1failurelatency = db.Column(BigInteger())
+    q1postfailureresulttime = db.Column(BigInteger())
+    q1postfailurelatency = db.Column(BigInteger())
+    q2resulttime = db.Column(BigInteger())
+    q2latency = db.Column(BigInteger())
+    q2failureresulttime = db.Column(BigInteger())
+    q2failurelatency = db.Column(BigInteger())
+    q2postfailureresulttime = db.Column(BigInteger())
+    q2postfailurelatency = db.Column(BigInteger())
+
+#TODO create a get_fte_evaluation_results()
 
 async def get_evaluation_results():
     return await db.all("""select distinct on(g.id) g.groupname, br.q1_90percentile, br.q1_throughput, br.q2_throughput, br.q2_90percentile, ((br.q1_90percentile + br.q2_90percentile) / 2) as avg90percentile, ((br.q1_throughput + br.q2_throughput) / 2) as avgthroughput from benchmarks as b
@@ -137,9 +193,21 @@ async def get_evaluation_results():
                            order by g.id, timestamp desc""")
 
 
+#TODO; specy that that == Evaluation
 async def get_benchmarks_by_group(gid):
-    return await Benchmarks.query.where(Benchmarks.group_id == gid).order_by(Benchmarks.timestamp.desc()).limit(
+    return await Benchmarks.query.where(Benchmarks.group_id == gid ).order_by(Benchmarks.timestamp.desc()).limit(
         100).gino.all()
+
+async def get_ftebenchmarks_by_group(gid):
+        return await Benchmarks.query.where((Benchmarks.group_id == gid )&( Benchmarks.benchmark_type ==  'fte')).order_by(Benchmarks.timestamp.desc()).limit(
+        100).gino.all()
+
+async def get_ftebenchmarkresults(benchmarkid):
+    return await BenchmarkResults1.query.where(BenchmarkResults1.id == benchmarkid).gino.first()
+
+async def get_ftequerymetrics(benchmarkid):
+    return await Quermetrics1.query.where(Quermetrics1.benchmark_id == benchmarkid).order_by(
+        Quermetrics.batch_id.asc()).gino.all()
 
 
 async def benchmark_get_is_active(gid, benchmarkid):

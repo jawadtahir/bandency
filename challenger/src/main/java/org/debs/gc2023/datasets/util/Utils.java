@@ -8,8 +8,8 @@ public class Utils {
     public static ArrayList<File> getFiles(File directory) {
         ArrayList<File> files = new ArrayList<>();
         if (directory.isDirectory()) {
-            for(File f : directory.listFiles()) {
-                if(f.isFile() && f.getName().endsWith(".zip")) {
+            for (File f : directory.listFiles()) {
+                if (f.isFile() && f.getName().endsWith(".zip")) {
                     files.add(f);
                 }
             }

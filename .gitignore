@@ -11,8 +11,11 @@ vm/.idea/
 vm/focal-server-cloudimg-amd64.img
 .vscode/
 .settings/
+.uuid
 .gradle/
 web/fetchdata/*.zip
+event_proc/plz-5stellig.geojson
+event_proc/data_Q1_2023.zip
 web/frontend/static/challenger.proto
 challenger/local.db/
 rchallenger/target/*

@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import hashlib
 import logging
+from operator import and_
 import os
 import random
 import string
@@ -13,9 +14,25 @@ from email.mime.text import MIMEText
 from aio_pika import connect, Message
 from aio_pika.robust_connection import connect_robust
 
-from frontend.models import db, Group, ChallengeGroup
+from frontend.models import db, Group, ChallengeGroup, VirtualMachines
 
 salt = 'qakLgEdljdsljertVyFHfR4vwQw'
+
+async def get_port():
+    try:
+        with open('counter.txt', 'r+') as file:
+            count_all = await db.select([db.func.count()]).select_from(VirtualMachines).gino.scalar()
+    except FileNotFoundError:
+        count_all = 0
+    except ValueError:
+        count_all = 0
+
+    with open('counter.txt','w') as file:
+        file.write(str(count_all) + '\n')
+        #dont use magic numbers
+        print("++++++++count"+str(count_all+10000))
+    return count_all+10000
+
 
 
 def create_msg(send_to, subject, message_text):
@@ -103,7 +120,6 @@ async def send_vm_request(group_name, forwarding_adrs):
 
     await con.close()
 
-
 async def main(parse_arguments):
     connection = os.environ['DB_CONNECTION']
     logging.debug("db-connection: {}".format(connection))
@@ -112,12 +128,15 @@ async def main(parse_arguments):
 
     if parse_arguments.command == 'newgroup':
         group_cnt = await db.func.count(ChallengeGroup.id).gino.scalar()
+        forwardingadrs=  os.environ["FORWARDING_VM_IP"]+":"+str(await get_port())
         print("counted groups {}".format(group_cnt))
         group_name = "group-{}".format(group_cnt)
         await create_group(group_name, args.email, args.skipmail)
-
+        adr=forwardingadrs.split(":")
+        print("forwarding adr : " + forwardingadrs)
+        print(adr)
         if args.makevm == "true":
-            await send_vm_request(group_name, args.forwardingadrs)
+            await send_vm_request(group_name, forwardingadrs)
 
 
 
@@ -131,7 +150,6 @@ if __name__ == "__main__":
     group_parser.add_argument('--email', type=str, action='store', help='email help', required=True)
     group_parser.add_argument('--skipmail', type=str, action='store', help='true false', required=True)
     group_parser.add_argument('--makevm', type=str, action='store', help='true false', default="true")
-    group_parser.add_argument('--forwardingadrs', type=str, action='store', help='forwarding address of VM', default="")
 
     args = parser.parse_args()
     logging.info(args)
