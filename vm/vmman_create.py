@@ -1,5 +1,5 @@
 #!/usr/bin/python3 python3
-#move getting automated forwarding adresses right here
+#Note that in case of a new group we have to create a new group 1st using Admin.py in frontend
 import os
 import asyncio
 import sys
@@ -165,6 +165,7 @@ async def createVM(team_name: str) -> None:
     print("forwarding adr : " + forwardingadrs)
     vm_count = int(forwardingadrs.split(":")[1]) - 10000
     ip_prefix = os.environ.get("IP_PREFIX", "192.168.1")
+    #vm_count+1 to avoid giving 192.168.1.0 to a group
     vm_ip = "{}.{}".format(ip_prefix, vm_count+1)
     print("vm_ip = "+vm_ip)
     dir_name = make_dir(team_name, vm_ip)
