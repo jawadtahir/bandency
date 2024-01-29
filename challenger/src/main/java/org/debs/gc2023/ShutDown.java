@@ -1,6 +1,5 @@
 package org.debs.gc2023;
 
-import eu.rekawek.toxiproxy.Proxy;
 import io.grpc.Server;
 
 import java.io.IOException;

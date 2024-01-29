@@ -3,12 +3,6 @@ package org.debs.gc2023;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import eu.rekawek.toxiproxy.Proxy;
-import eu.rekawek.toxiproxy.ToxiproxyClient;
-import eu.rekawek.toxiproxy.model.Toxic;
-import eu.rekawek.toxiproxy.model.ToxicDirection;
-import eu.rekawek.toxiproxy.model.toxic.Latency;
-
 import org.debs.gc2023.bandency.Benchmark;
 import org.debs.gc2023.challenger.BenchmarkPhase;
 import org.debs.gc2023.challenger.BenchmarkState;

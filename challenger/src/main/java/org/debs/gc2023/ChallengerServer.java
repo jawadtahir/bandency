@@ -3,9 +3,7 @@ package org.debs.gc2023;
 import com.google.protobuf.Empty;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import eu.rekawek.toxiproxy.Proxy;
-import eu.rekawek.toxiproxy.ToxiproxyClient;
-// import eu.rekawek.toxiproxy.Proxy;
+
 import io.grpc.Grpc;
 import io.grpc.ServerCall;
 import io.grpc.Status;

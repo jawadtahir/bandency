@@ -3,7 +3,6 @@ package org.debs.gc2023.challenger;
 // import autovalue.shaded.com.google.common.collect.AbstractMultimap;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import eu.rekawek.toxiproxy.Proxy;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.HdrHistogram.Histogram;

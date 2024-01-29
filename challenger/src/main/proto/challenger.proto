@@ -1,3 +1,4 @@
+
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
@@ -12,45 +13,52 @@ message DriveState {
   google.protobuf.Timestamp date = 1;
   string serial_number = 2;
   string model = 3;
-  int64 capacity_bytes = 4;
-  int32 failure = 5;
-  // Normalized values, key:value,key:value
-  string normalized = 6;
-  // Raw values, key:value,key:value
-  string raw = 7;
+  bool failure = 4;
+  int32 vault_id = 5;
+  // s1,s2,s3,s4,s5,s7,s8,s9,s10,
+  // s12,s173,s174,s183,s187,s188,
+  // s189,s190,s191,s192,s193,s194,
+  // s195,s196,s197,s198,s199,s200,
+  // s220,s222,s223,s226,s240,s241,
+  // s242
+  repeated int64 readings = 6;
 }
 
 message Batch {
   int64 seq_id = 1;
   bool last = 2;
-  repeated DriveState states = 3;
-  repeated string models = 4;
+  bool day_end = 3;
+  repeated int32 vault_ids = 4;
+  repeated int32 cluster_ids = 5;
+  repeated DriveState states = 6;
 }
 
 message Benchmark {
   int64 id = 1;
 }
 
-message Outliers {
-  string model = 1;
-  repeated string intervals = 2;
+message VaultFailures {
+  int32 vault_id = 1;
+  int32 failures = 2;
 }
 
 message ResultQ1 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
 
-  repeated Outliers entries = 3;
+  repeated VaultFailures entries = 3;
+}
+
+message ClusterInfo {
+  int32 cluster_id = 1;
+  int32 size = 2;
 }
 
 message ResultQ2 {
   int64 benchmark_id = 1;
   int64 batch_seq_id = 2;
 
-  // For each centroid c, the number of intervals for which c was the closest centroid in the previous batch but not now
-  repeated int64 centroids_out = 3;
-  // For each centroid c, the number of intervals for which c is the closest centroid now, but was not in the previous batch
-  repeated int64 centroids_in = 4;
+  repeated ClusterInfo entries = 3;
 }
 
 enum Query {
