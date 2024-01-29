@@ -24,7 +24,7 @@ public class Main {
 
                 ManagedChannel channel = ManagedChannelBuilder
                                 // .forAddress("challenge.msrg.in.tum.de", 5023)
-                                .forAddress("172.24.33.107", 5023) // in case it is used internally
+                                .forAddress("172.24.33.163", 5023) // in case it is used internally
                                 .usePlaintext().build();
                 System.out.println("");
 
@@ -38,7 +38,7 @@ public class Main {
                                 .addQueries(Query.Q1).addQueries(Query.Q2)
                                 .setToken("lpcbtkufdcdhsdowpyxpblmdejiplosf") // go to:
                                                                               // https://challenge.msrg.in.tum.de/profile/
-                                .setBenchmarkType("fte") // Benchmark Type for evaluation
+                                .setBenchmarkType("evaluation") // Benchmark Type for evaluation
                                 // .setBenchmarkType("test") //Benchmark Type for testing
                                 .build();
                 // Create a new Benchmark

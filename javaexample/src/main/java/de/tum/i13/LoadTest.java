@@ -69,7 +69,7 @@ public class LoadTest {
                 try {
                     var batch = challengeClient.nextBatch(newBenchmark).get();
                     al.addAndGet(batch.getSeqId());
-                    messageCount.addAndGet(batch.getEventsCount());
+                    // messageCount.addAndGet(batch.getEventsCount());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (ExecutionException e) {
