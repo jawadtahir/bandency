@@ -50,6 +50,20 @@ def read_public_key():
     return pubkey
 
 
+async def get_port():
+    try:
+        with open('counter.txt', 'r+') as file:
+            count_all = await db.select([db.func.count()]).select_from(VirtualMachines).gino.scalar()
+    except FileNotFoundError:
+        count_all = 0
+    except ValueError:
+        count_all = 0
+
+    with open('counter.txt','w') as file:
+        file.write(str(count_all) + '\n')
+        print("++++++++count"+str(count_all+10000))
+    return count_all+10000
+
 def create_key_pair(team_name: str) -> PKey:
 
     private_key_file_name = os.path.join(
@@ -128,9 +142,9 @@ def run_cloud_init_cmds(team_name, ip_adrs, dir_name, forwardingadrs):
 
 
 async def insert_in_db(team_name, ip_adrs, forwardingadrs):
-    connection = os.environ['DB_CONNECTION']
-    await db.set_bind(connection)
-    await db.gino.create_all()
+   # connection = os.environ['DB_CONNECTION']
+    #await db.set_bind(connection)
+    #await db.gino.create_all()
     group = await ChallengeGroup.query.where(ChallengeGroup.groupname == team_name).gino.first()
     
     await VirtualMachines.create(id=uuid.uuid4(),
@@ -141,16 +155,26 @@ async def insert_in_db(team_name, ip_adrs, forwardingadrs):
    
 
 
-async def createVM(team_name: str, ip_adrs: str, forwardingadrs:str) -> None:
-    print("forwarding adr 2 : " + forwardingadrs)
-    dir_name = make_dir(team_name, ip_adrs)
+async def createVM(team_name: str) -> None:
+    #Generates available ips
+    connection = os.environ['DB_CONNECTION']
+    await db.set_bind(connection)
+    await db.gino.create_all()
+    group_cnt = await db.func.count(ChallengeGroup.id).gino.scalar()
+    forwardingadrs=  os.environ["FORWARDING_VM_IP"]+":"+str(await get_port())
+    print("forwarding adr : " + forwardingadrs)
+    vm_count = int(forwardingadrs.split(":")[1]) - 10000
+    ip_prefix = os.environ.get("IP_PREFIX", "192.168.1")
+    vm_ip = "{}.{}".format(ip_prefix, vm_count+1)
+    print("vm_ip = "+vm_ip)
+    dir_name = make_dir(team_name, vm_ip)
      #key = create_key_pair(team_name=team_name)
     pubkey = read_public_key()
-    make_config_files(team_name, ip_adrs, pubkey, dir_name)
-    run_cloud_init_cmds(team_name, ip_adrs, dir_name, forwardingadrs)
-    await insert_in_db(team_name, ip_adrs,forwardingadrs)
+    make_config_files(team_name, vm_ip, pubkey, dir_name)
+    run_cloud_init_cmds(team_name, vm_ip, dir_name, forwardingadrs)
+    await insert_in_db(team_name, vm_ip,forwardingadrs)
 
 
 if __name__ == "__main__":
-    asyncio.run(createVM(sys.argv[1], sys.argv[2], sys.argv[3]))
-    #asyncio.run(createVM("group-0", "192.168.1.11", "challenge.msrg.in.tum.de:10001"))
+    asyncio.run(createVM(sys.argv[1]))
+    #asyncio.run(createVM("group-0"))
