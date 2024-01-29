@@ -166,6 +166,7 @@ public class Main {
             Logger.info("Initializing Service");
             Server server = ServerBuilder.forPort(5023).addService(cs)
                     .maxInboundMessageSize(10 * 1024 * 1024).build();
+            server.start();
 
             Logger.info("Initilize Prometheus");
             var metrics = new HTTPServer(8023); // This starts already a background thread serving
