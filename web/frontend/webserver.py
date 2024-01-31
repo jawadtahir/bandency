@@ -332,7 +332,7 @@ async def rawdata():
     group = await get_group_information(current_user.auth_id)
     d = os.environ["DATASET_DIR"]
     files = os.listdir(d)
-    filesandsize = map(lambda f: [f, (os.path.getsize(os.path.join(d, f)) / (1024 * 1024))], files)
+    filesandsize = map(lambda f: [f, (os.path.getsize(os.path.join(d, f)))/1024], files)
 
     return await render_template('rawdata.html', name="Rawdata", group=group, files=filesandsize,
                                  menu=helper.menu(rawdata=True))
