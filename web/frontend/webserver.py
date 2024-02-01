@@ -110,7 +110,6 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port):
     try:
         ssh.parse()
     except InvalidKeyError:
-       # send('hide_loading_overlay();',"")
         await flash('Invalid key', "danger")
         print("Invalid key")
         traceback.print_exc()
@@ -281,21 +280,21 @@ async def bonus():
     await lastUpdate()
     app.logger.info("Bonus")
     group = await get_group_information(current_user.auth_id)
-
     benchmarks = await get_ftebenchmarks_by_group(group.id)
     return await render_template('bonus.html',
                                  name="Bonus Benchmarks",
                                  group=group,
                                  benchmarks=benchmarks,
                                  menu=helper.menu(bonus=True))
-#TODO; create @app.route('/benchmark1details/<int:benchmarkid>/') to show details and change the top part don t show now the results at bonus illa mayikliki 1st
 
 @app.route('/ftebenchmarkdetails/<int:benchmarkid>/')
 @login_required
 async def ftebenchmarkdetails(benchmarkid):
+    print(benchmarkid)
     app.logger.info("ftebenchmarkdetails")
     benchmark = await get_benchmark(benchmarkid)
     benchmarkresults1 = await get_ftebenchmarkresults(benchmarkid)
+    print(""+benchmarkresults1)
     if benchmark:
         group = await get_group_information(current_user.auth_id)
         if group.id == benchmark.group_id:

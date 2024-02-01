@@ -171,6 +171,9 @@ public class Main {
             Logger.info("Initilize Prometheus");
             var metrics = new HTTPServer(8023); // This starts already a background thread serving
                                                 // the default registry
+            server.awaitTermination();
+            metrics.close();
+
         } catch (Exception ex) {
             Logger.error(ex);
             for (AutoCloseable autoCloseable : toclose) {

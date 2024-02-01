@@ -31,10 +31,8 @@ public class FailureInjector {
     }
 
     public void startLatencyInjection(long delay, String ip, String port, String groupName) {
-
-        String publicKeyFilePath = "~/.ssh/id_rsa";
-
-
+        // this key should be the private key of the hostVM
+        String publicKeyFilePath = "~/.ssh/temp";
         // Specify the command to execute
         String command = "sudo tc qdisc add dev enp1s0 root netem delay " + delay + "ms";
         Logger.info("failure command :" + command);
@@ -100,8 +98,8 @@ public class FailureInjector {
 
 
     public void stopLatencyInjection(String address, String port, String groupname) {
-
-        String publicKeyFilePath = "~/.ssh/id_rsa";
+        // private key of hostVM
+        String publicKeyFilePath = "~/.ssh/temp";
 
         String command = "sudo tc qdisc del dev enp1s0 root";
         Logger.info("removing failure command :" + command);

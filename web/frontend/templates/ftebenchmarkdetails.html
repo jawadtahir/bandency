@@ -44,14 +44,14 @@
                     <td>Batchsize</td>
                     <td align="right">{{ benchmark.batchsize }}</td>
                 </tr>
-                {% if not benchmarkresults %}
+                {% if not benchmarkresults1 %}
                     <tr>
                         <td>No results</td>
                         <td>Not finished? Not called endBenchmark(Benchmark)?</td>
                     </tr>
                 {% endif %}
 
-                {% if benchmarkresults %}
+                {% if benchmarkresults1 %}
                     <tr>
                         <td>Duration</td>
                         <td align="right">{{ benchmarkresults1.duration_sec }}</td>
@@ -82,7 +82,7 @@
                     </tr>
                     <tr>
                         <td>Details (Nanoseconds)</td>
-                        <td><textarea rows="8" style="min-width: 100%;resize:none">{{ benchmarkresults.summary }}</textarea></td>
+                        <td><textarea rows="8" style="min-width: 100%;resize:none">{{ benchmarkresults1.summary }}</textarea></td>
                     </tr>
                 {% endif %}
             </tbody>

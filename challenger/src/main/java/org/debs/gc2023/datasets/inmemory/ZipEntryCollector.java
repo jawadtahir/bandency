@@ -9,6 +9,7 @@ import java.util.HashSet;
 import com.google.protobuf.Timestamp;
 
 import org.debs.gc2023.bandency.DriveState;
+import org.tinylog.Logger;
 
 public class ZipEntryCollector {
 
@@ -50,7 +51,7 @@ public class ZipEntryCollector {
             if (first) {
                 first = false;
                 String[] parts = line.split(",", -1);
-                if (parts.length < 150) {
+                if (parts.length < 50) {
                     throw new Exception("Invalid header line: " + line);
                 }
 
@@ -113,7 +114,7 @@ public class ZipEntryCollector {
             line = br.readLine();
             ++cnt;
         }
-
+        Logger.info("zec.collect()");
         return true;
     }
 
