@@ -71,15 +71,16 @@ public class Queries implements IQueries {
             throws SQLException, ClassNotFoundException, InterruptedException {
         try (PreparedStatement pStmt = this.conn.getConnection()
                 .prepareStatement("INSERT INTO benchmarks("
-                        + "id, group_id, \"timestamp\", benchmark_name, benchmark_type, batchsize) "
-                        + "VALUES (?, ?, ?, ?, ?, ?)")) {
+                        + "id, is_active, group_id, \"timestamp\", benchmark_name, benchmark_type, batchsize) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
 
             pStmt.setLong(1, benchmarkId);
-            pStmt.setObject(2, groupId);
-            pStmt.setTimestamp(3, Timestamp.from(Instant.now()));
-            pStmt.setString(4, benchmarkName);
-            pStmt.setString(5, bt.toString());
-            pStmt.setLong(6, batchSize);
+            pStmt.setBoolean(2, true);
+            pStmt.setObject(3, groupId);
+            pStmt.setTimestamp(4, Timestamp.from(Instant.now()));
+            pStmt.setString(5, benchmarkName);
+            pStmt.setString(6, bt.toString());
+            pStmt.setLong(7, batchSize);
 
             pStmt.execute();
         }

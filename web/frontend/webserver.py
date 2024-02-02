@@ -268,6 +268,8 @@ async def benchmarks():
     app.logger.info("benchmarks")
     group = await get_group_information(current_user.auth_id)
     benchmarks = await get_benchmarks_by_group(group.id)
+    for benchmark in benchmarks:
+        print (benchmark)
     return await render_template('benchmarks.html',
                                  name="Benchmarks",
                                  group=group,
@@ -294,7 +296,7 @@ async def ftebenchmarkdetails(benchmarkid):
     app.logger.info("ftebenchmarkdetails")
     benchmark = await get_benchmark(benchmarkid)
     benchmarkresults1 = await get_ftebenchmarkresults(benchmarkid)
-    print(""+benchmarkresults1)
+    print(benchmarkresults1)
     if benchmark:
         group = await get_group_information(current_user.auth_id)
         if group.id == benchmark.group_id:

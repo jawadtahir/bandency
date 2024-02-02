@@ -38,7 +38,7 @@ public class Main {
                                 .addQueries(Query.Q1).addQueries(Query.Q2)
                                 .setToken("lpcbtkufdcdhsdowpyxpblmdejiplosf") // go to:
                                                                               // https://challenge.msrg.in.tum.de/profile/
-                                .setBenchmarkType("fte") // Benchmark Type for evaluation
+                                .setBenchmarkType("evaluation") // Benchmark Type for evaluation
                                 // .setBenchmarkType("test") //Benchmark Type for testing
                                 .build();
                 // Create a new Benchmark
@@ -86,8 +86,9 @@ public class Main {
                                         + batch.getSerializedSize());
                         ++cnt;
 
-                        if (cnt > 100) { // for testing you can stop early, in an evaluation run,
-                                         // run until getLast() is True.
+                        if (batch.getLast()) { // for testing you can stop early, in an evaluation
+                                               // run,
+                                               // run until getLast() is True.
                                 break;
                         }
                 }

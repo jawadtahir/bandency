@@ -193,13 +193,12 @@ async def get_evaluation_results():
                            order by g.id, timestamp desc""")
 
 
-#TODO; specy that that == Evaluation
 async def get_benchmarks_by_group(gid):
-    return await Benchmarks.query.where((Benchmarks.group_id == gid )&( Benchmarks.benchmark_type ==  'Evaluation')).order_by(Benchmarks.timestamp.desc()).limit(
+    return await Benchmarks.query.where((Benchmarks.group_id == gid )&(Benchmarks.benchmark_type.in_(['Evaluation','Test']))).order_by(Benchmarks.timestamp.desc()).limit(
         100).gino.all()
 
 async def get_ftebenchmarks_by_group(gid):
-        return await Benchmarks.query.where((Benchmarks.group_id == gid )&( Benchmarks.benchmark_type ==  'fte')).order_by(Benchmarks.timestamp.desc()).limit(
+        return await Benchmarks.query.where((Benchmarks.group_id == gid )&( Benchmarks.benchmark_type == 'fte')).order_by(Benchmarks.timestamp.desc()).limit(
         100).gino.all()
 
 async def get_ftebenchmarkresults(benchmarkid):

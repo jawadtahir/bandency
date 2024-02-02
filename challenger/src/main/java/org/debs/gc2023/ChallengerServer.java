@@ -286,15 +286,8 @@ public class ChallengerServer extends ChallengerImplBase {
             responseObserver.onCompleted();
             return;
         } else {
-            if (bms.get().getFailureinjector().getPhase() == BenchmarkPhase.FAILURE_INJECTION) {
-
-                responseObserver.onNext(acquired_batch);
-                responseObserver.onCompleted();
-            } else {
-                responseObserver.onNext(acquired_batch);
-                responseObserver.onCompleted();
-            }
-
+            responseObserver.onNext(acquired_batch);
+            responseObserver.onCompleted();
         }
     }
 

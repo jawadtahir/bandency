@@ -47,7 +47,7 @@ public class Main {
             String url =
                     "jdbc:postgresql://172.24.33.107:5432/bandency?user=bandency&password=bandency-high-5";
             int durationEvaluationMinutes = 3;
-            int maxBatches = 100;
+            int maxBatches = 191;
             Boolean inMemoryDataset = true;
             Boolean useDatabase = true;
 
@@ -171,6 +171,11 @@ public class Main {
             Logger.info("Initilize Prometheus");
             var metrics = new HTTPServer(8023); // This starts already a background thread serving
                                                 // the default registry
+
+            Logger.info("Starting Results verifier");
+            ResultsVerifier rv = new ResultsVerifier(verificationQueue, q);
+            Thread th = new Thread(rv);
+            th.start();
             server.awaitTermination();
             metrics.close();
 
