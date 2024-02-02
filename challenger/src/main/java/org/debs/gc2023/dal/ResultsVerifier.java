@@ -174,37 +174,51 @@ public class ResultsVerifier implements Runnable {
                                                         benchmarkDuration.getQ2FailureHistogram()
                                                                         .getTotalCount();
 
-                                                        double seconds = (benchmarkDuration
-                                                                        .getEndTime()
+                                                        double preFailureSeconds =
+                                                                        (benchmarkDuration
+                                                                                        .getEndPrefailureNanoTime()
+                                                                                        - benchmarkDuration
+                                                                                                        .getStartTime())
+                                                                                        / 1e9;
+                                                        double failureSeconds = (benchmarkDuration
+                                                                        .getEndFailureTime()
                                                                         - benchmarkDuration
-                                                                                        .getStartTime())
+                                                                                        .getStartFailureTime())
                                                                         / 1e9;
+                                                        double postFailureSeconds =
+                                                                        (benchmarkDuration
+                                                                                        .getEndTime()
+                                                                                        - benchmarkDuration
+                                                                                                        .getStartPostfailureTime())
+                                                                                        / 1e9;
                                                         double q1Throughput = benchmarkDuration
                                                                         .getQ1Histogram()
-                                                                        .getTotalCount() / seconds;
+                                                                        .getTotalCount()
+                                                                        / preFailureSeconds;
                                                         double q1FailureThroughput =
                                                                         benchmarkDuration
                                                                                         .getQ1FailureHistogram()
                                                                                         .getTotalCount()
-                                                                                        / seconds;
+                                                                                        / failureSeconds;
                                                         double q1PostFailureThroughput =
                                                                         benchmarkDuration
                                                                                         .getQ1PostFailureHistogram()
                                                                                         .getTotalCount()
-                                                                                        / seconds;
+                                                                                        / postFailureSeconds;
                                                         double q2Throughput = benchmarkDuration
                                                                         .getQ2Histogram()
-                                                                        .getTotalCount() / seconds;
+                                                                        .getTotalCount()
+                                                                        / preFailureSeconds;
                                                         double q2FailureThroughput =
                                                                         benchmarkDuration
                                                                                         .getQ2FailureHistogram()
                                                                                         .getTotalCount()
-                                                                                        / seconds;
+                                                                                        / failureSeconds;
                                                         double q2PostFailureThroughput =
                                                                         benchmarkDuration
                                                                                         .getQ2PostFailureHistogram()
                                                                                         .getTotalCount()
-                                                                                        / seconds;
+                                                                                        / postFailureSeconds;
                                                         BenchmarkResult br = new BenchmarkResult(
                                                                         benchmarkDuration
                                                                                         .getBenchmarkId(),
@@ -227,7 +241,10 @@ public class ResultsVerifier implements Runnable {
                                                                         benchmarkDuration
                                                                                         .getQ2PostFailureHistogram()
                                                                                         .getTotalCount(),
-                                                                        seconds, q1Throughput,
+                                                                        preFailureSeconds
+                                                                                        + failureSeconds
+                                                                                        + postFailureSeconds,
+                                                                        q1Throughput,
                                                                         q1FailureThroughput,
                                                                         q1PostFailureThroughput,
                                                                         q2Throughput,

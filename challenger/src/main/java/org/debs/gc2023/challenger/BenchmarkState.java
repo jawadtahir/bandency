@@ -80,6 +80,10 @@ public class BenchmarkState {
     private double postFailureAverageLatency;
     private double failureAverageLatency;
     private long startNanoTime;
+    private long startFailureNanoTime;
+    private long endPrefailureNanoTime;
+    private long endFailureNanoTime;
+    private long startPostfailureNanoTime;
     private BatchIterator datasource;
     private boolean q1Active;
     private boolean q2Active;
@@ -87,6 +91,14 @@ public class BenchmarkState {
     private long endNanoTime;
     private BenchmarkType benchmarkType;
     private String benchmarkName;
+
+    public long getStartFailureNanoTime() {
+        return startFailureNanoTime;
+    }
+
+    public long getEndFailureNanoTime() {
+        return endFailureNanoTime;
+    }
 
     public BenchmarkState(ArrayBlockingQueue<ToVerify> dbInserter) {
         this.dbInserter = dbInserter;
@@ -340,24 +352,28 @@ public class BenchmarkState {
     private void setPhaseAccordingToBatchNumber(int numOfBatches, Benchmark request, IQueries q)
             throws ClassNotFoundException, SQLException, InterruptedException {
 
-        if (this.processedBatchCount.get() == ((int) (numOfBatches / 4))) {
+        if (this.processedBatchCount.get() == ((int) (numOfBatches / 3))) {
             String[] vmInfo = computeRandomVmData(request, q);
             String address = vmInfo[0].split(":")[0];
             String port = vmInfo[0].split(":")[1];
             Logger.info("VMs Ip address" + address);
             Logger.info("VMs port" + port);
+            this.endPrefailureNanoTime = System.nanoTime();
             startLatencyInjection(DELAY, address, port, vmInfo[1]);
+            this.startFailureNanoTime = System.nanoTime();
             toxicated.add(vmInfo[0] + "/" + vmInfo[1]);
             Logger.info("Started Latency injection");
         }
-        if (this.processedBatchCount.get() == ((int) (numOfBatches / 4 * 3))) {
+        if (this.processedBatchCount.get() == ((int) (numOfBatches / 3 * 2))) {
             String info = toxicated.get(toxicated.size() - 1);// we keep last toxicated vm in memory
                                                               // for faster access
             String ip = info.split("/")[0];
             String groupName = info.split("/")[1];
             String address = ip.split(":")[0];
             String port = ip.split(":")[1];
+            this.endFailureNanoTime = System.nanoTime();
             this.failureinjector.stopLatencyInjection(address, port, groupName);
+            this.startPostfailureNanoTime = System.nanoTime();
             toxicated.remove(toxicated.size() - 1);
             Logger.info("stopped Latency Injection");
         }
@@ -501,10 +517,11 @@ public class BenchmarkState {
     public void endBenchmark(long benchmarkId, long endTime, String s) {
         this.endNanoTime = endTime;
 
-        BenchmarkDuration bd =
-                new BenchmarkDuration(benchmarkId, this.startNanoTime, endTime, this.averageLatency,
-                        q1Histogram, q1FailureHistogram, q1PostFailureHistogram, q2Histogram,
-                        q2FailureHistogram, q2PostFailureHistogram, this.q1Active, this.q2Active);
+        BenchmarkDuration bd = new BenchmarkDuration(benchmarkId, this.startNanoTime,
+                this.endPrefailureNanoTime, this.startFailureNanoTime, this.endFailureNanoTime,
+                this.startPostfailureNanoTime, endTime, this.averageLatency, q1Histogram,
+                q1FailureHistogram, q1PostFailureHistogram, q2Histogram, q2FailureHistogram,
+                q2PostFailureHistogram, this.q1Active, this.q2Active);
         this.dbInserter.add(new ToVerify(bd));
         this.processedBatchCount.set(0);
     }
