@@ -46,7 +46,7 @@ public class Main {
             File datasetDirectory = new File(env.get("HOME") + "/source/bandency/web/fetchdata");
             String url =
                     "jdbc:postgresql://172.24.33.107:5432/bandency?user=bandency&password=bandency-high-5";
-            int durationEvaluationMinutes = 3;
+            int durationEvaluationMinutes = 15;
             int maxBatches = 191;
             Boolean inMemoryDataset = true;
             Boolean useDatabase = true;

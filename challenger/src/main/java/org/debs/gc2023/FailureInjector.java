@@ -20,7 +20,7 @@ import java.util.TimerTask;
 
 public class FailureInjector {
 
-    private static final int TIMER_DURATION = 10000;
+    private static final int TIMER_DURATION = 900000;
 
     private boolean removedInjection;
     private BenchmarkPhase phase;
@@ -76,11 +76,13 @@ public class FailureInjector {
             session.disconnect();
             this.phase = BenchmarkPhase.FAILURE_INJECTION;
             System.out.println("Command executed successfully via SSH.");
+
+        
             Timer timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    // After the specified 3 Min , call the stopLatencyInjection method
+                    // After a certain TIMER_DURATION , call the stopLatencyInjection method
                     if (!removedInjection) {
                         Logger.info("Timer: removing latency from " + ip + ":" + port);
                         stopLatencyInjection(ip, port, groupName);

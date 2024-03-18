@@ -353,14 +353,20 @@ public class BenchmarkState {
             throws ClassNotFoundException, SQLException, InterruptedException {
 
         if (this.processedBatchCount.get() == ((int) (numOfBatches / 3))) {
+            //retrieve VM Ip and port from database
             String[] vmInfo = computeRandomVmData(request, q);
+            //parse the result
             String address = vmInfo[0].split(":")[0];
             String port = vmInfo[0].split(":")[1];
+            //logging the chosen vm informations to inject failure condition into
             Logger.info("VMs Ip address" + address);
             Logger.info("VMs port" + port);
+            //exclude the duration of failure injection from the total time of sending the badge
             this.endPrefailureNanoTime = System.nanoTime();
+            //Injecting the Failure condition
             startLatencyInjection(DELAY, address, port, vmInfo[1]);
             this.startFailureNanoTime = System.nanoTime();
+            //here we keep track of the affected vm since its faster to keep it in memory
             toxicated.add(vmInfo[0] + "/" + vmInfo[1]);
             Logger.info("Started Latency injection");
         }

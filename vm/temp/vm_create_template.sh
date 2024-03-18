@@ -9,8 +9,11 @@ qemu-img create -f qcow2 -b {os_img_path} -F qcow2 snapshot-focal-server_{team}_
 echo opening ssh tunnel..
 
 chmod u+w /home/ubuntu/bandency/{team}_{vm_number}/
+
+echo assigning port for external communication with the corresponding virtual machine.
 sudo iptables -t nat -A PREROUTING -p tcp --dport {forwardingport} -j DNAT --to-destination {ip}:22
 
+echo setting up a nat rule to forward packets comming from virtual machine
 sudo iptables -t nat -A POSTROUTING -o eth0 -s {ip} -j MASQUERADE
 
 
