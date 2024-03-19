@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,7 +33,7 @@ public class FailureInjector {
 
     public void startLatencyInjection(long delay, String ip, String port, String groupName) {
         // this key should be the private key of the hostVM
-        String publicKeyFilePath = "~/.ssh/id_rsa";
+        String publicKeyFilePath = System.getenv("PRIVATE_KEY_PATH");
         // Specify the command to execute
         String command = "sudo tc qdisc add dev enp1s0 root netem delay " + delay + "ms";
         Logger.info("failure command :" + command);
@@ -101,7 +102,7 @@ public class FailureInjector {
 
     public void stopLatencyInjection(String address, String port, String groupname) {
         // private key of hostVM
-        String publicKeyFilePath = "~/.ssh/id_rsa";
+        String publicKeyFilePath = System.getenv("PRIVATE_KEY_PATH");
 
         String command = "sudo tc qdisc del dev enp1s0 root";
         Logger.info("removing failure command :" + command);
