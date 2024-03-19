@@ -50,19 +50,40 @@ def read_public_key():
     return pubkey
 
 
+# async def get_port():
+#     try:
+#         with open('counter.txt', 'r+') as file:
+#             count_all = await db.select([db.func.count()]).select_from(VirtualMachines).gino.scalar()
+#     except FileNotFoundError:
+#         count_all = 0
+#     except ValueError:
+#         count_all = 0
+
+#     with open('counter.txt','w') as file:
+#         file.write(str(count_all) + '\n')
+#         print("++++++++count"+str(count_all+10000))
+#     return count_all+10000
+
 async def get_port():
     try:
-        with open('counter.txt', 'r+') as file:
-            count_all = await db.select([db.func.count()]).select_from(VirtualMachines).gino.scalar()
-    except FileNotFoundError:
-        count_all = 0
-    except ValueError:
-        count_all = 0
+        # Retrieve all forwarding addresses from the database
+        forwarding_addresses = await db.select([VirtualMachines.forwardingadrs]).gino.all()
+        #forwardingadrs_values = await VirtualMachine.query.with_only_columns(VirtualMachine.forwardingadrs).gino.all()
+        print (forwarding_addresses)
+        if forwarding_addresses:
+            # Extract port numbers from forwarding addresses and find the maximum
+            ports = [int(addr.split(":")[1]) for addresses in forwarding_addresses for addr in addresses]
+            print(ports)
+            max_port = max(ports)
+            return max_port + 1
+        else:
+            # If the table is empty, return 10000
+            return 10000
 
-    with open('counter.txt','w') as file:
-        file.write(str(count_all) + '\n')
-        print("++++++++count"+str(count_all+10000))
-    return count_all+10000
+    except Exception as e:
+        # Handle exceptions appropriately (e.g., log the error)
+        print("Error occurred:", e)
+        return None  # Or raise an exception depending on your error handling strategy
 
 def create_key_pair(team_name: str) -> PKey:
 

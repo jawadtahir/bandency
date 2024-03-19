@@ -36,9 +36,9 @@ public class Main {
                 BenchmarkConfiguration bc = BenchmarkConfiguration.newBuilder()
                                 .setBenchmarkName("Testrun " + new Date().toString())
                                 .addQueries(Query.Q1).addQueries(Query.Q2)
-                                .setToken("lpcbtkufdcdhsdowpyxpblmdejiplosf") // go to:
+                                .setToken("xynxyopifbxlqextyeobhrjoqwoihffv") // go to:
                                                                               // https://challenge.msrg.in.tum.de/profile/
-                                .setBenchmarkType("evaluation") // Benchmark Type for evaluation
+                                .setBenchmarkType("fte") // Benchmark Type for evaluation
                                 // .setBenchmarkType("test") //Benchmark Type for testing
                                 .build();
                 // Create a new Benchmark
