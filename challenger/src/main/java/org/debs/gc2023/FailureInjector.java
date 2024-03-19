@@ -32,7 +32,7 @@ public class FailureInjector {
 
     public void startLatencyInjection(long delay, String ip, String port, String groupName) {
         // this key should be the private key of the hostVM
-        String publicKeyFilePath = "~/.ssh/temp";
+        String publicKeyFilePath = "~/.ssh/id_rsa";
         // Specify the command to execute
         String command = "sudo tc qdisc add dev enp1s0 root netem delay " + delay + "ms";
         Logger.info("failure command :" + command);
@@ -77,7 +77,7 @@ public class FailureInjector {
             this.phase = BenchmarkPhase.FAILURE_INJECTION;
             System.out.println("Command executed successfully via SSH.");
 
-        
+
             Timer timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override
@@ -101,7 +101,7 @@ public class FailureInjector {
 
     public void stopLatencyInjection(String address, String port, String groupname) {
         // private key of hostVM
-        String publicKeyFilePath = "~/.ssh/temp";
+        String publicKeyFilePath = "~/.ssh/id_rsa";
 
         String command = "sudo tc qdisc del dev enp1s0 root";
         Logger.info("removing failure command :" + command);

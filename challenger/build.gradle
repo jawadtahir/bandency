@@ -13,8 +13,8 @@ repositories {
 group 'org.example'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 17
-targetCompatibility = 17
+sourceCompatibility = 20
+targetCompatibility = 20
 
 //apply plugin : "java"
 

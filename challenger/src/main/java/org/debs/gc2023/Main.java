@@ -47,7 +47,7 @@ public class Main {
             String url =
                     "jdbc:postgresql://172.24.33.107:5432/bandency?user=bandency&password=bandency-high-5";
             int durationEvaluationMinutes = 15;
-            int maxBatches = 191;
+            int maxBatches = 100;
             Boolean inMemoryDataset = true;
             Boolean useDatabase = true;
 
@@ -77,6 +77,13 @@ public class Main {
                 maxBatches = 100_000;
                 inMemoryDataset = false;
                 useDatabase = false;
+            } else if (hostName.equalsIgnoreCase("challengerVMPOC")) {
+                datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
+                url = env.get("JDBC_DB_CONNECTION");
+                durationEvaluationMinutes = 15;
+                maxBatches = 100_000;
+                inMemoryDataset = false;
+                useDatabase = true;
             } else {
                 if (env.containsKey("DATASET_DIRECTORY")) {
                     datasetDirectory = new File(env.get("DATASET_DIRECTORY"));
@@ -110,7 +117,6 @@ public class Main {
                     .forEach(f -> Logger.info("Using the following datasets: " + f.getName()));
 
             IDataStore store = null;
-
             if (inMemoryDataset) {
                 store = new InMemoryDataStore();
                 var bl = new BatchedCollector(store, 1000, maxBatches);
