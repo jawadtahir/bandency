@@ -17,7 +17,7 @@ SET default_table_access_method = heap;
 -- Name: benchmarkresults1; Type: TABLE; Schema: public; Owner: bandency
 --
 
-CREATE TABLE public.benchmarkresults1 (
+CREATE TABLE bandency.benchmarkresults1 (
     id bigint,
     duration_sec double precision,
     q1_count bigint,
@@ -67,7 +67,7 @@ SET default_table_access_method = heap;
 -- Name: querymetrics1; Type: TABLE; Schema: public; Owner: bandency
 --
 
-CREATE TABLE public.querymetrics1 (
+CREATE TABLE bandency.querymetrics1 (
     benchmark_id bigint,
     batch_id bigint,
     starttime bigint,
