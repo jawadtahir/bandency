@@ -19,3 +19,5 @@ event_proc/data_Q1_2023.zip
 web/frontend/static/challenger.proto
 challenger/local.db/
 rchallenger/target/*
+vm/cochairs
+vm/cochairs.pub
