@@ -8,7 +8,7 @@ challenger/bin/main/tinylog.properties
 group*/
 *.pyc
 vm/.idea/
-vm/focal-server-cloudimg-amd64.img
+vm/jammy-server-cloudimg-amd64.img
 .vscode/
 .settings/
 .uuid
