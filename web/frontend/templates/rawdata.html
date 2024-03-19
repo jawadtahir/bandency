@@ -13,8 +13,8 @@
         <tbody>
         {% for file in files %}
         <tr>
-            <td><a href="/datasets22/{{ file[0] }}">{{ file[0] }}</a></td>
-            <td>{{ "%.2f"|format(file[1]) }} MB</td>
+            <td><a href="/datasets/{{ file[0] }}">{{ file[0] }}</a></td>
+            <td>{{ "%.2f"|format(file[1]) }} kB</td>
         </tr>
         </tbody>
         {%  endfor %}
