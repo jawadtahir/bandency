@@ -4,7 +4,7 @@ echo printing current directory...
 pwd
 
 echo creating disk image...
-qemu-img create -f qcow2 -b {os_img_path} -F qcow2 snapshot-focal-server_{team}_{vm_number}.qcow2 10G
+qemu-img create -f qcow2 -b {os_img_path} -F qcow2 snapshot-focal-server_{team}_{vm_number}.qcow2 15G
 
 echo opening ssh tunnel..
 
