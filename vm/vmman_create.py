@@ -1,3 +1,5 @@
+#!/usr/bin/python3 python3
+#Note that in case of a new group we have to create a new group 1st using Admin.py in frontend
 import os
 import asyncio
 import sys
@@ -13,7 +15,7 @@ import uuid
 OS_IMG_PATH = os.environ.get("OS_IMG_PATH", "focal-server-cloudimg-amd64.img")
 TEMPLATE_DIR = os.environ.get("TEMPLATE_DIR", "temp")
 PUBLIC_KEY_PATH = os.environ.get("PUBLIC_KEY_PATH", "cochairs.pub")
-VM_DIR = os.environ.get("VM_DIR", "/mnt/hdd")
+VM_DIR = os.environ.get("VM_DIR", "/home/ubuntu/bandency")
 
 KEY_SIZE_BITS = 4096
 PRIVATE_KEY_FILENAME = "{}_rsa"
@@ -47,6 +49,41 @@ def read_public_key():
         pubkey = pubkey_file.readline()
     return pubkey
 
+
+# async def get_port():
+#     try:
+#         with open('counter.txt', 'r+') as file:
+#             count_all = await db.select([db.func.count()]).select_from(VirtualMachines).gino.scalar()
+#     except FileNotFoundError:
+#         count_all = 0
+#     except ValueError:
+#         count_all = 0
+
+#     with open('counter.txt','w') as file:
+#         file.write(str(count_all) + '\n')
+#         print("++++++++count"+str(count_all+10000))
+#     return count_all+10000
+
+async def get_port():
+    try:
+        # Retrieve all forwarding addresses from the database
+        forwarding_addresses = await db.select([VirtualMachines.forwardingadrs]).gino.all()
+        #forwardingadrs_values = await VirtualMachine.query.with_only_columns(VirtualMachine.forwardingadrs).gino.all()
+        print (forwarding_addresses)
+        if forwarding_addresses:
+            # Extract port numbers from forwarding addresses and find the maximum
+            ports = [int(addr.split(":")[1]) for addresses in forwarding_addresses for addr in addresses]
+            print(ports)
+            max_port = max(ports)
+            return max_port + 1
+        else:
+            # If the table is empty, return 10000
+            return 10000
+
+    except Exception as e:
+        # Handle exceptions appropriately (e.g., log the error)
+        print("Error occurred:", e)
+        return None  # Or raise an exception depending on your error handling strategy
 
 def create_key_pair(team_name: str) -> PKey:
 
@@ -92,7 +129,7 @@ def make_config_files(team_name: str, ip_adrs: str, pub_key, dir_name) -> None:
         file.write(net_cfg_text)
 
 
-def run_cloud_init_cmds(team_name, ip_adrs, dir_name):
+def run_cloud_init_cmds(team_name, ip_adrs, dir_name, forwardingadrs):
     # last block of IP adrs is the VM number (in case of multiple VMs by one group)
     vm_no = ip_adrs.split(".")[-1]
 
@@ -109,7 +146,8 @@ def run_cloud_init_cmds(team_name, ip_adrs, dir_name):
     
 
     sh_script_text = sh_script_text.format(
-        os_img_path=os.path.abspath(new_os_img_path), team=team_name, vm_number=vm_no)
+
+        os_img_path=os.path.abspath(new_os_img_path), team=team_name, vm_number=vm_no, ip=ip_adrs, forwardingport=forwardingadrs.split(":")[1])
 
     script_path = os.path.join(dir_name, CREATE_SCRIPT_FILE)
     with open(script_path, "w") as file:
@@ -125,29 +163,40 @@ def run_cloud_init_cmds(team_name, ip_adrs, dir_name):
 
 
 async def insert_in_db(team_name, ip_adrs, forwardingadrs):
+   # connection = os.environ['DB_CONNECTION']
+    #await db.set_bind(connection)
+    #await db.gino.create_all()
+    group = await ChallengeGroup.query.where(ChallengeGroup.groupname == team_name).gino.first()
+    
+    await VirtualMachines.create(id=uuid.uuid4(),
+                                     group_id=group.id,
+                                     internaladrs=ip_adrs,
+                                     forwardingadrs=forwardingadrs)
+    #logging.info("Value inserted")
+   
+
+
+async def createVM(team_name: str) -> None:
+    #Generates available ips
     connection = os.environ['DB_CONNECTION']
     await db.set_bind(connection)
     await db.gino.create_all()
-    group = await ChallengeGroup.query.where(ChallengeGroup.groupname == team_name).gino.first()
-    await VirtualMachines.create(id=uuid.uuid4(),
-                            group_id=group.id,
-                            internaladrs=ip_adrs,
-                            forwardingadrs=forwardingadrs)
-    print ("value inserted")
-
-
-
-
-
-async def createVM(team_name: str, ip_adrs: str, forwardingadrs:str) -> None:
-    dir_name = make_dir(team_name, ip_adrs)
-    # key = create_key_pair(team_name=team_name)
+    group_cnt = await db.func.count(ChallengeGroup.id).gino.scalar()
+    forwardingadrs=  os.environ["FORWARDING_VM_IP"]+":"+str(await get_port())
+    print("forwarding adr : " + forwardingadrs)
+    vm_count = int(forwardingadrs.split(":")[1]) - 10000
+    ip_prefix = os.environ.get("IP_PREFIX", "192.168.1")
+    #vm_count+1 to avoid giving 192.168.1.0 to a group
+    vm_ip = "{}.{}".format(ip_prefix, vm_count+1)
+    print("vm_ip = "+vm_ip)
+    dir_name = make_dir(team_name, vm_ip)
+     #key = create_key_pair(team_name=team_name)
     pubkey = read_public_key()
-    make_config_files(team_name, ip_adrs, pubkey, dir_name)
-    run_cloud_init_cmds(team_name, ip_adrs, dir_name)
-    await insert_in_db(team_name, ip_adrs,forwardingadrs)
+    make_config_files(team_name, vm_ip, pubkey, dir_name)
+    run_cloud_init_cmds(team_name, vm_ip, dir_name, forwardingadrs)
+    await insert_in_db(team_name, vm_ip,forwardingadrs)
 
 
 if __name__ == "__main__":
-    asyncio.run(createVM(sys.argv[1], sys.argv[2], sys.argv[3]))
-    #asyncio.run(createVM("group-0", "192.168.1.11", "challenge.msrg.in.tum.de:10001"))
+    asyncio.run(createVM(sys.argv[1]))
+    #asyncio.run(createVM("group-0"))

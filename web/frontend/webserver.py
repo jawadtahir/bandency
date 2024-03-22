@@ -19,13 +19,20 @@ from sshpubkeys import SSHKey, InvalidKeyError
 import frontend.helper as helper
 import frontend.worker as worker
 from frontend.admin import hash_password
-from frontend.models import db, ChallengeGroup, get_group_information, get_recent_changes, \
+from frontend.models import db, ChallengeGroup, get_ftebenchmarkresults, get_group_information, get_recent_changes, \
     get_benchmarks_by_group, get_benchmark, get_benchmarkresults, VirtualMachines, get_vms_of_group, get_querymetrics, \
-    benchmark_get_is_active, get_evaluation_results
+    benchmark_get_is_active, get_evaluation_results, get_ftebenchmarks_by_group
 from shared.util import raise_shutdown, Shutdown
+from websocket import send
+
+#from frontend.models import get_ftebenchmarks_by_group
+
 
 shutdown_event = asyncio.Event()
 PRIVATE_KEY_PATH = os.environ.get("PRIVATE_KEY_PATH", "cochairs")
+HOST_VM_IP = os.environ.get("HOST_VM_IP", "debs24-gc-worker.dis.cit.tum.de")
+# Better approach, always give some default values
+# HOST_VM_IP = os.environ["HOST_VM_IP"]
 
 
 def signal_handler(*_: Any) -> None:
@@ -71,10 +78,10 @@ async def login():
     if request.method == 'POST':
         form = await request.form
         groupname = form['group'].strip()
-        password = hash_password(form['password'].strip())
+        password = hash_password(hash_password(form['password'].strip()))
 
         group = await ChallengeGroup.query.where(
-            ChallengeGroup.groupname == groupname and ChallengeGroup.password == password).gino.first()
+            ChallengeGroup.groupname == groupname).where(ChallengeGroup.password == password).gino.first()
         if group:
             login_success = True
             login_user(AuthUser(str(group.id)))
@@ -97,10 +104,11 @@ async def logout():
 async def redirect_to_login(*_):
     return redirect(url_for("login"))
 
-
-async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int = 22):
+@app.websocket('/upload_pub_key')
+async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port):
     app.logger.info("upload_pub_key")
     ssh = SSHKey(pubkey, strict=True)
+    #await flash('Uploading public key...', 'info')
     try:
         ssh.parse()
     except InvalidKeyError:
@@ -113,12 +121,12 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
         print("Invalid key type")
         traceback.print_exc()
         return
-
+ 
     pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
     with paramiko.SSHClient() as client:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         try:
-            client.connect(vm_adrs, port, username, pkey=pkey, timeout=3.0)  # three seconds timeout
+            client.connect(HOST_VM_IP, port, username, pkey=pkey, timeout=3.0)  # three seconds timeout
         except:
             print("Could not connect")
             return await flash("Could not connect to VM to set the key", "danger")
@@ -154,11 +162,11 @@ async def upload_pub_key(pubkey: str, vm_adrs: str, username, groupid, port: int
             await vm.update(sshpubkey=pubkey).apply()
 
 
+
 @app.route('/profile/', methods=['GET', 'POST'])
 @login_required
 async def profile():
     await lastUpdate()
-
     app.logger.info("profile")
     if request.method == 'POST':
         group = await get_group_information(current_user.auth_id)
@@ -193,10 +201,8 @@ async def vms():
 
     app.logger.info("vms")
     group = await get_group_information(current_user.auth_id)
-
     if request.method == 'POST':
         form = await request.form
-        print("sshkey")
         err = False
         if 'VMAdrs' not in form:
             await flash('No VM selected', "danger")
@@ -206,14 +212,16 @@ async def vms():
             err = True
 
         if err:
-            return redirect(url_for('profile'))
+            return redirect(url_for('vms'))
 
         vmadrs = form['VMAdrs'].strip()
         sshkey = form['sshpubkey'].strip()
         groupname = group.groupname
-        vmadrs = vmadrs.split("/")[1]
+        adrs = vmadrs.split("/")[1]
+        frwdingadrs = vmadrs.split("/")[0]
+        port=frwdingadrs.split(":")[1]
         try:
-            await upload_pub_key(sshkey, vmadrs, groupname, group.id, 22)
+            await upload_pub_key(sshkey, adrs, groupname, group.id, port)
         except Exception as e:
             print(e)
             print(traceback.format_exc())
@@ -267,6 +275,35 @@ async def benchmarks():
                                  group=group,
                                  benchmarks=benchmarks,
                                  menu=helper.menu(benchmarks=True))
+
+@app.route('/bonus/')
+@login_required
+async def bonus():
+    await lastUpdate()
+    app.logger.info("Bonus")
+    group = await get_group_information(current_user.auth_id)
+    benchmarks = await get_ftebenchmarks_by_group(group.id)
+    return await render_template('bonus.html',
+                                 name="Bonus Benchmarks",
+                                 group=group,
+                                 benchmarks=benchmarks,
+                                 menu=helper.menu(bonus=True))
+
+@app.route('/ftebenchmarkdetails/<int:benchmarkid>/')
+@login_required
+async def ftebenchmarkdetails(benchmarkid):
+    app.logger.info("ftebenchmarkdetails")
+    benchmark = await get_benchmark(benchmarkid)
+    benchmarkresults1 = await get_ftebenchmarkresults(benchmarkid)
+    if benchmark:
+        group = await get_group_information(current_user.auth_id)
+        if group.id == benchmark.group_id:
+            return await render_template('ftebenchmarkdetails.html',
+                                         name="Failure Benchmark",
+                                         group=group,
+                                         benchmark=benchmark,
+                                         benchmarkresults1=benchmarkresults1,
+                                         menu=helper.menu(bonus=True))
 
 
 @app.route('/benchmarkdetails/<int:benchmarkid>/')

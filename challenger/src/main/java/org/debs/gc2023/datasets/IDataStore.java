@@ -13,5 +13,5 @@ public interface IDataStore {
 
     Batch GetBatch(int pointer) throws RocksDBException, InvalidProtocolBufferException;
 
-    void SetBatchCount(int batchCount) throws RocksDBException;    
+    void SetBatchCount(int batchCount) throws RocksDBException;
 }

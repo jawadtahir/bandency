@@ -5,7 +5,7 @@
         Virtual machines will be proviced end of January 2022. plz. develop using the API locally.    
     </div> -->
     <div class="alert alert-secondary">
-        If you go for a distributed implementation and need more VMs for the evaluation, please e-mail: debsgc22@gmail.com
+        If you go for a distributed implementation and need more VMs for the evaluation, please e-mail: debs24gc@gmail.com
     </div>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
         <table class="table table-bordered table-hover">
@@ -32,7 +32,7 @@
         </table>
     </div>
 
-    <form action="{{ url_for('vms') }}" method="post" class="form">
+    <form action="{{ url_for('vms') }}" method="post" class="form" onsubmit="show_loading_overlay();">
         <h5>Add public key to VM</h5>
         <div class="form-group row">
             <label for="VMAdrs" class="col-sm-3 col-form-label">VM Address</label>
@@ -47,7 +47,7 @@
         <div class="form-group row">
             <label for="inputSSHKeyId" class="col-sm-3 col-form-label">SSH-Key public key</label>
             <div class="col-sm-7">
-                <input type="text" name="sshpubkey" class="form-control" id="inputSSHKeyId" value="">
+                <input type="text" name="sshpubkey" class="form-control" id="inputSSHKeyId" placeholder="$ cat ~/.ssh/id_rsa.pub Copy content and paste it here or check the tutorial on how to create a SSH key below." value="">
             </div>
         </div>
         <div class="form-group row">
@@ -57,10 +57,66 @@
             </div>
         </div>
     </form>
+    <div id="loading-overlay" class="loading-overlay">
+        <svg viewBox="0 0 100 100">
+          <defs>
+            <filter id="shadow">
+              <feDropShadow dx="0" dy="0" stdDeviation="1.5" 
+                flood-color="#fc6767"/>
+            </filter>
+          </defs>
+          <circle id="spinner" style="fill:transparent;stroke:#dd2476;stroke-width: 7px;stroke-linecap: round;filter:url(#shadow);" cx="50" cy="50" r="45"/>
+      </svg>
+      </div>
+    <style>
+        #loading-overlay {
+            display: none;
+            width: 200px;
+            height: 200px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes animation {
+            0% {
+            stroke-dasharray: 1 98;
+            stroke-dashoffset: -105;
+            }
+            50% {
+                stroke-dasharray: 80 10;
+                stroke-dashoffset: -160;
+            }
+            100% {
+                stroke-dasharray: 1 98;
+                stroke-dashoffset: -300;
+            }
+        }
+
+        #spinner {
+            transform-origin: center;
+            animation-name: animation;
+            animation-duration: 1.2s;
+            animation-timing-function: cubic-bezier;
+            animation-iteration-count: infinite;
+        }
+    </style>
     <div>
         <h4>SSH-Key</h4>
         <p>Use an existing public key or create a new key locally on your machine. On Linux you may find the key under .ssh/ and with the extension .pub</p>
         <p><a target="_blank" href="https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent">Here</a> is a tutorial on how to create a ssh key.</p>
     </div>
+    <script>
+        // Function to show the loading overlay
+        function show_loading_overlay() {
+            document.getElementById('loading-overlay').style.display = 'block';
+        }
+    
+        // Function to hide the loading overlay
+        function hide_loading_overlay() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+    </script>
 
 {% endblock %}

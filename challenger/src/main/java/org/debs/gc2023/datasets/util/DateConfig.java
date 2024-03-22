@@ -22,17 +22,17 @@ public class DateConfig {
     }
 
     public boolean validFor(LocalDate d) {
-        if(this.from.isEqual(d) || this.to.isEqual(d))
+        if (this.from.isEqual(d) || this.to.isEqual(d))
             return true;
 
-        if(this.from.isBefore(d) && this.to.isAfter(d))
+        if (this.from.isBefore(d) && this.to.isAfter(d))
             return true;
 
         return false;
     }
 
     public LocalDateTime parse(String date) {
-        if(this.dateTimeFormatter == null) {
+        if (this.dateTimeFormatter == null) {
             Instant instant = Instant.ofEpochMilli(Long.parseLong(date));
             return LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
         } else {
@@ -41,15 +41,13 @@ public class DateConfig {
     }
 
     public Timestamp asTimestamp(LocalDateTime dt) {
-        return Timestamp.newBuilder().setSeconds(dt.toEpochSecond(ZoneOffset.UTC)).setNanos(dt.getNano()).build();
+        return Timestamp.newBuilder().setSeconds(dt.toEpochSecond(ZoneOffset.UTC))
+                .setNanos(dt.getNano()).build();
     }
 
     @Override
     public String toString() {
-        return "DateConfig{" +
-                "from=" + from +
-                ", to=" + to +
-                ", dateTimeFormatter=" + dateTimeFormatter +
-                '}';
+        return "DateConfig{" + "from=" + from + ", to=" + to + ", dateTimeFormatter="
+                + dateTimeFormatter + '}';
     }
 }

@@ -26,14 +26,12 @@ public class HddLoader {
     }
 
     private List<String> getCsVs() throws ZipException, IOException {
-        try(
-            ZipFile zipFile = new ZipFile(this.file);
-        ) {
+        try (ZipFile zipFile = new ZipFile(this.file);) {
             var entries = Collections.list(zipFile.entries());
             var csvs = entries.stream()
-                .filter(a -> !a.getName().contains("MACOSX") && a.getName().endsWith(".csv"))
-                .sorted((b,c) -> b.getName().compareTo(c.getName()))
-                .map(a -> a.getName()).toList();
+                    .filter(a -> !a.getName().contains("MACOSX") && a.getName().endsWith(".csv"))
+                    .sorted((b, c) -> b.getName().compareTo(c.getName())).map(a -> a.getName())
+                    .toList();
             return csvs;
         }
     }
@@ -41,23 +39,20 @@ public class HddLoader {
     public boolean load() throws Exception {
 
         for (var entry : this.getCsVs()) {
-            try(
-                ZipFile zipFile = new ZipFile(this.file);
-            ) {
+            try (ZipFile zipFile = new ZipFile(this.file);) {
                 var zipEntry = zipFile.getEntry(entry);
                 var filename = zipEntry.getName();
-                if(!filename.contains("MACOSX") && filename.endsWith(".csv")) {                
+                if (!filename.contains("MACOSX") && filename.endsWith(".csv")) {
                     Logger.info("Loading file: " + zipEntry.getName());
-                    try (
-                        InputStream stream = zipFile.getInputStream(zipEntry);
-                        InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
-                        BufferedReader br = new BufferedReader(isr, 10*1024*1024);
-                    ) {
+                    try (InputStream stream = zipFile.getInputStream(zipEntry);
+                            InputStreamReader isr =
+                                    new InputStreamReader(stream, StandardCharsets.UTF_8);
+                            BufferedReader br = new BufferedReader(isr, 10 * 1024 * 1024);) {
                         var zec = new ZipEntryCollector(bl, br);
                         zec.collect();
                     }
                 }
-            }                
+            }
         }
         return true;
     }

@@ -65,6 +65,8 @@ dependencies {
     implementation 'com.google.guava:guava:32.1.2-jre'
     implementation 'com.google.auto.value:auto-value:1.10.4'
     implementation 'org.rocksdb:rocksdbjni:8.5.3'
+    implementation 'com.github.mwiede:jsch:0.2.16'
+
 
     implementation 'io.prometheus:simpleclient:0.16.0'
     implementation 'io.prometheus:simpleclient_hotspot:0.16.0'
