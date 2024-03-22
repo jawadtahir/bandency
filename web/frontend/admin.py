@@ -128,14 +128,15 @@ async def main(parse_arguments):
 
     if parse_arguments.command == 'newgroup':
         group_cnt = await db.func.count(ChallengeGroup.id).gino.scalar()
-        forwardingadrs=  os.environ["FORWARDING_VM_IP"]+":"+str(await get_port())
         print("counted groups {}".format(group_cnt))
         group_name = "group-{}".format(group_cnt)
         await create_group(group_name, args.email, args.skipmail)
-        adr=forwardingadrs.split(":")
-        print("forwarding adr : " + forwardingadrs)
-        print(adr)
+        
         if args.makevm == "true":
+            forwardingadrs=  os.environ["FORWARDING_VM_IP"]+":"+str(await get_port())
+            adr=forwardingadrs.split(":")
+            print("forwarding adr : " + forwardingadrs)
+            print(adr)
             await send_vm_request(group_name, forwardingadrs)
 
 

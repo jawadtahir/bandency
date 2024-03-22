@@ -30,7 +30,9 @@ from websocket import send
 
 shutdown_event = asyncio.Event()
 PRIVATE_KEY_PATH = os.environ.get("PRIVATE_KEY_PATH", "cochairs")
-HOST_VM_IP = os.environ["HOST_VM_IP"]
+HOST_VM_IP = os.environ.get("HOST_VM_IP", "debs24-gc-worker.dis.cit.tum.de")
+# Better approach, always give some default values
+# HOST_VM_IP = os.environ["HOST_VM_IP"]
 
 
 def signal_handler(*_: Any) -> None:
@@ -76,10 +78,10 @@ async def login():
     if request.method == 'POST':
         form = await request.form
         groupname = form['group'].strip()
-        password = hash_password(form['password'].strip())
+        password = hash_password(hash_password(form['password'].strip()))
 
         group = await ChallengeGroup.query.where(
-            ChallengeGroup.groupname == groupname and ChallengeGroup.password == password).gino.first()
+            ChallengeGroup.groupname == groupname).where(ChallengeGroup.password == password).gino.first()
         if group:
             login_success = True
             login_user(AuthUser(str(group.id)))
