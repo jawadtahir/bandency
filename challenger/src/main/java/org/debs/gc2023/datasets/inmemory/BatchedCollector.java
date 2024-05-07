@@ -96,7 +96,7 @@ public class BatchedCollector {
         ++currentBatchSize;
 
         // set dayend to true if we are at the end of the day
-        if (nextDate > state.getDate().getSeconds()) {
+        if (state.getDate().getSeconds() > nextDate) {
             bb.setDayEnd(true);
             nextDate = state.getDate().getSeconds() + 24 * 60 * 60;
         }
