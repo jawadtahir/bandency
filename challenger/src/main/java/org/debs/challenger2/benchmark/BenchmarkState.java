@@ -12,66 +12,49 @@ import org.rocksdb.RocksDBException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BenchmarkState {
     private final ArrayBlockingQueue<ToVerify> dbInserter;
     private String token;
+
+    private ObjectId benchmarkId;
     private int batchSize;
     private boolean isStarted;
-    private HashMap<Long, Long> pingCorrelation;
-    private ArrayList<Long> measurements;
 
-    private HashMap<Long, LatencyMeasurement> latencyCorrelation;
-    private ArrayList<Long> q1measurements;
+    private ConcurrentHashMap<Long, LatencyMeasurement> latencyCorrelation;
 
-    private Histogram q1Histogram;
-    private Histogram q2Histogram;
+    private ConcurrentHashMap<Integer, Histogram> histograms;
 
-    private double averageLatency;
     private long startNanoTime;
     private BatchIterator datasource;
-    private boolean q1Active;
-    private boolean q2Active;
-    private ObjectId benchmarkId;
+
     private long endNanoTime;
     private BenchmarkType benchmarkType;
     private String benchmarkName;
 
     public BenchmarkState(ArrayBlockingQueue<ToVerify> dbInserter) {
         this.dbInserter = dbInserter;
-        this.averageLatency = 0.0;
         this.batchSize = -1;
         this.isStarted = false;
 
-        this.pingCorrelation = new HashMap<>();
-        this.measurements = new ArrayList<>();
+        this.latencyCorrelation = new ConcurrentHashMap<>();
 
-        this.latencyCorrelation = new HashMap<>();
-        this.q1measurements = new ArrayList<>();
-
-        averageLatency = 0.0;
         startNanoTime = -1;
         endNanoTime = -1;
         datasource = null;
 
-        this.q1Active = false;
-        this.q2Active = false;
+        this.histograms = new ConcurrentHashMap<>();
 
-        this.q1Histogram = new Histogram( 3);
-        this.q2Histogram = new Histogram( 3);
+
+//        this.q1Histogram = new Histogram( 3);
+//        this.q2Histogram = new Histogram( 3);
 
         this.benchmarkId = null;
 
         this.benchmarkType = BenchmarkType.Test;
     }
 
-    public void setQ1(boolean contains) {
-        this.q1Active = contains;
-    }
-
-    public void setQ2(boolean contains) {
-        this.q2Active = contains;
-    }
 
     public void setToken(String token) {
         this.token = token;
@@ -123,27 +106,6 @@ public class BenchmarkState {
 
 
 
-    //Methods for latency measurement
-    public void addLatencyTimeStamp(long random_id, long nanoTime) {
-        pingCorrelation.put(random_id, nanoTime);
-    }
-
-    public void correlatePing(long correlation_id, long nanoTime) {
-        if(pingCorrelation.containsKey(correlation_id)) {
-            Long sentTime = pingCorrelation.get(correlation_id);
-            pingCorrelation.remove(correlation_id);
-            long duration = nanoTime - sentTime;
-            this.measurements.add(duration);
-        }
-    }
-
-    public double calcAverageTransportLatency() {
-        if(this.measurements.size() > 0) {
-            this.averageLatency = this.measurements.stream().mapToLong(a -> a).average().getAsDouble();
-        }
-
-        return this.averageLatency;
-    }
 
     //Starting the benchmark - timestamp
     public void startBenchmark(long startNanoTime) {
@@ -180,49 +142,33 @@ public class BenchmarkState {
         }
     }
 
-    public void resultsQ1(ResultQ1 request, long nanoTime) {
-        if (latencyCorrelation.containsKey(request.getBatchSeqId())) {
-            LatencyMeasurement lm = latencyCorrelation.get(request.getBatchSeqId());
-            lm.setQ1Results(nanoTime, request);
-            q1Histogram.recordValue(nanoTime - lm.getStartTime());
-            if (isfinished(lm)) {
-                this.dbInserter.add(new ToVerify(lm));
-                latencyCorrelation.remove(request.getBatchSeqId());
+    public boolean markResult(Long batchId, Long endNanoTime, Integer query){
+        boolean retVal = false;
+
+        if (latencyCorrelation.containsKey(batchId)){
+            LatencyMeasurement lm = latencyCorrelation.get(batchId);
+            lm.markEnd(query, endNanoTime);
+            retVal = true;
+            if (!histograms.containsKey(query)){
+                histograms.put(query, new Histogram(3));
             }
+            histograms.get(query).recordValue(endNanoTime - lm.getStartTime());
+        } else {
+            retVal = false;
         }
+        return retVal;
     }
 
-    public void resultsQ2(ResultQ2 request, long nanoTime) {
-        if (latencyCorrelation.containsKey(request.getBatchSeqId())) {
-            LatencyMeasurement lm = latencyCorrelation.get(request.getBatchSeqId());
-            lm.setQ2Results(nanoTime, request);
-            q2Histogram.recordValue(nanoTime - lm.getStartTime());
-            if (isfinished(lm)) {
-                this.dbInserter.add(new ToVerify(lm));
-                latencyCorrelation.remove(request.getBatchSeqId());
-            }
-        }
-    }
 
-    private boolean isfinished(LatencyMeasurement lm) {
-        if((this.q1Active == lm.hasQ1Results()) && (this.q2Active == lm.hasQ2Results())) {
-            return true;
-        }
-        return false;
-    }
 
-    public void endBenchmark(long benchmarkId, long endTime) {
+    public void endBenchmark(String benchmarkId, long endTime) {
         this.endNanoTime = endTime;
 
         BenchmarkDuration bd = new BenchmarkDuration(
                 benchmarkId,
                 this.startNanoTime,
                 endTime,
-                this.averageLatency,
-                q1Histogram,
-                q2Histogram,
-                this.q1Active,
-                this.q2Active);
+                histograms);
         this.dbInserter.add(new ToVerify(bd));
     }
 

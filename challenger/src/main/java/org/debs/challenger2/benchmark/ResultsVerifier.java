@@ -79,45 +79,46 @@ public class ResultsVerifier implements Runnable{
                                                 var pl = new ArrayList<PercentileResult>();
 
                                                 for(double percentile : percentiles) {
-                                                        var p = new PercentileResult(percentile);
-                                                        if(benchmarkDuration.isQ1Active()) {
-                                                                long valueAtPercentile = benchmarkDuration.getQ1Histogram().getValueAtPercentile(percentile);
-                                                                p.setQ1Latency(valueAtPercentile);
-                                                        }
-                                                        if(benchmarkDuration.isQ2Active()) {
-                                                                long valueAtPercentile = benchmarkDuration.getQ2Histogram().getValueAtPercentile(percentile);
-                                                                p.setQ2Latency(valueAtPercentile);
-                                                        }
-                                                        pl.add(p);
+//                                                        var p = new PercentileResult(percentile);
+//                                                        if(benchmarkDuration.isQ1Active()) {
+//                                                                long valueAtPercentile = benchmarkDuration.getQ1Histogram().getValueAtPercentile(percentile);
+//                                                                p.setQ1Latency(valueAtPercentile);
+//                                                        }
+//                                                        if(benchmarkDuration.isQ2Active()) {
+//                                                                long valueAtPercentile = benchmarkDuration.getQ2Histogram().getValueAtPercentile(percentile);
+//                                                                p.setQ2Latency(valueAtPercentile);
+//                                                        }
+//                                                        pl.add(p);
                                                 }
 
-                                                double q1_90Percentile = benchmarkDuration.isQ1Active() ? benchmarkDuration.getQ1Histogram().getValueAtPercentile(90)/1e6 : -1.0;
-                                                double q2_90Percentile = benchmarkDuration.isQ2Active() ? benchmarkDuration.getQ2Histogram().getValueAtPercentile(90)/1e6 : -1.0;
+//                                                double q1_90Percentile = benchmarkDuration.isQ1Active() ? benchmarkDuration.getQ1Histogram().getValueAtPercentile(90)/1e6 : -1.0;
+//                                                double q2_90Percentile = benchmarkDuration.isQ2Active() ? benchmarkDuration.getQ2Histogram().getValueAtPercentile(90)/1e6 : -1.0;
 
                                                 benchmarkDuration.getStartTime();
                                                 benchmarkDuration.getEndTime();
-                                                benchmarkDuration.getQ1Histogram().getTotalCount();
-                                                benchmarkDuration.getQ2Histogram().getTotalCount();
+//                                                benchmarkDuration.getQ1Histogram().getTotalCount();
+//                                                benchmarkDuration.getQ2Histogram().getTotalCount();
 
                                                 double seconds = (benchmarkDuration.getEndTime() - benchmarkDuration.getStartTime()) / 1e9;
-                                                double q1Throughput = benchmarkDuration.getQ1Histogram().getTotalCount() / seconds;
-                                                double q2Throughput = benchmarkDuration.getQ2Histogram().getTotalCount() / seconds;
+//                                                double q1Throughput = benchmarkDuration.getQ1Histogram().getTotalCount() / seconds;
+//                                                double q2Throughput = benchmarkDuration.getQ2Histogram().getTotalCount() / seconds;
 
-                                                BenchmarkResult br = new BenchmarkResult(benchmarkDuration.getBenchmarkId(),
-                                                        pl,
-                                                        benchmarkDuration.getQ1Histogram().getTotalCount(),
-                                                        benchmarkDuration.getQ2Histogram().getTotalCount(),
-                                                        seconds,
-                                                        q1Throughput,
-                                                        q2Throughput,
-                                                        q1_90Percentile,
-                                                        q2_90Percentile);
+//                                                BenchmarkResult br = new BenchmarkResult(benchmarkDuration.getBenchmarkId(),
+//                                                        pl,
+//                                                        benchmarkDuration.getQ1Histogram().getTotalCount(),
+//                                                        benchmarkDuration.getQ2Histogram().getTotalCount(),
+//                                                        seconds,
+//                                                        q1Throughput,
+//                                                        q2Throughput,
+//                                                        q1_90Percentile,
+//                                                        q2_90Percentile);
 
                                                 Gson g = new Gson();
-                                                String s = g.toJson(br);
+//                                                String s = g.toJson(br);
+                                                String s = "";
 
                                                 try {
-                                                        q.insertBenchmarkResult(br, s);
+                                                        q.insertBenchmarkResult(null, s);
                                                 } catch (Exception throwables) {
                                                         throwables.printStackTrace();
                                                         Logger.error(throwables, "Insert of Benchmarkresult failed");

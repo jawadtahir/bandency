@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Benchmark {
 
-    @JsonProperty("benchmarkId")
+    @JsonProperty("benchmark_id")
     private String benchmarkId;
 
     public Benchmark(String id){
