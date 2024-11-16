@@ -21,3 +21,4 @@ challenger/local.db/
 rchallenger/target/*
 vm/cochairs
 vm/cochairs.pub
+.idea/*.*
