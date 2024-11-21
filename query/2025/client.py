@@ -1,17 +1,17 @@
 import requests
+import json
 
 REST_SERVER_ADDR="http://localhost:52923/benchmark"
 
 TOKEN="testtesttesttest"
 BENCHMARK_TYPE="test"
 BENCHMARK_NAME="test"
-QUERIES="q1"
+
 
 CREATE_PARAMS={
     "token": TOKEN,
     "benchmarkType": BENCHMARK_TYPE,
-    "benchmarkName": BENCHMARK_NAME,
-    "queries": QUERIES
+    "benchmarkName": BENCHMARK_NAME
 }
 
 CREATE_BENCHMARK = "/create-benchmark"
@@ -20,14 +20,15 @@ NEXT_BATCH = "/next-batch/{}"
 RESULT = "/result/{}/{}/{}"
 END_BENCHMARK = "/end-benchmark/{}"
 
-benchmark = requests.get(REST_SERVER_ADDR+CREATE_BENCHMARK, params=CREATE_PARAMS)
+benchmark = requests.post(REST_SERVER_ADDR+CREATE_BENCHMARK, json=CREATE_PARAMS, headers={"Content-Type": "application/json"})
+# benchmark = requests.post(REST_SERVER_ADDR+CREATE_BENCHMARK, headers={"Content-Type": "application/json"})
 
 
 print(benchmark.json())
 
 benchamrk_id = benchmark.json()["benchmark_id"]
 
-start = requests.post(REST_SERVER_ADDR+START_BENCHMARK.format(benchamrk_id))
+start = requests.get(REST_SERVER_ADDR+START_BENCHMARK.format(benchamrk_id))
 
 batch = requests.get(REST_SERVER_ADDR+NEXT_BATCH.format(benchamrk_id))
 
@@ -46,4 +47,4 @@ while(batch.json()["last"] != True):
     batch = requests.get(REST_SERVER_ADDR+NEXT_BATCH.format(benchamrk_id))
 
 
-requests.post(REST_SERVER_ADDR+END_BENCHMARK.format(benchamrk_id))
+requests.get(REST_SERVER_ADDR+END_BENCHMARK.format(benchamrk_id))

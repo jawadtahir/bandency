@@ -11,22 +11,14 @@ import org.bson.types.ObjectId;
 import org.debs.challenger2.benchmark.BenchmarkState;
 import org.debs.challenger2.benchmark.BenchmarkType;
 import org.debs.challenger2.benchmark.ToVerify;
-import org.debs.challenger2.dataset.BatchIterator;
 import org.debs.challenger2.dataset.IDataSelector;
 import org.debs.challenger2.dataset.IDataStore;
 import org.debs.challenger2.dataset.TestDataSelector;
-import org.debs.challenger2.rest.dao.Batch;
-import org.debs.challenger2.rest.dao.Benchmark;
 import org.debs.challenger2.db.IQueries;
-
-
-import jakarta.ws.rs.Path;
-import org.debs.challenger2.rest.dao.BenchmarkStart;
-import org.debs.challenger2.rest.dao.ResultResponse;
+import org.debs.challenger2.rest.dao.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,45 +64,45 @@ public class RestServer {
     }
 
     //TODO: Change it to request params from query params
-    @GET
+    @POST
     @Path("/create-benchmark")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBenchmark(@QueryParam("token") String token,
-                                    @QueryParam("benchmarkType") String benchmarkType,
-                                    @QueryParam("benchmarkName") String benchmarkName,
-                                    @QueryParam("queries") List<String> queries){
+    public Response createBenchmark(String request ){
+        BatchRequest request1 = null;
+        try {
+            request1 = objectMapper.readValue(request, BatchRequest.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         // Validate
-        if (token == null){
+        if (request1.getToken() == null){
             return Response.status(Status.BAD_REQUEST).entity("token is missing in query params.").build();
         }
-        if (benchmarkType == null){
+        if (request1.getBenchmarkType() == null){
             return Response.status(Status.BAD_REQUEST).entity("benchmarkType is missing in query params.").build();
         }
-        if (benchmarkName == null){
+        if (request1.getBenchmarkName() == null){
             return Response.status(Status.BAD_REQUEST).entity("benchmarkName is missing in query params.").build();
         }
-        if (queries == null || queries.isEmpty()){
-            return Response.status(Status.BAD_REQUEST).entity("queries is missing in query params.").build();
-        }
-        if (!isValid(benchmarkType)){
+        if (!isValid(request1.getBenchmarkType())){
             return Response.status(Status.PRECONDITION_FAILED).entity("Unsupported benchmarkType.").build();
         }
 
-        ObjectId groupId = q.getGroupIdFromToken(token);
+        ObjectId groupId = q.getGroupIdFromToken(request1.getToken());
 
         if (groupId == null){
             return Response.status(Status.FORBIDDEN).entity("Invalid token.").build();
         } else {
             // Configure benchmark
-            BenchmarkType bt = getBenchmarkType(benchmarkType);
-            ObjectId benchmarkId = q.insertBenchmarkStarted(groupId , benchmarkName, 1000, bt.toString());
+            BenchmarkType bt = getBenchmarkType(request1.getBenchmarkType());
+            ObjectId benchmarkId = q.insertBenchmarkStarted(groupId , request1.getBenchmarkName(), 1000, bt.toString());
 
             BenchmarkState bms = new BenchmarkState(this.dbInserter);
-            bms.setToken(token);
+            bms.setToken(request1.getToken());
             bms.setBenchmarkId(benchmarkId);
-            bms.setToken(token);
             bms.setBenchmarkType(bt);
-            bms.setBenchmarkName(benchmarkName);
+            bms.setBenchmarkName(request1.getBenchmarkName());
 
             Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
 
@@ -141,7 +133,7 @@ public class RestServer {
         }
 
     }
-    @POST
+    @GET
     @Path("/start-benchmark/{benchmark_id}/")
     public Response startBenchmark(@PathParam("benchmark_id") String benchmarkId){
         if (!benchmarks.containsKey(benchmarkId)){
@@ -217,7 +209,7 @@ public class RestServer {
         }
     }
 
-    @POST
+    @GET
     @Path("/end-benchmark/{benchmark_id}")
     public Response endBenchmark(@PathParam("benchmark_id") String benchmarkId){
         long nanoTime = System.nanoTime();
