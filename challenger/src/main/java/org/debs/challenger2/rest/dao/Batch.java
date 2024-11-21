@@ -7,15 +7,20 @@ import java.util.List;
 
 public class Batch {
     @JsonProperty("seq_id")
-    private long seqId;
+    private long seqId = 0;
 
     @JsonProperty("last")
-    private boolean last;
-    @JsonProperty("images")
-    private List<Image> images;
+    private boolean last = false;
+    @JsonProperty("data")
+    private byte[] data;
 
     public Batch(){
-        this.images = new ArrayList<>();
+
+    }
+
+    public Batch (long seqId, byte[] data){
+        this.seqId = seqId;
+        this.data = data;
     }
 
     public long getSeqId() {
@@ -34,11 +39,11 @@ public class Batch {
         this.last = last;
     }
 
-    public List<Image> getImages() {
-        return images;
+    public byte[] getData() {
+        return data;
     }
 
-    public void setImages(List<Image> images) {
-        this.images = images;
+    public void setData(byte[] data) {
+        this.data = data;
     }
 }

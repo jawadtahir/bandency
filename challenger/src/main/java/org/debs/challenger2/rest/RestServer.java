@@ -12,7 +12,10 @@ import org.debs.challenger2.benchmark.BenchmarkState;
 import org.debs.challenger2.benchmark.BenchmarkType;
 import org.debs.challenger2.benchmark.ToVerify;
 import org.debs.challenger2.dataset.BatchIterator;
+import org.debs.challenger2.dataset.IDataSelector;
 import org.debs.challenger2.dataset.IDataStore;
+import org.debs.challenger2.dataset.TestDataSelector;
+import org.debs.challenger2.rest.dao.Batch;
 import org.debs.challenger2.rest.dao.Benchmark;
 import org.debs.challenger2.db.IQueries;
 
@@ -28,6 +31,7 @@ import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Path("/benchmark")
 public class RestServer {
@@ -67,6 +71,7 @@ public class RestServer {
 
     }
 
+    //TODO: Change it to request params from query params
     @GET
     @Path("/create-benchmark")
     @Produces(MediaType.APPLICATION_JSON)
@@ -110,12 +115,13 @@ public class RestServer {
             Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
 
             if(bt == BenchmarkType.Evaluation) {
-                var bi = new BatchIterator(this.store, stopTime);
-                bms.setDatasource(bi);
+                // TODO: Change it to eval data selector
+                IDataSelector dataSelector = new TestDataSelector(store, 3);
+                bms.setDataSelector(dataSelector);
             } else {
                 // for the time being, there is no difference in the dataset
-                var bi = new BatchIterator(this.store, stopTime);
-                bms.setDatasource(bi);
+                IDataSelector dataSelector = new TestDataSelector(store, 3);
+                bms.setDataSelector(dataSelector);
             }
 
 //        Logger.info("Ready for benchmark: " + bms.toString());
@@ -155,6 +161,35 @@ public class RestServer {
         }
     }
 
+    //TODO: Send data in binary
+    @GET
+    @Path("/next-batch/{benchmark_id}/")
+    public Response getNextBatch(@PathParam("benchmark_id") String benchmarkId){
+        if (!benchmarks.containsKey(benchmarkId)){
+            return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
+        }
+        if (!benchmarks.get(benchmarkId).getIsStarted()){
+            return Response.status(Status.PRECONDITION_FAILED).entity("Benchmark is deactivated").build();
+        }
+        AtomicReference<Batch> batchRef = new AtomicReference<>();
+        benchmarks.computeIfPresent(benchmarkId, (key, bmState) -> {
+            batchRef.set(bmState.getNextBatch(benchmarkId));
+            return bmState;
+        });
+
+        Batch batch = batchRef.getAcquire();
+        if (batch == null){
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Please contact DEBS organizers").build();
+        }
+
+        try {
+            return Response.status(Status.OK).entity(objectMapper.writeValueAsString(batch)).build();
+        } catch (JsonProcessingException e) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error parsing batch.").build();
+        }
+    }
+
+    //TODO: Receive data in binary
     @POST
     @Path("/result/{benchmark_id}/{batch_seq_id}/{query}/")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -166,7 +201,7 @@ public class RestServer {
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
         }
-        if (benchmarks.get(benchmarkId).getIsStarted()){
+        if (!benchmarks.get(benchmarkId).getIsStarted()){
             return Response.status(Status.PRECONDITION_FAILED).entity("Benchmark is deactivated.").build();
         }
 

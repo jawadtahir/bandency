@@ -1,16 +1,11 @@
 package org.debs.challenger2.benchmark;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import org.HdrHistogram.Histogram;
 import org.bson.types.ObjectId;
 import org.debs.challenger2.dataset.BatchIterator;
+import org.debs.challenger2.dataset.IDataSelector;
 import org.debs.challenger2.rest.dao.Batch;
-import org.debs.challenger2.rest.dao.ResultQ1;
-import org.debs.challenger2.rest.dao.ResultQ2;
-import org.rocksdb.RocksDBException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,7 +22,7 @@ public class BenchmarkState {
     private ConcurrentHashMap<Integer, Histogram> histograms;
 
     private long startNanoTime;
-    private BatchIterator datasource;
+    private IDataSelector dataSelector;
 
     private long endNanoTime;
     private BenchmarkType benchmarkType;
@@ -42,7 +37,7 @@ public class BenchmarkState {
 
         startNanoTime = -1;
         endNanoTime = -1;
-        datasource = null;
+        dataSelector = null;
 
         this.histograms = new ConcurrentHashMap<>();
 
@@ -112,30 +107,31 @@ public class BenchmarkState {
         this.startNanoTime = startNanoTime;
     }
 
-    public void setDatasource(BatchIterator newDataSource) {
-        this.datasource = newDataSource;
+    public void setDataSelector(IDataSelector newDataSource) {
+        this.dataSelector = newDataSource;
     }
 
-    public BatchIterator getDatasource() {
-        return this.datasource;
+    public IDataSelector getDataSelector() {
+        return this.dataSelector;
     }
 
-    public Batch getNextBatch(ObjectId benchmarkId) throws RocksDBException, InterruptedException, InvalidProtocolBufferException {
+    public Batch getNextBatch(String benchmarkId){
 
-        if(this.datasource == null) { //when participants ignore the last flag
+        if(this.dataSelector == null) { //when participants ignore the last flag
             Batch batchJSON = new Batch();
             batchJSON.setLast(true);
             return batchJSON;
         }
-        if(this.datasource.hasMoreElements()) {
+        if(this.dataSelector.hasMoreElements()) {
             // Logger.info("Has more elements: " + benchmarkId);
-            Batch batch = this.datasource.nextElement();
-            LatencyMeasurement lm = new LatencyMeasurement(benchmarkId, batch.getSeqId(), System.nanoTime());
+            Batch batch = this.dataSelector.nextElement();
+            ObjectId benchmarkOid = new ObjectId(benchmarkId);
+            LatencyMeasurement lm = new LatencyMeasurement(benchmarkOid, batch.getSeqId(), System.nanoTime());
             this.latencyCorrelation.put(batch.getSeqId(), lm);
             return batch;
         } else {
             //Logger.info("No more elements" + benchmarkId);
-            this.datasource = null;
+            this.dataSelector = null;
             Batch batchJSON = new Batch();
             batchJSON.setLast(true);
             return batchJSON;

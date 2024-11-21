@@ -6,11 +6,10 @@ import org.rocksdb.RocksDBException;
 
 public interface IDataStore {
 
-    void AddBatch(int batchCount, Batch build) throws RocksDBException;
+    void addBatch(long batchCount, Batch batch);
 
-    int BatchCount() throws RocksDBException, InterruptedException;
+    int batchCount();
 
-    Batch GetBatch(int pointer) throws RocksDBException, InvalidProtocolBufferException;
+    Batch getBatch(long pointer);
 
-    void SetBatchCount(int batchCount) throws RocksDBException;
 }

@@ -17,16 +17,16 @@ public class BatchIterator {
         this.stopTime = stopTime;
     }
 
-    public boolean hasMoreElements() throws RocksDBException, InterruptedException {
+    public boolean hasMoreElements() {
         if (Instant.now().isAfter(this.stopTime)) {
             return false;
         } else {
-            return this.store.BatchCount() > this.pointer;
+            return this.store.batchCount() > this.pointer;
         }
     }
 
-    public Batch nextElement() throws InvalidProtocolBufferException, RocksDBException {
-        var b = this.store.GetBatch(this.pointer);
+    public Batch nextElement() {
+        var b = this.store.getBatch(this.pointer);
         ++this.pointer;
         return b;
     }
