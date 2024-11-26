@@ -1,13 +1,14 @@
-package org.debs.challenger2.benchmark;
+package org.debs.challenger2.pending;
 
 
 import org.bson.types.ObjectId;
-import org.debs.challenger2.rest.dao.ResultQ1;
-import org.debs.challenger2.rest.dao.ResultQ2;
+import org.debs.challenger2.db.IQueries;
 
 // TODO; update this class accordingly
-public class LatencyMeasurement {
+public class LatencyMeasurement implements IPendingTask {
+    private final ObjectId groupId;
     private final ObjectId benchmarkId;
+
     private final Long batchId;
 
     private Integer query;
@@ -16,7 +17,8 @@ public class LatencyMeasurement {
     private Long endTime;
 
 
-    public LatencyMeasurement(ObjectId benchmarkId, Long batchId, Long startTime) {
+    public LatencyMeasurement(ObjectId groupId, ObjectId benchmarkId, Long batchId, Long startTime) {
+        this.groupId = groupId;
         this.benchmarkId = benchmarkId;
         this.batchId = batchId;
         this.startTime = startTime;
@@ -25,6 +27,14 @@ public class LatencyMeasurement {
     public void markEnd(Integer query, long endTime){
         this.query = query;
         this.endTime = endTime;
+    }
+
+    public ObjectId getGroupId() {
+        return groupId;
+    }
+
+    public void setQuery(Integer query) {
+        this.query = query;
     }
 
     public ObjectId getBenchmarkId() {
@@ -49,6 +59,14 @@ public class LatencyMeasurement {
 
     public void setEndTime(Long endTime) {
         this.endTime = endTime;
+    }
+
+    @Override
+    public void doPending(IQueries queries) {
+
+        Long latency = getEndTime() - getStartTime();
+
+        queries.insertLatency(getGroupId(), getQuery(), latency);
     }
 }
 

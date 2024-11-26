@@ -10,11 +10,11 @@ import jakarta.ws.rs.core.Response.Status;
 import org.bson.types.ObjectId;
 import org.debs.challenger2.benchmark.BenchmarkState;
 import org.debs.challenger2.benchmark.BenchmarkType;
-import org.debs.challenger2.benchmark.ToVerify;
 import org.debs.challenger2.dataset.IDataSelector;
 import org.debs.challenger2.dataset.IDataStore;
 import org.debs.challenger2.dataset.TestDataSelector;
 import org.debs.challenger2.db.IQueries;
+import org.debs.challenger2.pending.IPendingTask;
 import org.debs.challenger2.rest.dao.*;
 
 import java.time.Instant;
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Path("/benchmark")
 public class RestServer {
 
-    private final ArrayBlockingQueue<ToVerify> dbInserter;
+    private final ArrayBlockingQueue<IPendingTask> pending;
     private final IQueries q;
     private final int durationEvaluationMinutes;
     private final Random random;
@@ -37,12 +37,12 @@ public class RestServer {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     static final Counter errorCounter = Counter.build()
-            .name("errorsREST")
+            .name("errors")
             .help("unforseen errors")
             .register();
 
     static final Counter createNewBenchmarkCounter = Counter.build()
-            .name("createNewBenchmarkREST")
+            .name("createNewBenchmark")
             .help("calls to createNewBenchmark methods")
             .register();
 
@@ -53,9 +53,9 @@ public class RestServer {
     public RestServer(){
         this(null, null, null, 10);
     }
-    public RestServer(IDataStore store, ArrayBlockingQueue<ToVerify> dbInserter, IQueries q, int durationEvaluationMinute){
+    public RestServer(IDataStore store, ArrayBlockingQueue<IPendingTask> pending, IQueries q, int durationEvaluationMinute){
         this.store = store;
-        this.dbInserter = dbInserter;
+        this.pending = pending;
         this.q = q;
         this.durationEvaluationMinutes = durationEvaluationMinute;
         this.benchmarks = new ConcurrentHashMap<>();
@@ -96,10 +96,15 @@ public class RestServer {
         } else {
             // Configure benchmark
             BenchmarkType bt = getBenchmarkType(request1.getBenchmarkType());
-            ObjectId benchmarkId = q.insertBenchmarkStarted(groupId , request1.getBenchmarkName(), 1000, bt.toString());
+            ObjectId benchmarkId = q.createBenchmark(groupId , request1.getBenchmarkName(), bt.toString());
 
-            BenchmarkState bms = new BenchmarkState(this.dbInserter);
+            if (benchmarkId == null){
+                return Response.status(Status.INTERNAL_SERVER_ERROR)
+                        .entity("Unable to create benchmark object").build();
+            }
+            BenchmarkState bms = new BenchmarkState(this.pending);
             bms.setToken(request1.getToken());
+            bms.setGroupId(groupId);
             bms.setBenchmarkId(benchmarkId);
             bms.setBenchmarkType(bt);
             bms.setBenchmarkName(request1.getBenchmarkName());
@@ -130,6 +135,8 @@ public class RestServer {
                         .entity("Error parsing benchmark").build();
             }
 
+
+
         }
 
     }
@@ -141,12 +148,14 @@ public class RestServer {
         }
         Long startTime = System.nanoTime();
         benchmarks.computeIfPresent(benchmarkId, (key, bmState) -> {
-            bmState.setIsStarted(true);
-            bmState.startBenchmark(startTime);
+            bmState.setStarted(true);
+            bmState.setStartNanoTime(startTime);
             return bmState;
         });
         BenchmarkStart benchmarkStart = new BenchmarkStart(benchmarkId, startTime);
         try {
+
+            q.markBenchmarkActive(new ObjectId(benchmarkId));
             return Response.status(Status.OK).entity(objectMapper.writeValueAsString(benchmarkStart)).build();
         } catch (JsonProcessingException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Failed to create benchmark_start").build();
@@ -160,7 +169,7 @@ public class RestServer {
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
         }
-        if (!benchmarks.get(benchmarkId).getIsStarted()){
+        if (!benchmarks.get(benchmarkId).isStarted()){
             return Response.status(Status.PRECONDITION_FAILED).entity("Benchmark is deactivated").build();
         }
         AtomicReference<Batch> batchRef = new AtomicReference<>();
@@ -193,7 +202,7 @@ public class RestServer {
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
         }
-        if (!benchmarks.get(benchmarkId).getIsStarted()){
+        if (!benchmarks.get(benchmarkId).isStarted()){
             return Response.status(Status.PRECONDITION_FAILED).entity("Benchmark is deactivated.").build();
         }
 
@@ -202,6 +211,7 @@ public class RestServer {
             return bmState;
         });
         ResultResponse response = new ResultResponse(benchmarkId, batchSeqId, query, nanoTime);
+
         try {
             return Response.status(Status.OK).entity(objectMapper.writeValueAsString(response)).build();
         } catch (JsonProcessingException e) {
@@ -216,12 +226,12 @@ public class RestServer {
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
         }
-        if (!benchmarks.get(benchmarkId).getIsStarted()){
+        if (!benchmarks.get(benchmarkId).isStarted()){
             return Response.status(Status.PRECONDITION_FAILED).entity("Benchmark is deactivated.").build();
         }
         AtomicBoolean found = new AtomicBoolean(false);
         benchmarks.computeIfPresent(benchmarkId, (k, b) -> {
-            b.endBenchmark(benchmarkId, nanoTime);
+            b.endBenchmark(System.currentTimeMillis());
             found.set(true);
 
             //Logger.info("Ended benchmark: " + b.toString());

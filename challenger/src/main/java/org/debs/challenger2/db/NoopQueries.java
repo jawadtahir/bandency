@@ -1,13 +1,13 @@
 package org.debs.challenger2.db;
 
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.debs.challenger2.benchmark.LatencyMeasurement;
 import org.debs.gc2023.dal.DB;
-import org.debs.gc2023.dal.dto.BenchmarkResult;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 public class NoopQueries implements IQueries{
     @Override
@@ -26,33 +26,46 @@ public class NoopQueries implements IQueries{
     }
 
     @Override
-    public ObjectId insertBenchmarkStarted(ObjectId groupId, String benchmarkName,
-                                       int batchSize, String bt) {
-
+    public ObjectId createBenchmark(ObjectId groupId, String benchmarkName, String bt) {
         return new ObjectId();
     }
 
     @Override
-    public void insertLatencyMeasurementStats(ObjectId benchmarkId, double averageLatency) {
+    public Document markBenchmarkActive(ObjectId benchmarkId) {
+        return new Document("benchmark_id", benchmarkId);
+    }
+
+    @Override
+    public Document markBenchmarkFinished(ObjectId benchmarkId, Date finishTime) {
+        return new Document("benchmark_id", benchmarkId);
+    }
+
+    @Override
+    public Document getBenchmark(ObjectId benchmarkId) {
+        return new Document("benchmark_id", benchmarkId);
+    }
+
+
+    @Override
+    public void insertLatency(ObjectId groupId, Integer query, Long latency) {
+
+        return;
+    }
+
+    public List<Document> getLatencyAnalysis(ObjectId groupId, Integer query, Date startTime, Date endTime){
+        return List.of(new Document());
+    }
+
+    @Override
+    public void insertBenchmarkResult(ObjectId benchmarkId, Bson results) {
         return;
     }
 
     @Override
-    public void insertLatency(LatencyMeasurement lm) {
+    public void closeDB() {
 
-        return;
     }
 
-    @Override
-    public void insertBenchmarkResult(BenchmarkResult br, String s) {
-        return;
-    }
-
-    @Override
-    public List<String> getVirtualMachineInfo(String token) {
-        List<String> l = new ArrayList<>();
-        return l;
-    }
 
     @Override
     public DB getDb() {
@@ -60,14 +73,7 @@ public class NoopQueries implements IQueries{
     }
 
     @Override
-    public void insertLatency(LatencyMeasurement lm, boolean s) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'insertLatency'");
-    }
+    public void close() throws IOException {
 
-    @Override
-    public void insertBenchmarkResult(BenchmarkResult br, String s, boolean v) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'insertBenchmarkResult'");
     }
 }

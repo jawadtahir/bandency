@@ -1,14 +1,15 @@
 package org.debs.challenger2.db;
 
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.debs.challenger2.benchmark.LatencyMeasurement;
 import org.debs.gc2023.dal.DB;
-import org.debs.gc2023.dal.dto.BenchmarkResult;
 
+import java.io.Closeable;
+import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
-public interface IQueries {
+public interface IQueries extends Closeable {
     DB getDb();
 
     boolean checkIfGroupExists(String token);
@@ -17,18 +18,22 @@ public interface IQueries {
 
     String getGroupNameFromToken(String token);
 
-    ObjectId insertBenchmarkStarted(ObjectId groupId, String benchmarkName, int batchSize,
-                                String bt);
+    public ObjectId createBenchmark(ObjectId groupId, String benchmarkName, String bt);
 
-    void insertLatencyMeasurementStats(ObjectId benchmarkId, double averageLatency);
+    public Document markBenchmarkActive(ObjectId benchmarkId);
 
-    void insertLatency(LatencyMeasurement lm);
+    public Document markBenchmarkFinished(ObjectId benchmarkId, Date finishTime);
 
-    void insertLatency(LatencyMeasurement lm, boolean s);
+    public Document getBenchmark (ObjectId benchmarkId);
 
-    void insertBenchmarkResult(BenchmarkResult br, String s);
 
-    void insertBenchmarkResult(BenchmarkResult br, String s, boolean v);
+    void insertLatency(ObjectId groupId, Integer query, Long latency);
+    public List<Document> getLatencyAnalysis(ObjectId groupId, Integer query, Date startTime, Date endTime);
 
-    List<String> getVirtualMachineInfo(String token);
+
+    void insertBenchmarkResult(ObjectId benchmarkId, Bson results);
+
+    void closeDB();
+
+
 }
