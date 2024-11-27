@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="497px" preserveAspectRatio="none" style="width:464px;height:497px;background:#FFFFFF;" version="1.1" viewBox="0 0 464 497" width="464px" zoomAndPan="magnify"><defs/><g><rect fill="#FFFFFF" height="390.2002" style="stroke:#181818;stroke-width:1.0;" width="10" x="75.5" y="46.7999"/><rect fill="#FFFFFF" height="29.6" style="stroke:#181818;stroke-width:1.0;" width="10" x="381.5" y="93"/><rect fill="#FFFFFF" height="253.2001" style="stroke:#181818;stroke-width:1.0;" width="10" x="381.5" y="183.8"/><rect fill="#FFFFFF" height="156.4001" style="stroke:#181818;stroke-width:1.0;" width="10" x="386.5" y="238"/><rect height="76.8" style="stroke:#000000;stroke-width:1.5;fill:none;" width="408" x="30" y="53.7999"/><rect height="300.4001" style="stroke:#000000;stroke-width:1.5;fill:none;" width="448" x="10" y="144.6"/><rect height="195.6001" style="stroke:#000000;stroke-width:1.5;fill:none;" width="428" x="20" y="198.8"/><rect height="104.8" style="stroke:#000000;stroke-width:1.5;fill:none;" width="408" x="30" y="282.6"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="80" x2="80" y1="36.7999" y2="462.0001"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="386" x2="386" y1="36.7999" y2="462.0001"/><rect fill="#E2E2F0" height="30.7999" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="81" x="40" y="5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="67" x="47" y="25.0059">Participant</text><rect fill="#E2E2F0" height="30.7999" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="81" x="40" y="461.0001"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="67" x="47" y="481.006">Participant</text><rect fill="#E2E2F0" height="30.7999" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="83" x="345" y="5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="69" x="352" y="25.0059">Challenger</text><rect fill="#E2E2F0" height="30.7999" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="83" x="345" y="461.0001"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="69" x="352" y="481.006">Challenger</text><rect fill="#FFFFFF" height="390.2002" style="stroke:#181818;stroke-width:1.0;" width="10" x="75.5" y="46.7999"/><rect fill="#FFFFFF" height="29.6" style="stroke:#181818;stroke-width:1.0;" width="10" x="381.5" y="93"/><rect fill="#FFFFFF" height="253.2001" style="stroke:#181818;stroke-width:1.0;" width="10" x="381.5" y="183.8"/><rect fill="#FFFFFF" height="156.4001" style="stroke:#181818;stroke-width:1.0;" width="10" x="386.5" y="238"/><path d="M30,53.7999 L243,53.7999 L243,61.3999 L233,71.3999 L30,71.3999 L30,53.7999 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/><rect fill="none" height="76.8" style="stroke:#000000;stroke-width:1.5;" width="408" x="30" y="53.7999"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="168" x="45" y="66.8769">1) Create a new Benchmark</text><polygon fill="#181818" points="369.5,89,379.5,93,369.5,97,373.5,93" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="85.5" x2="375.5" y1="93" y2="93"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="277" x="92.5" y="87.477">createNewBenchmark(BenchmarkConfiguration)</text><polygon fill="#181818" points="96.5,118.6,86.5,122.6,96.5,126.6,92.5,122.6" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="90.5" x2="385.5" y1="122.6" y2="122.6"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="74" x="102.5" y="117.077">(Benchmark)</text><path d="M10,144.6 L140,144.6 L140,152.2 L130,162.2 L10,162.2 L10,144.6 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/><rect fill="none" height="300.4001" style="stroke:#000000;stroke-width:1.5;" width="448" x="10" y="144.6"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="85" x="25" y="157.677">2) Benchmark</text><polygon fill="#181818" points="369.5,179.8,379.5,183.8,369.5,187.8,373.5,183.8" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="85.5" x2="375.5" y1="183.8" y2="183.8"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="166" x="92.5" y="178.277">startBenchmark(Benchmark)</text><path d="M20,198.8 L193,198.8 L193,206.4 L183,216.4 L20,216.4 L20,198.8 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/><rect fill="none" height="195.6001" style="stroke:#000000;stroke-width:1.5;" width="428" x="20" y="198.8"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="128" x="35" y="211.877">Repeat until finished</text><polygon fill="#181818" points="374.5,234,384.5,238,374.5,242,378.5,238" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="85.5" x2="380.5" y1="238" y2="238"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="152" x="92.5" y="232.477">nextMessage(Benchmark)</text><polygon fill="#181818" points="96.5,263.6,86.5,267.6,96.5,271.6,92.5,267.6" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="90.5" x2="385.5" y1="267.6" y2="267.6"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="47" x="102.5" y="262.077">Payload</text><path d="M30,282.6 L282,282.6 L282,290.2001 L272,300.2001 L30,300.2001 L30,282.6 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/><rect fill="none" height="104.8" style="stroke:#000000;stroke-width:1.5;" width="408" x="30" y="282.6"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="207" x="45" y="295.677">Parallelized calculation of results</text><polygon fill="#181818" points="374.5,317.8001,384.5,321.8001,374.5,325.8001,378.5,321.8001" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="85.5" x2="380.5" y1="321.8001" y2="321.8001"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="111" x="92.5" y="316.2771">resultQ1(ResultQ1)</text><polygon fill="#181818" points="96.5,331.8001,86.5,335.8001,96.5,339.8001,92.5,335.8001" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="90.5" x2="385.5" y1="335.8001" y2="335.8001"/><polygon fill="#181818" points="374.5,361.4001,384.5,365.4001,374.5,369.4001,378.5,365.4001" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="85.5" x2="380.5" y1="365.4001" y2="365.4001"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="111" x="92.5" y="359.8771">resultQ2(ResultQ2)</text><polygon fill="#181818" points="96.5,375.4001,86.5,379.4001,96.5,383.4001,92.5,379.4001" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="90.5" x2="385.5" y1="379.4001" y2="379.4001"/><polygon fill="#181818" points="369.5,419.0001,379.5,423.0001,369.5,427.0001,373.5,423.0001" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="85.5" x2="375.5" y1="423.0001" y2="423.0001"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="161" x="92.5" y="417.4771">endBenchmark(Benchmark)</text><polygon fill="#181818" points="91.5,433.0001,81.5,437.0001,91.5,441.0001,87.5,437.0001" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="85.5" x2="385.5" y1="437.0001" y2="437.0001"/><!--MD5=[d9827bc35a4cb9358a311982847c7950]
+@startuml
+activate Participant
+
+
+group 1) Create a new Benchmark
+Challenger <- Participant: createNewBenchmark(BenchmarkConfiguration)
+activate Challenger
+Challenger - -> Participant: (Benchmark)
+deactivate Challenger
+end
+
+group 2) Benchmark
+Challenger <- Participant: startBenchmark(Benchmark)
+activate Challenger
+
+
+group Repeat until finished
+Challenger <- Participant: nextMessage(Benchmark)
+activate Challenger
+Challenger - -> Participant: Payload
+
+group Parallelized calculation of results
+Challenger <- Participant: resultQ1(ResultQ1)
+Challenger - -> Participant:
+Challenger <- Participant: resultQ2(ResultQ2)
+Challenger - -> Participant:
+end
+
+deactivate Challenger
+end
+
+
+
+Challenger <- Participant: endBenchmark(Benchmark)
+Challenger - -> Participant:
+
+deactivate Challenger
+deactivate Participant
+end
+
+
+@enduml
+
+PlantUML version 1.2022.2(Sat Mar 05 17:30:19 CET 2022)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

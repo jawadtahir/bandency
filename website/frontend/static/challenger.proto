@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "org.debs.gc2023.bandency";
+
+package Challenger;
+
+message DriveState {
+  google.protobuf.Timestamp date = 1;
+  string serial_number = 2;
+  string model = 3;
+  bool failure = 4;
+  int32 vault_id = 5;
+  // s1,s2,s3,s4,s5,s7,s8,s9,s10,
+  // s12,s173,s174,s183,s187,s188,
+  // s189,s190,s191,s192,s193,s194,
+  // s195,s196,s197,s198,s199,s200,
+  // s220,s222,s223,s226,s240,s241,
+  // s242
+  repeated int64 readings = 6;
+}
+
+message Batch {
+  int64 seq_id = 1;
+  bool last = 2;
+  bool day_end = 3;
+  repeated int32 vault_ids = 4;
+  repeated int32 cluster_ids = 5;
+  repeated DriveState states = 6;
+}
+
+message Benchmark {
+  int64 id = 1;
+}
+
+message VaultFailures {
+  int32 vault_id = 1;
+  int32 failures = 2;
+}
+
+message ResultQ1 {
+  int64 benchmark_id = 1;
+  int64 batch_seq_id = 2;
+
+  repeated VaultFailures entries = 3;
+}
+
+message ClusterInfo {
+  int32 cluster_id = 1;
+  int32 size = 2;
+}
+
+message ResultQ2 {
+  int64 benchmark_id = 1;
+  int64 batch_seq_id = 2;
+
+  repeated ClusterInfo entries = 3;
+}
+
+enum Query {
+  Q1 = 0;
+  Q2 = 1;
+}
+
+message BenchmarkConfiguration {
+  string token = 1; // Token from the webapp for authentication
+  string benchmark_name = 2; // chosen by the team, listed in the results
+  string benchmark_type = 3; // benchmark type, e.g., test
+  repeated Query queries = 4; // Specify which queries to run
+}
+
+service Challenger {
+
+  //Create a new Benchmark based on the configuration
+  rpc createNewBenchmark(BenchmarkConfiguration) returns (Benchmark);
+
+  //This marks the starting point of the throughput measurements
+  rpc startBenchmark(Benchmark) returns (google.protobuf.Empty);
+
+  //get the next Batch
+  rpc nextBatch(Benchmark) returns (Batch);
+
+  //post the result
+  rpc resultQ1(ResultQ1) returns (google.protobuf.Empty);
+  rpc resultQ2(ResultQ2) returns (google.protobuf.Empty);
+  
+  //This marks the end of the throughput measurements
+  rpc endBenchmark(Benchmark) returns (google.protobuf.Empty);
+}

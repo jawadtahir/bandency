@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    
+
+    <form action="{{ url_for('deployment') }}" method="post" class="form" enctype="multipart/form-data">
+        <div class="form-group row">
+            <label for="inputFile" class="col-sm-3 col-form-label">File</label>
+            <div class="col-sm-5">
+                <input type="file" name="file" class="form-control" id="inputFile" accept=".yaml, .yml" value="">
+            </div>
+        </div>
+        
+        <div class="form-group row">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-2">
+                <input type="submit" name="deploy" class="btn btn-primary mb-2" value="Deploy" />
+            </div>
+        </div>
+    </form>
+
+    <h6>Previous deployments</h6>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Details</th>
+                <th>Timestamp</th>
+                
+                <th>Name</th>
+                
+                <th align="right">Is active</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for deployment in deployments %}
+                <tr>
+                    <td><a class="btn btn-primary" href="/benchmarkdetails/{{ benchmark.id }}/">Show details</a>
+                    </td>
+                    <td class="humantimestamp" title="{{ deployment.timestamp }}"></td>
+                    
+                    <td>{{ deployment.name }}</td>
+                    
+                    <td align="right">{{ deployment.is_active }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+
+
+{% endblock %}
