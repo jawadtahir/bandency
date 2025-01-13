@@ -2,21 +2,27 @@
 
 {% block content %}
     <div class="form-group row">
-        <label for="staticGroupNameId" class="col-sm-3 col-form-label">Group name</label>
+        <label for="groupname" class="col-sm-3 col-form-label">Group name</label>
         <div class="col-sm-5">
-            <input type="text" readonly class="form-control-plaintext" id="groupname" value="{{ group.groupnick }}">
+            <input type="text" readonly class="form-control-plaintext" id="groupname" value="{{ group.name }}">
         </div>
     </div>
     <div class="form-group row">
-        <label for="groupemail" class="col-sm-3 col-form-label">Email</label>
+        <label for="groupnamespace" class="col-sm-3 col-form-label">Namespace</label>
         <div class="col-sm-5">
-            <input type="text" readonly class="form-control-plaintext" id="groupemail" value="{{ group.groupemail }}">
+            <input type="text" readonly class="form-control-plaintext" id="groupnamespace" value="{{ group.namespace }}">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="groupemail" class="col-sm-3 col-form-label">Contact email</label>
+        <div class="col-sm-5">
+            <input type="text" readonly class="form-control-plaintext" id="groupemail" value="{{ group.email }}">
         </div>
     </div>
     <div class="form-group row">
         <label for="groupapikey" class="col-sm-3 col-form-label">API Key</label>
         <div class="col-sm-5">
-            <input type="text" readonly class="form-control-plaintext" id="groupapikey" value="{{ group.groupapikey }}">
+            <input type="text" readonly class="form-control-plaintext" id="groupapikey" value="{{ group.apikey }}">
         </div>
     </div>
     <div class="form-group row">
@@ -38,7 +44,7 @@
         <div class="form-group row">
             <label for="inputGroupEmail" class="col-sm-3 col-form-label">E-Mail</label>
             <div class="col-sm-5">
-                <input type="email" name="groupemail" class="form-control" id="inputGroupEmail" value="{{ group.groupemail }}">
+                <input type="email" name="groupemail" class="form-control" id="inputGroupEmail" value="{{ group.email }}">
             </div>
         </div>
         <div class="form-group row">

@@ -1,0 +1,17 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: pod-{deploy_id}
+  namespace: {namespace}
+spec:
+  schedule: '*/{timer} * * * *'
+  historyLimit: 5
+  concurrencyPolicy: 'Forbid'
+  type: 'PodChaos'
+  podChaos:
+    action: pod-kill
+    mode: all
+    selector:
+      namespaces:
+        - {namespace}
+    duration: '10s'

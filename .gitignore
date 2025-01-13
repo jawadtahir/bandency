@@ -22,3 +22,9 @@ rchallenger/target/*
 vm/cochairs
 vm/cochairs.pub
 .idea/*.*
+
+upload/
+
+website/quotas/
+
+deploy/

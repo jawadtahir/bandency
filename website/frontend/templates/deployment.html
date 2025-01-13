@@ -10,11 +10,37 @@
                 <input type="file" name="file" class="form-control" id="inputFile" accept=".yaml, .yml" value="">
             </div>
         </div>
+
+        <div class="form-group row">
+            <label for="inputFile" class="col-sm-3 col-form-label">Failure</label>
+            <div class="col-sm-5">
+                <input type="checkbox" name="failure" class="form-check-input col-form-input" id="failure" value="">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="failure_type" class="col-sm-3 col-form-label">Failure type</label>
+            <div class="col-sm-5">
+                <select name="failure_type" id="failure_type" class="select">
+                    <option value="pod">Pod</option>
+                    <option value="network" selected>Network</option>
+                </select>
+                
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="timer" class="col-sm-3 col-form-label">Failure interval (min)</label>
+            <div class="col-sm-5">
+                <input type="text" name="timer" class="form-control-sm col-form-input" id="timer" value="1">
+            </div>
+        </div>
+
         
         <div class="form-group row">
             <div class="col-sm-3"></div>
-            <div class="col-sm-2">
-                <input type="submit" name="deploy" class="btn btn-primary mb-2" value="Deploy" />
+            <div clas#s="col-sm-2">
+                <input type="submit" name="deploy" class="btn btn-primary mb-2" value="Deploy"  {{ 'disabled' if not deployment_allowed }}  />
             </div>
         </div>
     </form>
@@ -24,24 +50,25 @@
         <table class="table table-bordered table-hover">
             <thead>
             <tr>
-                <th>Details</th>
+                <th>ID</th>
                 <th>Timestamp</th>
                 
-                <th>Name</th>
+                <th>Failure</th>
                 
-                <th align="right">Is active</th>
+                <th align="right">Delete</th>
             </tr>
             </thead>
             <tbody>
             {% for deployment in deployments %}
                 <tr>
-                    <td><a class="btn btn-primary" href="/benchmarkdetails/{{ benchmark.id }}/">Show details</a>
-                    </td>
+                    <td>{{ deployment._id }}</td>
                     <td class="humantimestamp" title="{{ deployment.timestamp }}"></td>
-                    
-                    <td>{{ deployment.name }}</td>
-                    
-                    <td align="right">{{ deployment.is_active }}</td>
+                    <td align="right"><input type="checkbox" name="failure-indicator-{{deployment._id}}" class="form-check-input" id="failure" value="" disabled></td>
+                    <td>
+                        <form action="{{ url_for('deployment_delete', deployment_id=deployment._id) }}" method="post" class="form" enctype="application/x-www-form-urlencoded">
+                            <input type="submit" name="deployDelete" id="deployDelete" class="btn btn-primary mb-2 deploy-delete" value="Delete" {{ 'disabled' if not deployment.is_active }}/>
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -49,6 +76,6 @@
     </div>
 
 
-
+    <!-- <script src="/static/js/deployment.js" -->
 
 {% endblock %}
