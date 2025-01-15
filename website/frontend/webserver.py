@@ -8,6 +8,7 @@ import hashlib
 import helper
 import subprocess
 
+
 from typing import Any
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
@@ -302,20 +303,41 @@ async def deployment_delete(deployment_id):
     return redirect(url_for("deployment"))
 
 
-@app.route('/benchmarks/')
+@app.route('/benchmarks/', methods=["GET"])
 @login_required
 async def benchmarks():
     #TODO: get banchmarks
-    benchmarks = {}
+    benchmarks = db.benchmarks.find({
+            "group_id": ObjectId(current_user.auth_id)
+        }).sort({"timestamp": -1})
+    
+    benchmark_list = []
 
-    return await render_template("benchmarks.html", name="Benchmarks", benchmarks=benchmarks, menu=helper.menu(benchmarks=True))
+    async for benchmark in benchmarks:
+        
+        # Deactivates the benchmark if
+        # benchmark is active or
+        # the duration of benchmark is unknown
+        benchmark["deactivate"] = True if (
+            benchmark["is_active"]) or (
+                benchmark.get("activation_timestamp",False) or benchmark.get("finished_timestamp", False)
+                ) else False
+        
+        benchmark_list.append(benchmark)
+
+
+    return await render_template("benchmarks.html", name="Benchmarks", benchmarks=benchmark_list, menu=helper.menu(benchmarks=True))
 
 
 @app.route('/benchmarks/details/<benchmarkid>/')
 @login_required
 async def benchmarkdetails(benchmarkid):
     #TODO: get benchmark and benchmarkdetails
-    benchmark = {}
+    benchmark = await db.benchmarks.find_one({"_id": ObjectId(benchmarkid)})
+    benchmark_duration = (benchmark["finished_timestamp"] - benchmark["activation_timestamp"]).total_seconds()
+
+    q1_latencies = db.latencies.find({"group_id": ObjectId(current_user.auth_id), "timestamp": {"$gte": benchmark["activation_timestamp"], "$lte": benchmark["finished_timestamp"]}})
+
     benchmarkresults = {}
 
     return await render_template("benchmarkdetails.html", benchmark=benchmark, benchmarkresults=benchmarkresults, menu=helper.menu(benchmarks=True))
@@ -325,8 +347,15 @@ async def benchmarkdetails(benchmarkid):
 @login_required
 async def deactivatebenchmark(benchmarkid):
     #TODO: update benchmark
+    time_instant = datetime.now()
+    benchmark = await db.benchmarks.find_one({"_id": ObjectId(benchmarkid)})
+    benchmark["is_active"] = False
+    benchmark["activation_timestamp"] = benchmark.get("activation_timestamp", time_instant)
+    benchmark["finished_timestamp"] = benchmark.get("finished_timestamp", time_instant)
 
-    return redirect("/benchmarks/details/{}/".format(benchmarkid))
+    await db.benchmarks.find_one_and_replace({"_id": ObjectId(benchmarkid)}, benchmark, return_document=ReturnDocument.AFTER)
+
+    return redirect("/benchmarks/")
 
 
 

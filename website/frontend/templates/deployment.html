@@ -66,7 +66,7 @@
                     <td align="right"><input type="checkbox" name="failure-indicator-{{deployment._id}}" class="form-check-input" id="failure" value="" disabled></td>
                     <td>
                         <form action="{{ url_for('deployment_delete', deployment_id=deployment._id) }}" method="post" class="form" enctype="application/x-www-form-urlencoded">
-                            <input type="submit" name="deployDelete" id="deployDelete" class="btn btn-primary mb-2 deploy-delete" value="Delete" {{ 'disabled' if not deployment.is_active }}/>
+                            <input type="submit" name="deployDelete" id="deployDelete" class="btn btn-danger mb-2 deploy-delete" value="Delete" {{ 'disabled' if not deployment.is_active }}/>
                         </form>
                     </td>
                 </tr>

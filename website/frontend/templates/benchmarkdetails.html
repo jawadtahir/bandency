@@ -25,12 +25,20 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Timestamp</td>
-                    <td class="humantimestamp" title="{{ benchmark.timestamp }}"></td>
+                    <td>Creation Timestamp</td>
+                    <td>{{ benchmark.creation_timestamp }}</td>
+                </tr>
+                <tr>
+                    <td>Activation Timestamp</td>
+                    <td>{{ benchmark.activation_timestamp }}</td>
+                </tr>
+                <tr>
+                    <td>Finished Timestamp</td>
+                    <td>{{ benchmark.finished_timestamp }}</td>
                 </tr>
                 <tr>
                     <td>Type</td>
-                    <td>{{ benchmark.benchmark_type }}</td>
+                    <td>{{ benchmark.type }}</td>
                 </tr>
                 <tr>
                     <td>Active</td>
@@ -38,16 +46,12 @@
                 </tr>
                 <tr>
                     <td>Name</td>
-                    <td align="right">{{ benchmark.benchmark_name }}</td>
-                </tr>
-                <tr>
-                    <td>Batchsize</td>
-                    <td align="right">{{ benchmark.batchsize }}</td>
+                    <td align="right">{{ benchmark.name }}</td>
                 </tr>
                 {% if not benchmarkresults %}
                     <tr>
                         <td>No results</td>
-                        <td>Not finished? Not called endBenchmark(Benchmark)?</td>
+                        <td>No result invocation in the benchmark duration.</td>
                     </tr>
                 {% endif %}
 
