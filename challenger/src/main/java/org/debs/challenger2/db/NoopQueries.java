@@ -3,7 +3,6 @@ package org.debs.challenger2.db;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.debs.gc2023.dal.DB;
 
 import java.io.IOException;
 import java.util.Date;
@@ -45,6 +44,11 @@ public class NoopQueries implements IQueries{
         return new Document("benchmark_id", benchmarkId);
     }
 
+    @Override
+    public Document getActiveBenchmarkByGroupId(ObjectId groupId) {
+        return null;
+    }
+
 
     @Override
     public void insertLatency(ObjectId groupId, Integer query, Long latency) {
@@ -67,10 +71,6 @@ public class NoopQueries implements IQueries{
     }
 
 
-    @Override
-    public DB getDb() {
-        return null;
-    }
 
     @Override
     public void close() throws IOException {

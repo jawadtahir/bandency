@@ -23,8 +23,10 @@ END_BENCHMARK = "/end-benchmark/{}"
 benchmark = requests.post(REST_SERVER_ADDR+CREATE_BENCHMARK, json=CREATE_PARAMS, headers={"Content-Type": "application/json"})
 # benchmark = requests.post(REST_SERVER_ADDR+CREATE_BENCHMARK, headers={"Content-Type": "application/json"})
 
-
-print(benchmark.json())
+if benchmark.ok:
+    print(benchmark.json())
+else:
+    print(benchmark.content.decode("utf8"))
 
 benchamrk_id = benchmark.json()["benchmark_id"]
 

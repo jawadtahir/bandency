@@ -13,22 +13,41 @@ import org.debs.challenger2.pending.PendingTaskRunner;
 import org.debs.challenger2.rest.RestServer;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ArrayBlockingQueue;
 
 
 public class Main {
 
     static RestServer restServer = null;
-    private static final String DATA_DIR = "/home/foobar/PhD/Data/DEBS/imaging/archive/L-PBF Dataset/Build 1/Test";
 
     private static Logger logger = LogManager.getLogger(Main.class);
 //    public static final String DB_CONNECTION = "mongodb://myDatabaseUser:D1fficultP%40ssw0rd@mongodb0.example.com:52925/";
-public static final String DB_CONNECTION = "mongodb://localhost:52925/";
+    public static final String DB_CONNECTION = System.getProperty("DB_CONNECTION", "mongodb://localhost:52925/");
+    public static final String REST_PORT = System.getProperty("REST_PORT", "52923");
     public static final String DATABASE = "challenger";
     public static void main(String[] args) throws IOException {
+        String dataDir = System.getenv().getOrDefault("DATA_DIR", "/data");
+        Path dirPath = Paths.get(dataDir);
+        System.out.println(dirPath.toAbsolutePath());
+//        Files.list(dirPath).forEach(path -> System.out.println(path.toAbsolutePath()));
+        if (Files.notExists(dirPath)){
+            System.out.println("No such directory");
+            return;
+        }
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dirPath)){
+            if (!dirStream.iterator().hasNext()){
+                System.out.println("Found no files");
+                return;
+            }
+        }
+
         IDataStore store = new InMemoryDataStore();
         logger.info("Reading data files");
-        DataLoader dataLoader = new DataLoader(store, DATA_DIR);
+        DataLoader dataLoader = new DataLoader(store, dataDir);
         dataLoader.load();
         ArrayBlockingQueue<IPendingTask> dbInserter = new ArrayBlockingQueue<>(1_000_000, false);
         IQueries q = new MongoQueries(DB_CONNECTION, DATABASE);
@@ -36,11 +55,13 @@ public static final String DB_CONNECTION = "mongodb://localhost:52925/";
 
         restServer = new RestServer(store, dbInserter, q, evalDuration);
 
+        String restAddress = String.format("http://localhost:%s/", REST_PORT);
+
         JAXRSServerFactoryBean serverFactoryBean = new JAXRSServerFactoryBean();
         serverFactoryBean.setResourceClasses(RestServer.class);
         serverFactoryBean.setServiceBean(restServer);
         //serverFactoryBean.setResourceProvider(restServer.getClass(), new SingletonResourceProvider(restServer.getClass()));
-        serverFactoryBean.setAddress("http://localhost:52923/");
+        serverFactoryBean.setAddress(restAddress);
         serverFactoryBean.create();
 
         logger.info("Started REST Server");

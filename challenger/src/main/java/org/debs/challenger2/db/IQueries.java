@@ -3,14 +3,12 @@ package org.debs.challenger2.db;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.debs.gc2023.dal.DB;
 
 import java.io.Closeable;
 import java.util.Date;
 import java.util.List;
 
 public interface IQueries extends Closeable {
-    DB getDb();
 
     boolean checkIfGroupExists(String token);
 
@@ -25,6 +23,8 @@ public interface IQueries extends Closeable {
     public Document markBenchmarkFinished(ObjectId benchmarkId, Date finishTime);
 
     public Document getBenchmark (ObjectId benchmarkId);
+
+    public Document getActiveBenchmarkByGroupId(ObjectId groupId);
 
 
     void insertLatency(ObjectId groupId, Integer query, Long latency);

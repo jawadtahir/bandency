@@ -7,6 +7,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.debs.challenger2.benchmark.BenchmarkState;
 import org.debs.challenger2.benchmark.BenchmarkType;
@@ -93,50 +94,53 @@ public class RestServer {
 
         if (groupId == null){
             return Response.status(Status.FORBIDDEN).entity("Invalid token.").build();
+        }
+
+        Document activeBenchmark = q.getActiveBenchmarkByGroupId(groupId);
+
+        if (activeBenchmark != null){
+            return Response.status(Status.PRECONDITION_FAILED).entity(String.format("Benchmark %s is active. Please end the benchmark.", activeBenchmark.get("_id").toString())).build();
+        }
+
+        // Configure benchmark
+        BenchmarkType bt = getBenchmarkType(request1.getBenchmarkType());
+        ObjectId benchmarkId = q.createBenchmark(groupId , request1.getBenchmarkName(), bt.toString());
+
+        if (benchmarkId == null){
+            return Response.status(Status.INTERNAL_SERVER_ERROR)
+                    .entity("Unable to create benchmark object").build();
+        }
+        BenchmarkState bms = new BenchmarkState(this.pending);
+        bms.setToken(request1.getToken());
+        bms.setGroupId(groupId);
+        bms.setBenchmarkId(benchmarkId);
+        bms.setBenchmarkType(bt);
+        bms.setBenchmarkName(request1.getBenchmarkName());
+
+        Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
+
+        if(bt == BenchmarkType.Evaluation) {
+            // TODO: Change it to eval data selector
+            IDataSelector dataSelector = new TestDataSelector(store, 3);
+            bms.setDataSelector(dataSelector);
         } else {
-            // Configure benchmark
-            BenchmarkType bt = getBenchmarkType(request1.getBenchmarkType());
-            ObjectId benchmarkId = q.createBenchmark(groupId , request1.getBenchmarkName(), bt.toString());
-
-            if (benchmarkId == null){
-                return Response.status(Status.INTERNAL_SERVER_ERROR)
-                        .entity("Unable to create benchmark object").build();
-            }
-            BenchmarkState bms = new BenchmarkState(this.pending);
-            bms.setToken(request1.getToken());
-            bms.setGroupId(groupId);
-            bms.setBenchmarkId(benchmarkId);
-            bms.setBenchmarkType(bt);
-            bms.setBenchmarkName(request1.getBenchmarkName());
-
-            Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
-
-            if(bt == BenchmarkType.Evaluation) {
-                // TODO: Change it to eval data selector
-                IDataSelector dataSelector = new TestDataSelector(store, 3);
-                bms.setDataSelector(dataSelector);
-            } else {
-                // for the time being, there is no difference in the dataset
-                IDataSelector dataSelector = new TestDataSelector(store, 3);
-                bms.setDataSelector(dataSelector);
-            }
+            // for the time being, there is no difference in the dataset
+            IDataSelector dataSelector = new TestDataSelector(store, 3);
+            bms.setDataSelector(dataSelector);
+        }
 
 //        Logger.info("Ready for benchmark: " + bms.toString());
 
-            this.benchmarks.put(benchmarkId.toString(), bms);
-            createNewBenchmarkCounter.inc();
-            Benchmark created = new Benchmark(benchmarkId.toString());
-            try {
-                return Response.status(Status.OK)
-                        .entity(objectMapper.writeValueAsString(created))
-                        .build();
-            } catch (JsonProcessingException e) {
-                return  Response.status(Status.INTERNAL_SERVER_ERROR)
-                        .entity("Error parsing benchmark").build();
-            }
-
-
-
+        this.benchmarks.put(benchmarkId.toString(), bms);
+        createNewBenchmarkCounter.inc();
+        Benchmark created = new Benchmark(benchmarkId.toString());
+        try {
+            return Response.status(Status.OK)
+                    .entity(objectMapper.writeValueAsString(created))
+                    .build();
+        } catch (JsonProcessingException e) {
+            return  Response.status(Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error parsing benchmark").build();
         }
 
     }

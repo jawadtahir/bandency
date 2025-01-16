@@ -11,7 +11,6 @@ import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.debs.gc2023.dal.DB;
 
 import java.io.IOException;
 import java.util.*;
@@ -22,7 +21,7 @@ public class MongoQueries implements IQueries {
     public static final String COLLECTION_GROUPS = "groups";
     public static final String COLLECTION_BENCHMARKS = "benchmarks";
     public static final String COLLECTION_LATENCY = "latencies";
-    public static final String GROUP_API_KEY = "groupapikey";
+    public static final String GROUP_API_KEY = "apikey";
     public static final String ID = "_id";
 
     private final MongoClient client;
@@ -49,10 +48,6 @@ public class MongoQueries implements IQueries {
             options.timeSeriesOptions(timeSeriesOptions);
             db.createCollection(COLLECTION_LATENCY, options);
         }
-    }
-    @Override
-    public DB getDb() {
-        return null;
     }
 
     @Override
@@ -132,6 +127,13 @@ public class MongoQueries implements IQueries {
     public Document getBenchmark (ObjectId benchmarkId){
         MongoCollection<Document> benchmarks = client.getDatabase(database).getCollection(COLLECTION_BENCHMARKS);
         return benchmarks.find(Filters.eq("_id", benchmarkId)).first();
+    }
+
+    @Override
+    public Document getActiveBenchmarkByGroupId(ObjectId groupId){
+        MongoCollection<Document> benchmarks = client.getDatabase(database).getCollection(COLLECTION_BENCHMARKS);
+
+        return benchmarks.find(Filters.and(Filters.eq("group_id", groupId), Filters.eq("is_active", true))).sort(Sorts.descending("creation_timestamp")).first();
     }
 
     @Override
