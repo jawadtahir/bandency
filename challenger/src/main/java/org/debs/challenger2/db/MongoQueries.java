@@ -13,6 +13,9 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class MongoQueries implements IQueries {
@@ -36,7 +39,8 @@ public class MongoQueries implements IQueries {
             db.getCollection(COLLECTION_BENCHMARKS);
         } catch (IllegalArgumentException e){
             db.createCollection(COLLECTION_BENCHMARKS);
-            db.getCollection(COLLECTION_BENCHMARKS).createIndex(Indexes.text("group_id"));
+            IndexOptions indexOptions = new IndexOptions().unique(true);
+            db.getCollection(COLLECTION_BENCHMARKS).createIndex(Indexes.text("name"), indexOptions);
         }
         try {
             db.getCollection(COLLECTION_LATENCY);
@@ -81,7 +85,7 @@ public class MongoQueries implements IQueries {
                 .append("group_id", groupId)
                 .append("name", benchmarkName)
                 .append("type", bt)
-                .append("creation_timestamp", new Date(System.currentTimeMillis()))
+                .append("creation_timestamp", Date.from(Instant.now()))
                 .append("is_active", false);
 
         MongoDatabase db = client.getDatabase(database);
@@ -98,7 +102,7 @@ public class MongoQueries implements IQueries {
 
         MongoDatabase db = client.getDatabase(database);
         MongoCollection<Document> benchmarks  = db.getCollection(COLLECTION_BENCHMARKS);
-        Bson update = Updates.combine(Updates.set("is_active", true), Updates.set("activation_timestamp", new Date(System.currentTimeMillis())));
+        Bson update = Updates.combine(Updates.set("is_active", true), Updates.set("activation_timestamp", Date.from(Instant.now())));
         UpdateResult result = benchmarks.updateOne(
                 Filters.eq("_id", benchmarkId),
                 update);
@@ -140,7 +144,7 @@ public class MongoQueries implements IQueries {
     public void insertLatency(ObjectId groupId, Integer query, Long latency) {
 
         Document doc = new Document();
-        doc.append("timestamp", new Date(System.currentTimeMillis()))
+        doc.append("timestamp", Date.from(Instant.now()))
                 .append("metadata", new Document("group_id", groupId).append("query", query))
                 .append("latency", latency);
 
@@ -151,26 +155,59 @@ public class MongoQueries implements IQueries {
         }
     }
 
-    public List<Document> getLatencyAnalysis(ObjectId groupId, Integer query, Date startTime, Date endTime){
+    public List<Document> getLatencyAnalysis(Document benchmark){
         MongoCollection<Document> latencies = client.getDatabase(database).getCollection(COLLECTION_LATENCY);
 
-        Bson match = Aggregates.match(Filters.and(Filters.gte("timestamp", startTime),
-                Filters.lte("timestamp", endTime)));
-//        Document id = new Document("")
-        BsonField percentile = Accumulators.percentile("percentile", "$latency", Arrays.asList(0.5, 0.9), QuantileMethod.approximate());
-//        Bson group = Aggregates.group(new Document("_id", new Document("group_id", "$metadata.group_id").append("query", "$metadata.query")), percentile);
 
-        Bson group = Aggregates.group(Projections.fields(Filters.eq("group_id", "$metadata.group_id"),
-                Filters.eq("query", "$metadata.query")), percentile);
-        return latencies.aggregate(List.of(match, group)).into(new ArrayList<Document>());
+        Bson match = Aggregates.match(Filters.and(
+                Filters.gte("timestamp", benchmark.get("activation_timestamp")),
+                Filters.lte("timestamp", benchmark.get("finished_timestamp")),
+                Filters.eq("metadata.group_id", benchmark.get("group_id"))));
+
+        BsonField percentile = Accumulators.percentile("percentileLatency", "$latency", Arrays.asList(0.25,0.5,0.75,0.9), QuantileMethod.approximate());
+        BsonField min = Accumulators.min("minLatency", "$latency");
+        BsonField max = Accumulators.max("maxLatency", "$latency");
+        BsonField count = Accumulators.sum("count", 1);
+        Bson group = Aggregates.group("$metadata.query", min, max, percentile, count);
+
+        return latencies.aggregate(Arrays.asList(match,group)).into(new ArrayList<>());
 
     }
 
 
     @Override
-    public void insertBenchmarkResult(ObjectId benchmarkId, Bson results) {
+    public void insertBenchmarkResult(ObjectId benchmarkId, List<Document> results, Date bStartTime, Date bFinishTime) {
 
         MongoCollection<Document> benchmarks = client.getDatabase(database).getCollection(COLLECTION_BENCHMARKS);
+
+
+
+        Document benchmarkResult = new Document();
+
+        for (Document latAnal: results){
+
+            String queryNum = latAnal.get("_id").toString();
+            Long minLat = latAnal.getLong("minLatency");
+            Long maxLat = latAnal.getLong("maxLatency");
+            Integer countResults = latAnal.getInteger("count");
+            List<Double> percentiles = latAnal.getList("percentileLatency", Double.class);
+
+            Document queryResults = new Document();
+            queryResults = queryResults.append("percentiles", percentiles)
+                    .append("min", minLat)
+                    .append("max", maxLat)
+                    .append("count", countResults);
+
+            benchmarkResult.append(queryNum, queryResults);
+        }
+
+        long runTime = Duration.between(bStartTime.toInstant(), bFinishTime.toInstant()).get(ChronoUnit.MILLIS);
+        benchmarkResult.append("runtime_ms", runTime);
+
+        Bson bResults = Updates.set("results", benchmarkResult);
+
+        benchmarks.findOneAndUpdate(Filters.eq("_id", benchmarkId), bResults);
+
         UpdateResult result = benchmarks.updateOne(Filters.eq("_id", benchmarkId), results);
 
     }

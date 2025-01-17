@@ -97,7 +97,7 @@
 <script>
     if (typeof jQuery != "undefined") jQuery.fn.prettyDate = function() {
         return this.each(function() {
-            var date = moment(this.title, "YYYY-MM-DD hh:mm:ss").fromNow(); //2020-10-05 15:37:03.269469
+            var date = moment.utc(this.title, "YYYY-MM-DD hh:mm:ss").fromNow(); //2020-10-05 15:37:03.269469
             if (date) jQuery(this).text(date);
         });
     };

@@ -1,7 +1,6 @@
 package org.debs.challenger2.db;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.io.Closeable;
@@ -28,10 +27,10 @@ public interface IQueries extends Closeable {
 
 
     void insertLatency(ObjectId groupId, Integer query, Long latency);
-    public List<Document> getLatencyAnalysis(ObjectId groupId, Integer query, Date startTime, Date endTime);
+    public List<Document> getLatencyAnalysis(Document benchmark);
 
 
-    void insertBenchmarkResult(ObjectId benchmarkId, Bson results);
+    void insertBenchmarkResult(ObjectId benchmarkId, List<Document> results, Date bStartTime, Date bFinishTime);
 
     void closeDB();
 

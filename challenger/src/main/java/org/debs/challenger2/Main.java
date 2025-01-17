@@ -26,7 +26,7 @@ public class Main {
 
     private static Logger logger = LogManager.getLogger(Main.class);
 //    public static final String DB_CONNECTION = "mongodb://myDatabaseUser:D1fficultP%40ssw0rd@mongodb0.example.com:52925/";
-    public static final String DB_CONNECTION = System.getProperty("DB_CONNECTION", "mongodb://localhost:52925/");
+    public static final String DB_CONNECTION = System.getProperty("DB_CONNECTION", "mongodb://localhost:52926/");
     public static final String REST_PORT = System.getProperty("REST_PORT", "52923");
     public static final String DATABASE = "challenger";
     public static void main(String[] args) throws IOException {

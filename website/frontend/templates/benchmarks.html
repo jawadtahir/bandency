@@ -17,8 +17,8 @@
             {% for benchmark in benchmarks %}
                 <tr>
                     <td>
-                        {% if not benchmark.deactivate %}
-                        <form action="{{ url_for('benchmarkdetails', benchmarkid=benchmark._id) }}" method="post" class="form" enctype="application/x-www-form-urlencoded">
+                        {% if benchmark.details %}
+                        <form action="{{ url_for('benchmarkdetails', benchmarkid=benchmark._id) }}" method="get" class="form" enctype="application/x-www-form-urlencoded">
                             <input type="submit" name="benchmarkDetails" id="benchmarkDetails" class="btn btn-info mb-2" value="Details" />
                         </form>
                         {% endif%}

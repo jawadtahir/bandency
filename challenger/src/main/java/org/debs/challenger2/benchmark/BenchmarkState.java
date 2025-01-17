@@ -90,13 +90,12 @@ public class BenchmarkState {
 
 
 
-    public void endBenchmark(long endTime) {
-        this.endNanoTime = endTime;
+    public void endBenchmark(Date endTime) {
 
         BenchmarkDuration bd = new BenchmarkDuration(
                 groupId,
                 benchmarkId,
-                new Date(endTime));
+                endTime);
         this.pending.add(bd);
     }
 

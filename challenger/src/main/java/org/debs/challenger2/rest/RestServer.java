@@ -20,6 +20,7 @@ import org.debs.challenger2.rest.dao.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -144,7 +145,7 @@ public class RestServer {
         }
 
     }
-    @GET
+    @POST
     @Path("/start-benchmark/{benchmark_id}/")
     public Response startBenchmark(@PathParam("benchmark_id") String benchmarkId){
         if (!benchmarks.containsKey(benchmarkId)){
@@ -223,7 +224,7 @@ public class RestServer {
         }
     }
 
-    @GET
+    @POST
     @Path("/end-benchmark/{benchmark_id}")
     public Response endBenchmark(@PathParam("benchmark_id") String benchmarkId){
         long nanoTime = System.nanoTime();
@@ -235,7 +236,7 @@ public class RestServer {
         }
         AtomicBoolean found = new AtomicBoolean(false);
         benchmarks.computeIfPresent(benchmarkId, (k, b) -> {
-            b.endBenchmark(System.currentTimeMillis());
+            b.endBenchmark(Date.from(Instant.now()));
             found.set(true);
 
             //Logger.info("Ended benchmark: " + b.toString());

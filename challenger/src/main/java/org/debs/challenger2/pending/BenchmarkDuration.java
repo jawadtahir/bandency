@@ -1,13 +1,9 @@
 package org.debs.challenger2.pending;
 
-import com.mongodb.client.model.Updates;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.debs.challenger2.db.IQueries;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
@@ -46,26 +42,12 @@ public class BenchmarkDuration implements IPendingTask {
         if (benchmark == null){
             return;
         }
-        Date startTime = benchmark.getDate("activation_timestamp");
-        List<Document> analysis = queries.getLatencyAnalysis(groupId, 1, startTime, endTime);
-//        Document analysis_q2 = queries.getLatencyAnalysis(groupId, 2, startTime, endTime);
-        Document latAnalysis = new Document();
-        for (Document doc: analysis){
-            if (((Document)doc.get("_id")).get("query", Integer.class) == 1){
-                latAnalysis.append("query_1", new Document("percentile", doc.getList("percentile", Double.class)));
-            } else if (((Document)doc.get("_id")).get("query", Integer.class) == 2) {
-                latAnalysis.append("query_2", new Document("percentile", doc.getList("percentile", Double.class)));
-            } else {
-                //error handling
-            }
-        }
+        Date bStartTime = benchmark.getDate("activation_timestamp");
+        Date bFinishTime = benchmark.getDate("finished_timestamp");
 
-        long runtime = Duration.between(startTime.toInstant(), endTime.toInstant()).get(ChronoUnit.SECONDS);
-        latAnalysis.append("runtime", runtime);
+        List<Document> analysis = queries.getLatencyAnalysis(benchmark);
 
-        Bson result = Updates.set("results", latAnalysis);
-
-        queries.insertBenchmarkResult(benchmarkId, result);
+        queries.insertBenchmarkResult(benchmarkId, analysis, bStartTime, bFinishTime);
 
     }
 }

@@ -17,7 +17,7 @@ from quart_auth import QuartAuth, login_required, login_user, Unauthorized, Auth
 from pymongo import AsyncMongoClient, ReturnDocument
 from pymongo.errors import DuplicateKeyError
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 from yaml import safe_load_all, safe_dump_all, YAMLError
 
 
@@ -29,7 +29,7 @@ app.secret_key = os.environ.get("WEB_SECRET_KEY", "-9jMkQIvmUeoasdfwksWTtpih2w")
 auth_manager = QuartAuth(app=app)
 
 
-DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING", "localhost:52925")
+DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING", "localhost:52926")
 salt = os.environ.get("RANDOM_SALT", "akshdkashdhka")
 upload_dir = os.environ.get("DEPLOYMENT_UPLOAD_DIR", os.path.abspath("website/upload"))
 deploy_dir = os.environ.get("DEPLOYMENT_DEPLOY_DIR", os.path.abspath("website/deploy"))
@@ -107,6 +107,12 @@ async def register():
         api_key = generate_random_string(32)
 
         groups = db.groups
+        
+        existing_email = await groups.find_one({"email": email})
+        if existing_email:
+            await flash("Email address already in use. Please choose a different one.", "danger")
+            return redirect(url_for("register"))
+        
         num_groups = await groups.count_documents({})
         namespace = "group-{}".format(num_groups+1)
 
@@ -119,7 +125,8 @@ async def register():
                 "namespace": namespace
             })
         except DuplicateKeyError:
-            return await flash("Duplicate error", "danger")
+            await flash("Group name already in use. Please choose a different one.", "danger")
+            return redirect(url_for("register"))
 
         if (result.inserted_id != None):
             
@@ -130,7 +137,9 @@ async def register():
             
             return  redirect(url_for("login"))
         else:
-            await flash("Unable to creat user", "danger")
+            await flash("Unable to creat user. Contact admins.", "danger")
+            return redirect(url_for("register"))
+    
     elif request.method == 'GET':
         return await render_template("register.html", name="Register")
     
@@ -225,7 +234,7 @@ async def deployment():
     if request.method == "POST":
         
         file = await request.files
-        file_timestamp = datetime.now()
+        file_timestamp = datetime.now(timezone.utc)
         file_name = file["file"].filename.split(".")[0]
         file_extension = file["file"].filename.split(".")[1]
         file_save_path = os.path.join(upload_dir, current_user.namespace, "{}-{}.{}".format(file_name, file_timestamp, file_extension))
@@ -315,13 +324,9 @@ async def benchmarks():
 
     async for benchmark in benchmarks:
         
-        # Deactivates the benchmark if
-        # benchmark is active or
-        # the duration of benchmark is unknown
-        benchmark["deactivate"] = True if (
-            benchmark["is_active"]) or (
-                benchmark.get("activation_timestamp",False) or benchmark.get("finished_timestamp", False)
-                ) else False
+        # For buttons on UI
+        benchmark["deactivate"] = True if benchmark["is_active"] else False
+        benchmark["details"] = True if benchmark.get("results", None) else False
         
         benchmark_list.append(benchmark)
 
@@ -329,7 +334,7 @@ async def benchmarks():
     return await render_template("benchmarks.html", name="Benchmarks", benchmarks=benchmark_list, menu=helper.menu(benchmarks=True))
 
 
-@app.route('/benchmarks/details/<benchmarkid>/')
+@app.route('/benchmarks/details/<benchmarkid>/', methods=["GET"])
 @login_required
 async def benchmarkdetails(benchmarkid):
     #TODO: get benchmark and benchmarkdetails
@@ -343,11 +348,11 @@ async def benchmarkdetails(benchmarkid):
     return await render_template("benchmarkdetails.html", benchmark=benchmark, benchmarkresults=benchmarkresults, menu=helper.menu(benchmarks=True))
 
 
-@app.route('/benchmarks/deactivate/<benchmarkid>/')
+@app.route('/benchmarks/deactivate/<benchmarkid>/', methods=["POST"])
 @login_required
 async def deactivatebenchmark(benchmarkid):
     #TODO: update benchmark
-    time_instant = datetime.now()
+    time_instant = datetime.now(timezone.utc)
     benchmark = await db.benchmarks.find_one({"_id": ObjectId(benchmarkid)})
     benchmark["is_active"] = False
     benchmark["activation_timestamp"] = benchmark.get("activation_timestamp", time_instant)
