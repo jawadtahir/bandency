@@ -49,4 +49,4 @@ while(batch.json()["last"] != True):
     batch = requests.post(REST_SERVER_ADDR+NEXT_BATCH.format(benchamrk_id))
 
 
-requests.get(REST_SERVER_ADDR+END_BENCHMARK.format(benchamrk_id))
+requests.post(REST_SERVER_ADDR+END_BENCHMARK.format(benchamrk_id))

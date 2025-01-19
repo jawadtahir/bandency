@@ -1,7 +1,6 @@
 package org.debs.challenger2.db;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.io.IOException;
@@ -56,14 +55,20 @@ public class NoopQueries implements IQueries{
         return;
     }
 
+    @Override
+    public List<Document> getLatencyAnalysis(Document benchmark) {
+        return null;
+    }
+
+    @Override
+    public void insertBenchmarkResult(ObjectId benchmarkId, List<Document> results, Date bStartTime, Date bFinishTime) {
+
+    }
+
     public List<Document> getLatencyAnalysis(ObjectId groupId, Integer query, Date startTime, Date endTime){
         return List.of(new Document());
     }
 
-    @Override
-    public void insertBenchmarkResult(ObjectId benchmarkId, Bson results) {
-        return;
-    }
 
     @Override
     public void closeDB() {

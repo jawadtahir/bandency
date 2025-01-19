@@ -35,16 +35,29 @@ public class MongoQueries implements IQueries {
         client = MongoClients.create(connectionString);
         this.database = database;
         MongoDatabase db = client.getDatabase(database);
-        try{
-            db.getCollection(COLLECTION_BENCHMARKS);
-        } catch (IllegalArgumentException e){
-            db.createCollection(COLLECTION_BENCHMARKS);
-            IndexOptions indexOptions = new IndexOptions().unique(true);
-            db.getCollection(COLLECTION_BENCHMARKS).createIndex(Indexes.text("name"), indexOptions);
+        List<String> collectionNames = db.listCollectionNames().into(new ArrayList<>());
+
+        if (!collectionNames.contains(COLLECTION_GROUPS)){
+            db.createCollection(COLLECTION_GROUPS);
+            db.getCollection(COLLECTION_GROUPS)
+                    .createIndex(
+                            Indexes.text("name"),
+                            new IndexOptions().unique(true));
+        } else {
+            List<Document> indexes = db.getCollection(COLLECTION_GROUPS).listIndexes().into(new ArrayList<>());
+            if (indexes.size() != 2){
+                db.getCollection(COLLECTION_GROUPS)
+                        .createIndex(
+                                Indexes.text("name"),
+                                new IndexOptions().unique(true));
+            }
         }
-        try {
-            db.getCollection(COLLECTION_LATENCY);
-        } catch (IllegalArgumentException e){
+
+        if (!collectionNames.contains(COLLECTION_BENCHMARKS)){
+            db.createCollection(COLLECTION_BENCHMARKS);
+        }
+
+        if (!collectionNames.contains(COLLECTION_LATENCY)){
             TimeSeriesOptions timeSeriesOptions = new TimeSeriesOptions("timestamp");
             timeSeriesOptions.granularity(TimeSeriesGranularity.SECONDS);
             timeSeriesOptions.metaField("metadata");
