@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ResultResponse {
 
-    @JsonProperty("benchmark_id")
+    @JsonProperty("bench_id")
     private String benchmarkId;
-    @JsonProperty("batch_seq_id")
+    @JsonProperty("batch_number")
     private Long batchSeqId;
     @JsonProperty("query")
     private Integer query;

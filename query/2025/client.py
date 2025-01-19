@@ -1,7 +1,7 @@
 import requests
 import json
 
-REST_SERVER_ADDR="http://localhost:52923/benchmark"
+REST_SERVER_ADDR="http://localhost:52923/api"
 
 TOKEN="gfbmznvoywwogmwepbvvnbjbrxacvded"
 BENCHMARK_TYPE="test"
@@ -14,11 +14,11 @@ CREATE_PARAMS={
     "benchmarkName": BENCHMARK_NAME
 }
 
-CREATE_BENCHMARK = "/create-benchmark"
-START_BENCHMARK = "/start-benchmark/{}"
-NEXT_BATCH = "/next-batch/{}"
+CREATE_BENCHMARK = "/create"
+START_BENCHMARK = "/start/{}"
+NEXT_BATCH = "/next_batch/{}"
 RESULT = "/result/{}/{}/{}"
-END_BENCHMARK = "/end-benchmark/{}"
+END_BENCHMARK = "/end/{}"
 
 benchmark = requests.post(REST_SERVER_ADDR+CREATE_BENCHMARK, json=CREATE_PARAMS, headers={"Content-Type": "application/json"})
 # benchmark = requests.post(REST_SERVER_ADDR+CREATE_BENCHMARK, headers={"Content-Type": "application/json"})
@@ -43,8 +43,8 @@ while(batch.json()["last"] != True):
     response_q1 = {"result": result_q1}
     response_q2 = {"result": result_q2}
 
-    requests.post(REST_SERVER_ADDR+RESULT.format(benchamrk_id, seq_id, 1), response_q1, headers={"content-type": "application/json"})
-    requests.post(REST_SERVER_ADDR+RESULT.format(benchamrk_id, seq_id, 2), response_q2, headers={"content-type": "application/json"})
+    requests.post(REST_SERVER_ADDR+RESULT.format(0, benchamrk_id, seq_id), response_q1, headers={"content-type": "application/json"})
+    # requests.post(REST_SERVER_ADDR+RESULT.format(benchamrk_id, seq_id, 2), response_q2, headers={"content-type": "application/json"})
 
     batch = requests.post(REST_SERVER_ADDR+NEXT_BATCH.format(benchamrk_id))
 

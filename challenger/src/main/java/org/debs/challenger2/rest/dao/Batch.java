@@ -2,11 +2,8 @@ package org.debs.challenger2.rest.dao;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Batch {
-    @JsonProperty("seq_id")
+    @JsonProperty("batch_number")
     private long seqId = 0;
 
     @JsonProperty("last")

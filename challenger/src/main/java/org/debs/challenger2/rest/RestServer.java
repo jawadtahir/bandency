@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Path("/benchmark")
+@Path("/api")
 public class RestServer {
 
     private final ArrayBlockingQueue<IPendingTask> pending;
@@ -67,7 +67,7 @@ public class RestServer {
 
     //TODO: Change it to request params from query params
     @POST
-    @Path("/create-benchmark")
+    @Path("/create")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createBenchmark(String request ){
@@ -146,7 +146,7 @@ public class RestServer {
 
     }
     @POST
-    @Path("/start-benchmark/{benchmark_id}/")
+    @Path("/start/{benchmark_id}/")
     public Response startBenchmark(@PathParam("benchmark_id") String benchmarkId){
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
@@ -169,7 +169,7 @@ public class RestServer {
 
     //TODO: Send data in binary
     @GET
-    @Path("/next-batch/{benchmark_id}/")
+    @Path("/next_batch/{benchmark_id}/")
     public Response getNextBatch(@PathParam("benchmark_id") String benchmarkId){
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
@@ -189,7 +189,11 @@ public class RestServer {
         }
 
         try {
-            return Response.status(Status.OK).entity(objectMapper.writeValueAsString(batch)).build();
+            if (!batch.isLast()) {
+                return Response.status(Status.OK).entity(objectMapper.writeValueAsString(batch)).build();
+            } else {
+                return Response.status(Status.NOT_FOUND).build();
+            }
         } catch (JsonProcessingException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error parsing batch.").build();
         }
@@ -197,7 +201,7 @@ public class RestServer {
 
     //TODO: Receive data in binary
     @POST
-    @Path("/result/{benchmark_id}/{batch_seq_id}/{query}/")
+    @Path("/result/{query}/{benchmark_id}/{batch_seq_id}/")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response result(@PathParam("benchmark_id") String benchmarkId,
                            @PathParam("batch_seq_id") Long batchSeqId,
@@ -225,7 +229,7 @@ public class RestServer {
     }
 
     @POST
-    @Path("/end-benchmark/{benchmark_id}")
+    @Path("/end/{benchmark_id}")
     public Response endBenchmark(@PathParam("benchmark_id") String benchmarkId){
         long nanoTime = System.nanoTime();
         if (!benchmarks.containsKey(benchmarkId)){
