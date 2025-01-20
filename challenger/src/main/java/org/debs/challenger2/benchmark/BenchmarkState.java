@@ -80,10 +80,10 @@ public class BenchmarkState {
         if (latencyCorrelation.containsKey(batchId)){
             LatencyMeasurement lm = latencyCorrelation.get(batchId);
             lm.markEnd(query, endNanoTime);
-            if (!histograms.containsKey(query)){
-                histograms.put(query, new Histogram(3));
-            }
-            histograms.get(query).recordValue(endNanoTime - lm.getStartTime());
+//            if (!histograms.containsKey(query)){
+//                histograms.put(query, new Histogram(3));
+//            }
+//            histograms.get(query).recordValue(endNanoTime - lm.getStartTime());
             this.pending.add(lm);
         }
     }

@@ -193,8 +193,6 @@ public class MongoQueries implements IQueries {
 
         MongoCollection<Document> benchmarks = client.getDatabase(database).getCollection(COLLECTION_BENCHMARKS);
 
-
-
         Document benchmarkResult = new Document();
 
         for (Document latAnal: results){
@@ -215,13 +213,13 @@ public class MongoQueries implements IQueries {
         }
 
         long runTime = Duration.between(bStartTime.toInstant(), bFinishTime.toInstant()).get(ChronoUnit.NANOS);
-        benchmarkResult.append("runtime_ms", runTime);
+        benchmarkResult.append("runtime_ns", runTime);
 
         Bson bResults = Updates.set("results", benchmarkResult);
 
         benchmarks.findOneAndUpdate(Filters.eq("_id", benchmarkId), bResults);
 
-        UpdateResult result = benchmarks.updateOne(Filters.eq("_id", benchmarkId), results);
+//        UpdateResult result = benchmarks.updateOne(Filters.eq("_id", benchmarkId), results);
 
     }
 
