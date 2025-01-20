@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BatchRequest {
 
-    @JsonProperty("token")
+    @JsonProperty("apitoken")
     private String token;
-    @JsonProperty("benchmarkType")
-    private String benchmarkType;
-    @JsonProperty("benchmarkName")
+    @JsonProperty("test")
+    private boolean test;
+    @JsonProperty("name")
     private String benchmarkName;
 
     public BatchRequest(){}
@@ -21,12 +21,12 @@ public class BatchRequest {
         this.token = token;
     }
 
-    public String getBenchmarkType() {
-        return benchmarkType;
+    public boolean isTest() {
+        return test;
     }
 
-    public void setBenchmarkType(String benchmarkType) {
-        this.benchmarkType = benchmarkType;
+    public void setTest(boolean test) {
+        this.test = test;
     }
 
     public String getBenchmarkName() {

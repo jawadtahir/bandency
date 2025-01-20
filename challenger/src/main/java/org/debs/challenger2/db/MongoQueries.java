@@ -214,7 +214,7 @@ public class MongoQueries implements IQueries {
             benchmarkResult.append(queryNum, queryResults);
         }
 
-        long runTime = Duration.between(bStartTime.toInstant(), bFinishTime.toInstant()).get(ChronoUnit.MILLIS);
+        long runTime = Duration.between(bStartTime.toInstant(), bFinishTime.toInstant()).get(ChronoUnit.NANOS);
         benchmarkResult.append("runtime_ms", runTime);
 
         Bson bResults = Updates.set("results", benchmarkResult);

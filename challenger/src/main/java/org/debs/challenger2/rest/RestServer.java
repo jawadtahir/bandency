@@ -21,7 +21,6 @@ import org.debs.challenger2.rest.dao.*;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,7 +32,6 @@ public class RestServer {
     private final ArrayBlockingQueue<IPendingTask> pending;
     private final IQueries q;
     private final int durationEvaluationMinutes;
-    private final Random random;
     private IDataStore store;
     final private ConcurrentHashMap<String, BenchmarkState> benchmarks;
 
@@ -61,7 +59,6 @@ public class RestServer {
         this.q = q;
         this.durationEvaluationMinutes = durationEvaluationMinute;
         this.benchmarks = new ConcurrentHashMap<>();
-        this.random = new Random(System.nanoTime());
 
     }
 
@@ -79,16 +76,10 @@ public class RestServer {
         }
         // Validate
         if (request1.getToken() == null){
-            return Response.status(Status.BAD_REQUEST).entity("token is missing in query params.").build();
-        }
-        if (request1.getBenchmarkType() == null){
-            return Response.status(Status.BAD_REQUEST).entity("benchmarkType is missing in query params.").build();
+            return Response.status(Status.BAD_REQUEST).entity("apitoken is missing in query params.").build();
         }
         if (request1.getBenchmarkName() == null){
-            return Response.status(Status.BAD_REQUEST).entity("benchmarkName is missing in query params.").build();
-        }
-        if (!isValid(request1.getBenchmarkType())){
-            return Response.status(Status.PRECONDITION_FAILED).entity("Unsupported benchmarkType.").build();
+            return Response.status(Status.BAD_REQUEST).entity("name is missing in query params.").build();
         }
 
         ObjectId groupId = q.getGroupIdFromToken(request1.getToken());
@@ -104,7 +95,12 @@ public class RestServer {
         }
 
         // Configure benchmark
-        BenchmarkType bt = getBenchmarkType(request1.getBenchmarkType());
+        BenchmarkType bt = null;
+        if (request1.isTest()){
+            bt = BenchmarkType.Test;
+        } else {
+            bt = BenchmarkType.Evaluation;
+        }
         ObjectId benchmarkId = q.createBenchmark(groupId , request1.getBenchmarkName(), bt.toString());
 
         if (benchmarkId == null){
@@ -120,7 +116,7 @@ public class RestServer {
 
         Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
 
-        if(bt == BenchmarkType.Evaluation) {
+        if (bt == BenchmarkType.Evaluation) {
             // TODO: Change it to eval data selector
             IDataSelector dataSelector = new TestDataSelector(store, 3);
             bms.setDataSelector(dataSelector);
@@ -129,8 +125,6 @@ public class RestServer {
             IDataSelector dataSelector = new TestDataSelector(store, 3);
             bms.setDataSelector(dataSelector);
         }
-
-//        Logger.info("Ready for benchmark: " + bms.toString());
 
         this.benchmarks.put(benchmarkId.toString(), bms);
         createNewBenchmarkCounter.inc();
@@ -243,7 +237,6 @@ public class RestServer {
             b.endBenchmark(Date.from(Instant.now()));
             found.set(true);
 
-            //Logger.info("Ended benchmark: " + b.toString());
             return b;
         });
 
@@ -251,7 +244,6 @@ public class RestServer {
             benchmarks.remove(benchmarkId);
         }
 
-//        endBenchmarkCounter.inc();
 
         return Response.status(Response.Status.OK).build();
     }

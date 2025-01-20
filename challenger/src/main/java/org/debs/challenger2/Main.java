@@ -74,9 +74,5 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(serverFactoryBean.getServer(), q, taskRunner)));
         logger.info("Added shutdown hook");
 
-
-
-
-
     }
 }
