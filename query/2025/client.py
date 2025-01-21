@@ -1,7 +1,8 @@
 import requests
 import json
+import os
 
-REST_SERVER_ADDR="http://localhost:52923/api"
+REST_SERVER_ADDR=os.environ.get("REST_SERVER_ADDRESS", "http://localhost:52923/api")
 
 TOKEN="gfbmznvoywwogmwepbvvnbjbrxacvded"
 BENCHMARK_TYPE=True
@@ -22,6 +23,7 @@ END_BENCHMARK = "/end/{}"
 
 benchmark = requests.post(REST_SERVER_ADDR+CREATE_BENCHMARK, json=CREATE_PARAMS, headers={"Content-Type": "application/json"})
 # benchmark = requests.post(REST_SERVER_ADDR+CREATE_BENCHMARK, headers={"Content-Type": "application/json"})
+print(benchmark)
 
 if benchmark.ok:
     print(benchmark.json())
