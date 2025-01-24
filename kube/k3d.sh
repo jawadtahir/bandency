@@ -1,0 +1,2 @@
+#! /bin/bash
+k3d cluster create challenger2 -s 1 -a 1 -v /home/foobar/PhD/Data/C3/data:/dataDir@server:0 -v /home/foobar/PhD/Data/C3/db:/data/db@server:0 -v /home/foobar/PhD/Data/C3/pv:/pv@agent:0 -p 52928:30000@server:0 -p 52929:30001@server:0 -p 52930:30000@agent:0 --k3s-node-label "org.debs/type=server@server:0" --k3s-node-label "org.debs/type=agent@agent:0"

@@ -32,7 +32,9 @@ public class Main {
     public static void main(String[] args) throws IOException {
         String dataDir = System.getenv().getOrDefault("DATA_DIR", "/data");
         Path dirPath = Paths.get(dataDir);
-        System.out.println(dirPath.toAbsolutePath());
+        System.out.printf("The data directory is %s%n", dirPath.toAbsolutePath());
+        System.out.printf("Database connection string is %s%n", DB_CONNECTION);
+        System.out.printf("The REST server will listen to port %s%n", REST_PORT);
 //        Files.list(dirPath).forEach(path -> System.out.println(path.toAbsolutePath()));
         if (Files.notExists(dirPath)){
             System.out.println("No such directory");

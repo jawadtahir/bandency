@@ -43,7 +43,6 @@ while(batch.status_code == 200):
     print(batch.json()["batch_number"])
 
     response_q1 = {"result": result_q1}
-    response_q2 = {"result": result_q2}
 
     requests.post(REST_SERVER_ADDR+RESULT.format(0, benchamrk_id, seq_id), response_q1, headers={"content-type": "application/json"})
     # requests.post(REST_SERVER_ADDR+RESULT.format(benchamrk_id, seq_id, 2), response_q2, headers={"content-type": "application/json"})

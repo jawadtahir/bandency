@@ -203,7 +203,7 @@ public class RestServer {
                            String jsonBody){
         long nanoTime = System.nanoTime();
         if (!benchmarks.containsKey(benchmarkId)){
-            return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
+            return Response.status(Status.NOT_FOUND).entity("Invalid bench_id").build();
         }
         if (!benchmarks.get(benchmarkId).isStarted()){
             return Response.status(Status.PRECONDITION_FAILED).entity("Benchmark is deactivated.").build();

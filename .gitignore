@@ -27,4 +27,5 @@ upload/
 
 website/quotas/
 
-deploy/
+website/deploy/
+website/upload/

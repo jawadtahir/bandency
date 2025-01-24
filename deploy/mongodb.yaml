@@ -1,0 +1,165 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: challenger
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+spec:
+  capacity: 
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: local-storage
+  local:
+    path: /data/db
+  nodeAffinity:
+    required:
+      nodeSelectorTerms: 
+      - matchExpressions:
+        - key: org.debs/type
+          operator: In
+          values:
+          - server
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: challenger-pv
+spec:
+  capacity: 
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: local-storage
+  local:
+    path: /dataDir
+  nodeAffinity:
+    required:
+      nodeSelectorTerms: 
+      - matchExpressions:
+        - key: org.debs/type
+          operator: In
+          values:
+          - server
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: challenger
+spec:
+  volumeName: mongodb-pv
+  storageClassName: local-storage
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: challenger-pvc
+  namespace: challenger
+spec:
+  volumeName: challenger-pv
+  storageClassName: local-storage
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  namespace: challenger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata: 
+      labels:
+        app: mongo
+    spec:
+      volumes:
+      - name: mongo-data
+        persistentVolumeClaim:
+          claimName: mongodb-pvc
+      - name: challenger-data
+        persistentVolumeClaim:
+          claimName: challenger-pvc
+      containers:
+      - image: docker.io/mongo:8.0.4
+        name: mongo
+        volumeMounts: 
+        - name: mongo-data
+          mountPath: /data/db
+        ports: 
+        - name: mongo-port
+          containerPort: 27017
+
+      - image: docker.io/jawadtahir/challenger:latest
+        name: challenger
+        volumeMounts: 
+        - name: challenger-data
+          mountPath: /dataDir
+        ports: 
+        - name: challenger-port
+          containerPort: 52923
+        env:
+        - name: DB_CONNECTION
+          value: "mongodb://localhost:27017/"
+        - name: REST_PORT
+          value:  "52923"
+        - name: DATA_DIR
+          value: "/dataDir"
+      
+
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: mongo-svc
+  namespace: challenger
+spec: 
+  selector:
+    app: mongo
+  type: NodePort
+  ports:
+  - name: mongo-svc-port
+    port: 27017
+    protocol: TCP
+    targetPort: mongo-port
+    nodePort: 30000
+
+  - name: challenger-svc-port
+    port: 52923
+    protocol: TCP
+    targetPort: challenger-port
+    nodePort: 30001
