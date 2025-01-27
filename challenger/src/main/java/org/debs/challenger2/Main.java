@@ -57,7 +57,7 @@ public class Main {
 
         restServer = new RestServer(store, dbInserter, q, evalDuration);
 
-        String restAddress = String.format("http://localhost:%s/", REST_PORT);
+        String restAddress = String.format("http://0.0.0.0:%s/", REST_PORT);
 
         JAXRSServerFactoryBean serverFactoryBean = new JAXRSServerFactoryBean();
 //        serverFactoryBean.setResourceClasses(RestServer.class);
