@@ -26,8 +26,8 @@ public class Main {
 
     private static Logger logger = LogManager.getLogger(Main.class);
 //    public static final String DB_CONNECTION = "mongodb://myDatabaseUser:D1fficultP%40ssw0rd@mongodb0.example.com:52925/";
-    public static final String DB_CONNECTION = System.getProperty("DB_CONNECTION", "mongodb://localhost:52926/");
-    public static final String REST_PORT = System.getProperty("REST_PORT", "52923");
+    public static final String DB_CONNECTION = System.getenv().getOrDefault("DB_CONNECTION", "mongodb://localhost:52926/");
+    public static final String REST_PORT = System.getenv().getOrDefault("REST_PORT", "52923");
     public static final String DATABASE = "challenger";
     public static void main(String[] args) throws IOException {
         String dataDir = System.getenv().getOrDefault("DATA_DIR", "/data");
@@ -60,7 +60,7 @@ public class Main {
         String restAddress = String.format("http://localhost:%s/", REST_PORT);
 
         JAXRSServerFactoryBean serverFactoryBean = new JAXRSServerFactoryBean();
-        serverFactoryBean.setResourceClasses(RestServer.class);
+//        serverFactoryBean.setResourceClasses(RestServer.class);
         serverFactoryBean.setServiceBean(restServer);
         //serverFactoryBean.setResourceProvider(restServer.getClass(), new SingletonResourceProvider(restServer.getClass()));
         serverFactoryBean.setAddress(restAddress);

@@ -128,7 +128,7 @@ spec:
         name: challenger
         volumeMounts: 
         - name: challenger-data
-          mountPath: /dataDir
+          mountPath: /data
         ports: 
         - name: challenger-port
           containerPort: 52923
@@ -138,7 +138,7 @@ spec:
         - name: REST_PORT
           value:  "52923"
         - name: DATA_DIR
-          value: "/dataDir"
+          value: "/data"
       
 
 ---

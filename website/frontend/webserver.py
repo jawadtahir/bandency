@@ -318,7 +318,7 @@ async def benchmarks():
     #TODO: get banchmarks
     benchmarks = db.benchmarks.find({
             "group_id": ObjectId(current_user.auth_id)
-        }).sort({"timestamp": -1})
+        }).sort({"creation_timestamp": -1})
     
     benchmark_list = []
 

@@ -5,18 +5,60 @@ import com.mongodb.client.model.*;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.msgpack.core.MessageBufferPacker;
+import org.msgpack.core.MessagePack;
+import org.msgpack.core.MessageUnpacker;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Test {
 
 
 
     public static void main(String[] args) throws IOException {
+        String dataDir = "/home/foobar/PhD/Data/DEBS/imaging/archive/L-PBF Dataset/Build 1/OT";
+        Path dir = Paths.get(dataDir);
+        List<Path> imageFilePaths = Files.list(dir).filter(f -> !f.endsWith(".tif")).collect(Collectors.toList());
+        Long seq_id = 0L;
+        for (Path imageFilePath : imageFilePaths) {
+            byte[] imageData = Files.readAllBytes(imageFilePath);
+            seq_id++;
+
+            byte[] packedData = null;
+
+            try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()) {
+                packer.packInt(seq_id.intValue()); //sequence
+                packer.packInt(0); //print_id
+                packer.packInt(0); //tile_id
+                packer.packInt(0); //layer
+                packer.packBinaryHeader(imageData.length);
+                packer.writePayload(imageData);
+                packedData = packer.toByteArray();
+            }
+
+            try (MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(packedData)) {
+                int seq = unpacker.unpackInt();
+                int print = unpacker.unpackInt();
+                int tile = unpacker.unpackInt();
+                int layer = unpacker.unpackInt();
+                int bin_size = unpacker.unpackBinaryHeader();
+                byte[] packed_data = unpacker.readPayload(bin_size);
+                packed_data = Arrays.copyOfRange(packed_data, 0, 50);
+                System.out.printf("Seq_id = %d, print_id = %d, tile = %d, layer = %d, data = %s\n", seq, print, tile, layer, Arrays.toString(packed_data));
+            }
+
+        }
+    }
+
+    private static void createCollection() {
         String uri = "mongodb://localhost:52926/";
         String latencies = "testLatencies";
         String groups = "testGroups";
@@ -56,7 +98,6 @@ public class Test {
             }
 
         }
-
     }
 
     private static void populateTimeSeriesDB() {

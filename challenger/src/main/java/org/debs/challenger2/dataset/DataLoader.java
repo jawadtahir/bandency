@@ -1,6 +1,8 @@
 package org.debs.challenger2.dataset;
 
 import org.debs.challenger2.rest.dao.Batch;
+import org.msgpack.core.MessageBufferPacker;
+import org.msgpack.core.MessagePack;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class DataLoader {
 
@@ -28,7 +29,20 @@ public class DataLoader {
         for (Path imageFilePath : imageFilePaths){
             byte[] imageData = Files.readAllBytes(imageFilePath);
             seq_id++;
-            Batch batch = new Batch(seq_id, imageData);
+
+            byte[] packedData = null;
+
+            try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()) {
+                packer.packInt(seq_id.intValue()); //sequence
+                packer.packInt(0); //print_id
+                packer.packInt(0); //tile_id
+                packer.packInt(0); //layer
+                packer.packBinaryHeader(imageData.length);
+                packer.writePayload(imageData);
+                packedData = packer.toByteArray();
+            }
+
+            Batch batch = new Batch(seq_id, packedData);
             dataStore.addBatch(seq_id, batch);
         }
     }

@@ -7,6 +7,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.debs.challenger2.benchmark.BenchmarkState;
@@ -28,6 +30,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Path("/api")
 public class RestServer {
+
+    private static final Logger LOGGER = LogManager.getLogger(RestServer.class);
 
     private final ArrayBlockingQueue<IPendingTask> pending;
     private final IQueries q;
@@ -68,6 +72,7 @@ public class RestServer {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createBenchmark(String request ){
+        LOGGER.info("/create");
         BatchRequest request1 = null;
         try {
             request1 = objectMapper.readValue(request, BatchRequest.class);
@@ -142,6 +147,7 @@ public class RestServer {
     @POST
     @Path("/start/{benchmark_id}/")
     public Response startBenchmark(@PathParam("benchmark_id") String benchmarkId){
+        LOGGER.info(String.format("/start/%s", benchmarkId));
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
         }
@@ -165,6 +171,7 @@ public class RestServer {
     @GET
     @Path("/next_batch/{benchmark_id}/")
     public Response getNextBatch(@PathParam("benchmark_id") String benchmarkId){
+        LOGGER.info(String.format("/next_batch/%s", benchmarkId));
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
         }
@@ -201,6 +208,7 @@ public class RestServer {
                            @PathParam("batch_seq_id") Long batchSeqId,
                            @PathParam("query") Integer query,
                            String jsonBody){
+        LOGGER.info(String.format("/result/0/%s/%s", benchmarkId, batchSeqId));
         long nanoTime = System.nanoTime();
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid bench_id").build();
@@ -225,6 +233,7 @@ public class RestServer {
     @POST
     @Path("/end/{benchmark_id}")
     public Response endBenchmark(@PathParam("benchmark_id") String benchmarkId){
+        LOGGER.info(String.format("/end/%s", benchmarkId));
         long nanoTime = System.nanoTime();
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
