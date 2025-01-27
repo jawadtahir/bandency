@@ -119,6 +119,7 @@ dependencies {
 // https://mvnrepository.com/artifact/org.mongodb/mongodb-driver
     implementation 'org.mongodb:mongodb-driver-sync:5.2.0'
     implementation 'org.msgpack:msgpack-core:0.9.9'
+    implementation 'org.slf4j:slf4j-simple:2.0.16'
 
 
 

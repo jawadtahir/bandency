@@ -13,6 +13,13 @@ PARAMS = {
     "name": "Test1"
 }
 
+# REST_SRVR="http://localhost:52929/api"
+# PARAMS = {
+#     "apitoken": "vynyonxizjnizuphrurbuylnlxryufjc",
+#     "test": True,
+#     "name": "Test1"
+# }
+
 bench_id = requests.post(REST_SRVR+"/create", json=PARAMS, headers={"Content-Type": "application/json"}).json()["bench_id"]
 requests.post(REST_SRVR+"/start/{}".format(bench_id))
 batch = requests.get(REST_SRVR+"/next_batch/{}".format(bench_id))

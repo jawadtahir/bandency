@@ -66,7 +66,6 @@ public class RestServer {
 
     }
 
-    //TODO: Change it to request params from query params
     @POST
     @Path("/create")
     @Consumes(MediaType.APPLICATION_JSON)
