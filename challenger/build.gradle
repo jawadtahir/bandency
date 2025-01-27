@@ -118,6 +118,7 @@ dependencies {
 //    implementation group: 'org.mongodb', name: 'mongo-java-driver', version: '3.12.14'
 // https://mvnrepository.com/artifact/org.mongodb/mongodb-driver
     implementation 'org.mongodb:mongodb-driver-sync:5.2.0'
+    implementation 'org.msgpack:msgpack-core:0.9.9'
 
 
 
