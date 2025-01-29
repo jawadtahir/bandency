@@ -26,7 +26,7 @@ from deployment import Deployment
 shutdown_event = asyncio.Event()
 app = Quart(__name__)
 app.secret_key = os.environ.get("WEB_SECRET_KEY", "-9jMkQIvmUeoasdfwksWTtpih2w")
-auth_manager = QuartAuth(app=app)
+auth_manager = QuartAuth(app=app, cookie_secure=False)
 
 
 DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING", "localhost:52926")
@@ -67,7 +67,7 @@ class LoggedInUser(AuthUser):
 
 
 auth_manager.user_class = LoggedInUser
-auth_manager.init_app(app)
+# auth_manager.init_app(app)
 
 @app.before_request
 @app.before_websocket
