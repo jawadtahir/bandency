@@ -29,3 +29,9 @@ website/quotas/
 
 website/deploy/
 website/upload/
+
+challenger/bin/main/
+
+bandency.iml
+
+challenger/out/production/resources/

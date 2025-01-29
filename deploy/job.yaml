@@ -1,0 +1,19 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-workload
+  namespace: group-1
+spec:
+  template: 
+    spec: 
+      containers:
+        - name: client
+          image: docker.io/jawadtahir/challengerclient
+          env:
+          - name: REST_SERVER_ADDRESS
+            value: "http://mongo-svc.challenger:52923/api"
+          - name: API_TOKEN
+            value: vynyonxizjnizuphrurbuylnlxryufjc
+      restartPolicy: OnFailure
+

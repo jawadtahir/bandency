@@ -6,6 +6,6 @@ RUN pip install --no-cache-dir requests
 
 COPY . .
 
-ENV REST_SERVER_ADDRESS=http://localhost:52923/api
+ENV REST_SERVER_ADDRESS="http://localhost:52923/api" API_TOKEN=""
 
-CMD [ "python", "./client.py" ]
+CMD [ "python", "./short_client.py" ]
