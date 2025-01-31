@@ -29,7 +29,7 @@ app.secret_key = os.environ.get("WEB_SECRET_KEY", "-9jMkQIvmUeoasdfwksWTtpih2w")
 auth_manager = QuartAuth(app=app, cookie_secure=False)
 
 
-DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING", "localhost:52926")
+DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING", "localhost:52928")
 salt = os.environ.get("RANDOM_SALT", "akshdkashdhka")
 upload_dir = os.environ.get("DEPLOYMENT_UPLOAD_DIR", os.path.abspath("website/upload"))
 deploy_dir = os.environ.get("DEPLOYMENT_DEPLOY_DIR", os.path.abspath("website/deploy"))
