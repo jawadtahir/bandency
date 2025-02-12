@@ -1,6 +1,9 @@
 package org.debs.challenger2;
 
-import com.mongodb.client.*;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -24,6 +27,18 @@ public class Test {
 
 
     public static void main(String[] args) throws IOException {
+
+        Date active = Date.from(Instant.parse("2025-02-12T07:54:22.935+00:00"));
+        Date finished = Date.from(Instant.parse("2025-02-12T07:54:53.335+00:00"));
+
+        Long runTime_ns = Duration.between(active.toInstant(), finished.toInstant()).toNanos();
+        System.out.printf("NS: %d\n", runTime_ns);
+        Long runTime_sec = Duration.between(active.toInstant(), finished.toInstant()).toSeconds();
+        System.out.printf("Sec: %d\n", runTime_sec);
+
+    }
+
+    private static void msgPackTest() throws IOException {
         String dataDir = "/home/foobar/PhD/Data/DEBS/imaging/archive/L-PBF Dataset/Build 1/OT";
         Path dir = Paths.get(dataDir);
         List<Path> imageFilePaths = Files.list(dir).filter(f -> !f.endsWith(".tif")).collect(Collectors.toList());

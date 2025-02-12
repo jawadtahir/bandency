@@ -15,7 +15,6 @@ import org.bson.types.ObjectId;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class MongoQueries implements IQueries {
@@ -191,6 +190,9 @@ public class MongoQueries implements IQueries {
     @Override
     public void insertBenchmarkResult(ObjectId benchmarkId, List<Document> results, Date bStartTime, Date bFinishTime) {
 
+        Duration benchmarkDuration = Duration.between(bStartTime.toInstant(), bFinishTime.toInstant());
+        Long runTime_ns = benchmarkDuration.toNanos();
+        Long runTime_sec = benchmarkDuration.toSeconds();
         MongoCollection<Document> benchmarks = client.getDatabase(database).getCollection(COLLECTION_BENCHMARKS);
 
         Document benchmarkResult = new Document();
@@ -203,17 +205,21 @@ public class MongoQueries implements IQueries {
             Integer countResults = latAnal.getInteger("count");
             List<Double> percentiles = latAnal.getList("percentileLatency", Double.class);
 
+            Double throughput = countResults.doubleValue() / runTime_sec;
+
             Document queryResults = new Document();
             queryResults = queryResults.append("percentiles", percentiles)
                     .append("min", minLat)
                     .append("max", maxLat)
-                    .append("count", countResults);
+                    .append("count", countResults)
+                    .append("throughput", throughput);
 
             benchmarkResult.append(queryNum, queryResults);
         }
 
-        long runTime = Duration.between(bStartTime.toInstant(), bFinishTime.toInstant()).get(ChronoUnit.NANOS);
-        benchmarkResult.append("runtime_ns", runTime);
+
+        benchmarkResult.append("runtime_ns", runTime_ns);
+        benchmarkResult.append("runtime_sec", runTime_sec);
 
         Bson bResults = Updates.set("results", benchmarkResult);
 

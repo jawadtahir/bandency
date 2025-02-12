@@ -1,8 +1,6 @@
 package org.debs.challenger2.dataset;
 
 import org.debs.challenger2.rest.dao.Batch;
-import org.msgpack.core.MessageBufferPacker;
-import org.msgpack.core.MessagePack;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,25 +22,14 @@ public class DataLoader {
     public void load() throws IOException {
 
         Path dir = Paths.get(dataDir);
-        List<Path> imageFilePaths = Files.list(dir).filter(f -> !f.endsWith(".tif")).collect(Collectors.toList());
+        List<Path> imageFilePaths = Files.list(dir).filter(f -> !f.endsWith(".mpack")).sorted().collect(Collectors.toList());
         Long seq_id = 0L;
         for (Path imageFilePath : imageFilePaths){
             byte[] imageData = Files.readAllBytes(imageFilePath);
             seq_id++;
 
-            byte[] packedData = null;
 
-            try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()) {
-                packer.packInt(seq_id.intValue()); //sequence
-                packer.packInt(0); //print_id
-                packer.packInt(0); //tile_id
-                packer.packInt(0); //layer
-                packer.packBinaryHeader(imageData.length);
-                packer.writePayload(imageData);
-                packedData = packer.toByteArray();
-            }
-
-            Batch batch = new Batch(seq_id, packedData);
+            Batch batch = new Batch(seq_id, imageData);
             dataStore.addBatch(seq_id, batch);
         }
     }

@@ -76,7 +76,7 @@ public class RestServer {
         try {
             request1 = objectMapper.readValue(request, BatchRequest.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            return Response.status(Status.BAD_REQUEST).entity("JSON should contain apitoken, name, and a test flag").build();
         }
         // Validate
         if (request1.getToken() == null){
@@ -122,11 +122,11 @@ public class RestServer {
 
         if (bt == BenchmarkType.Evaluation) {
             // TODO: Change it to eval data selector
-            IDataSelector dataSelector = new TestDataSelector(store, 3);
+            IDataSelector dataSelector = new TestDataSelector(store, 1);
             bms.setDataSelector(dataSelector);
         } else {
             // for the time being, there is no difference in the dataset
-            IDataSelector dataSelector = new TestDataSelector(store, 3);
+            IDataSelector dataSelector = new TestDataSelector(store, 1);
             bms.setDataSelector(dataSelector);
         }
 
@@ -135,7 +135,7 @@ public class RestServer {
         Benchmark created = new Benchmark(benchmarkId.toString());
         try {
             return Response.status(Status.OK)
-                    .entity(objectMapper.writeValueAsString(created))
+                    .entity(objectMapper.writeValueAsString(benchmarkId.toString()))
                     .build();
         } catch (JsonProcessingException e) {
             return  Response.status(Status.INTERNAL_SERVER_ERROR)
@@ -145,6 +145,7 @@ public class RestServer {
     }
     @POST
     @Path("/start/{benchmark_id}/")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response startBenchmark(@PathParam("benchmark_id") String benchmarkId){
         LOGGER.info(String.format("/start/%s", benchmarkId));
         if (!benchmarks.containsKey(benchmarkId)){
@@ -170,7 +171,7 @@ public class RestServer {
     @GET
     @Path("/next_batch/{benchmark_id}/")
     public Response getNextBatch(@PathParam("benchmark_id") String benchmarkId){
-        LOGGER.info(String.format("/next_batch/%s", benchmarkId));
+        LOGGER.debug(String.format("/next_batch/%s", benchmarkId));
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid benchmark_id").build();
         }
@@ -188,26 +189,22 @@ public class RestServer {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Please contact DEBS organizers").build();
         }
 
-        try {
-            if (!batch.isLast()) {
-                return Response.status(Status.OK).entity(objectMapper.writeValueAsString(batch)).build();
-            } else {
-                return Response.status(Status.NOT_FOUND).build();
-            }
-        } catch (JsonProcessingException e) {
-            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error parsing batch.").build();
+        if (!batch.isLast()) {
+            return Response.status(Status.OK).entity(batch.getData()).build();
+        } else {
+            return Response.status(Status.NOT_FOUND).build();
         }
     }
 
     //TODO: Receive data in binary
     @POST
     @Path("/result/{query}/{benchmark_id}/{batch_seq_id}/")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.WILDCARD)
     public Response result(@PathParam("benchmark_id") String benchmarkId,
                            @PathParam("batch_seq_id") Long batchSeqId,
                            @PathParam("query") Integer query,
-                           String jsonBody){
-        LOGGER.info(String.format("/result/0/%s/%s", benchmarkId, batchSeqId));
+                           byte[] jsonBody){
+        LOGGER.debug(String.format("/result/0/%s/%s", benchmarkId, batchSeqId));
         long nanoTime = System.nanoTime();
         if (!benchmarks.containsKey(benchmarkId)){
             return Response.status(Status.NOT_FOUND).entity("Invalid bench_id").build();
