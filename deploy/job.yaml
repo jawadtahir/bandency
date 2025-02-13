@@ -9,11 +9,9 @@ spec:
     spec: 
       containers:
         - name: client
-          image: docker.io/jawadtahir/challengerclient
+          image: docker.io/jawadtahir/challengerclient:latest
           env:
-          - name: REST_SERVER_ADDRESS
-            value: "http://mongo-svc.challenger:52923/api"
           - name: API_TOKEN
-            value: vynyonxizjnizuphrurbuylnlxryufjc
+            value: purwqyiryytfwseeqkghqdlrsxxdoauo
       restartPolicy: OnFailure
 

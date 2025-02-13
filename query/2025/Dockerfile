@@ -2,10 +2,10 @@ FROM python:3.12
 
 WORKDIR /usr/src/app
 
-RUN pip install --no-cache-dir requests
+RUN pip install --no-cache-dir requests umsgpack
 
 COPY . .
 
-ENV REST_SERVER_ADDRESS="http://localhost:52923/api" API_TOKEN=""
+ENV API_TOKEN=""
 
 CMD [ "python", "./short_client.py" ]

@@ -9,7 +9,7 @@ spec:
   concurrencyPolicy: 'Forbid'
   type: 'PodChaos'
   podChaos:
-    action: pod-kill
+    action: pod-failure
     mode: all
     selector:
       namespaces:
