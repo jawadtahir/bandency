@@ -29,7 +29,7 @@ app.secret_key = os.environ.get("WEB_SECRET_KEY", "-9jMkQIvmUeoasdfwksWTtpih2w")
 auth_manager = QuartAuth(app=app)
 
 
-DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING", "localhost:52928")
+DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING", "0.0.0.0:52926")
 salt = os.environ.get("RANDOM_SALT", "akshdkashdhka")
 upload_dir = os.environ.get("DEPLOYMENT_UPLOAD_DIR", os.path.abspath("website/upload"))
 deploy_dir = os.environ.get("DEPLOYMENT_DEPLOY_DIR", os.path.abspath("website/deploy"))
@@ -77,7 +77,7 @@ async def load_logged_in_user():
 @app.route("/")
 async def index():
     if await current_user.is_authenticated:
-        return redirect(url_for('profile'))
+        return redirect(url_for('leaderboard'))
     else:
         return await render_template('index.html', name="Welcome!")
 
@@ -182,7 +182,7 @@ async def login():
         if group:
             
             login_user(LoggedInUser(str(group["_id"])))
-            return redirect(url_for("profile"))
+            return redirect(url_for("leaderboard"))
         else:
             await flash("Invalid credentials.", "danger")
             return await render_template("login.html", name="Login")
@@ -315,7 +315,7 @@ async def deployment_delete(deployment_id):
 @app.route('/benchmarks/', methods=["GET"])
 @login_required
 async def benchmarks():
-    #TODO: get banchmarks
+    
     benchmarks = db.benchmarks.find({
             "group_id": ObjectId(current_user.auth_id)
         }).sort({"creation_timestamp": -1})
@@ -337,21 +337,17 @@ async def benchmarks():
 @app.route('/benchmarks/details/<benchmarkid>/', methods=["GET"])
 @login_required
 async def benchmarkdetails(benchmarkid):
-    #TODO: get benchmark and benchmarkdetails
+    
     benchmark = await db.benchmarks.find_one({"_id": ObjectId(benchmarkid)})
-    benchmark_duration = (benchmark["finished_timestamp"] - benchmark["activation_timestamp"]).total_seconds()
+    
 
-    q1_latencies = db.latencies.find({"group_id": ObjectId(current_user.auth_id), "timestamp": {"$gte": benchmark["activation_timestamp"], "$lte": benchmark["finished_timestamp"]}})
-
-    benchmarkresults = {}
-
-    return await render_template("benchmarkdetails.html", benchmark=benchmark, benchmarkresults=benchmarkresults, menu=helper.menu(benchmarks=True))
+    return await render_template("benchmarkdetails.html", benchmark=benchmark, menu=helper.menu(benchmarks=True))
 
 
 @app.route('/benchmarks/deactivate/<benchmarkid>/', methods=["POST"])
 @login_required
 async def deactivatebenchmark(benchmarkid):
-    #TODO: update benchmark
+    
     time_instant = datetime.now(timezone.utc)
     benchmark = await db.benchmarks.find_one({"_id": ObjectId(benchmarkid)})
     benchmark["is_active"] = False
@@ -389,8 +385,87 @@ async def recentchanges():
 async def leaderboard():
 
     #TODO: Get leaderboard results
-    throughput = {}
-    latencies = {}
+    latency_pipeline = [
+        { "$match": { 
+            "type": 'Test' 
+            } 
+        },
+        {"$group": {
+            "_id": '$group_id',
+            "latency": { "$min": '$results.q0.p90' },
+            "throughput": {
+                "$max": '$results.q0.throughput'
+                }
+            }
+        },
+        {
+            "$match": {
+                "latency": { "$ne": None }
+            }
+        },
+        {
+            "$lookup": {
+                "from": 'groups',
+                "localField": '_id',
+                "foreignField": '_id',
+                "as": 'group'
+            }
+        },
+        { "$sort": { "latency": 1, "throughput": -1, "_id": 1 } }
+    ]
+    throughput_pipeline = [
+        { "$match": { 
+            "type": 'Test' 
+            } 
+        },
+        {"$group": {
+            "_id": '$group_id',
+            "latency": { "$min": '$results.q0.p90' },
+            "throughput": {
+                "$max": '$results.q0.throughput'
+                }
+            }
+        },
+        {
+            "$match": {
+                "throughput": { "$ne": None }
+            }
+        },
+        {
+            "$lookup": {
+                "from": 'groups',
+                "localField": '_id',
+                "foreignField": '_id',
+                "as": 'group'
+            }
+        },
+        { "$sort": { "throughput": -1, "latency": 1, "_id": 1 } }
+    ]
+
+
+    lat_ranks = await db.benchmarks.aggregate(latency_pipeline)
+    tp_ranks = await db.benchmarks.aggregate(throughput_pipeline)
+    throughput = []
+    latencies = []
+    lat_rank = 1
+    tp_rank = 1
+    async for rank in lat_ranks:
+        temp_lat = {}
+        temp_lat["rank"] = lat_rank
+        temp_lat["name"] = rank["group"][0]["name"]
+        temp_lat["latency"] = rank["latency"]
+        temp_lat["throughput"] = rank["throughput"]
+        latencies.append(temp_lat)
+        lat_rank += 1
+
+    async for rank in tp_ranks:
+        temp_throughput = {}
+        temp_throughput["rank"] = tp_rank
+        temp_throughput["name"] = rank["group"][0]["name"]
+        temp_throughput["latency"] = rank["latency"]
+        temp_throughput["throughput"] = rank["throughput"]
+        throughput.append(temp_throughput)
+        tp_rank += 1
 
     return await render_template("leaderboard.html", name="Leaderboard", latencies=latencies, throughput=throughput, menu=helper.menu(leaderboard=True))
 
@@ -404,12 +479,7 @@ async def feedback():
 @login_required
 async def rawdata():
 
-    d = os.environ["DATASET_DIR"]
-    files = os.listdir(d)
-    filesandsize = map(lambda f: [f, (os.path.getsize(os.path.join(d, f)) / (1024 * 1024))], files)
-
-    return await render_template('rawdata.html', name="Rawdata", files=filesandsize,
-                                 menu=helper.menu(rawdata=True))
+    return await render_template('rawdata.html', name="Rawdata", menu=helper.menu(rawdata=True))
 
 
 def run_event_loop():

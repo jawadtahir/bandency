@@ -8,10 +8,10 @@ def menu(profile=False,
          rawdata=False,
          feedback=False):
     return [
+        ["Leaderboard", "layers", "/leaderboard", leaderboard],
         ["Profile", "home", "/profile", profile],
         ["Benchmarks", "layers", "/benchmarks", benchmarks],
         ["Deployment", "layers", "/deployment", deployment],
-        ["Leaderboard", "layers", "/leaderboard", leaderboard],
         ["Docs", "layers", "/docs", documentation],
         ["FAQ", "layers", "/faq", faq],
         ["Recent changes", "layers", "/recentchanges", recentchanges],

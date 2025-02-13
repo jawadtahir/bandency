@@ -199,7 +199,7 @@ public class MongoQueries implements IQueries {
 
         for (Document latAnal: results){
 
-            String queryNum = latAnal.get("_id").toString();
+            String query = String.format("q%s", latAnal.get("_id").toString());
             Long minLat = latAnal.getLong("minLatency");
             Long maxLat = latAnal.getLong("maxLatency");
             Integer countResults = latAnal.getInteger("count");
@@ -208,13 +208,16 @@ public class MongoQueries implements IQueries {
             Double throughput = countResults.doubleValue() / runTime_sec;
 
             Document queryResults = new Document();
-            queryResults = queryResults.append("percentiles", percentiles)
-                    .append("min", minLat)
+            queryResults = queryResults.append("min", minLat)
+                    .append("p25", percentiles.get(0))
+                    .append("p50", percentiles.get(1))
+                    .append("p75", percentiles.get(2))
+                    .append("p90", percentiles.get(3))
                     .append("max", maxLat)
-                    .append("count", countResults)
-                    .append("throughput", throughput);
+                    .append("throughput", throughput)
+                    .append("count", countResults);
 
-            benchmarkResult.append(queryNum, queryResults);
+            benchmarkResult.append(query, queryResults);
         }
 
 

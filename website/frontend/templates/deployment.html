@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 
 {% block content %}
+    <div class="alert alert-secondary">
+        Only one deployment is allowed at a time.
+    </div>
     
 
     <form action="{{ url_for('deployment') }}" method="post" class="form" enctype="multipart/form-data">
