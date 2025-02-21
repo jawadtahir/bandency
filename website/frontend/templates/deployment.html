@@ -2,9 +2,52 @@
 
 {% block content %}
     <div class="alert alert-secondary">
+
+        <p>
+            To foster the culture of cloud-native solutions in the community and ensure the reproducibility of the solutions, we provide a Kubernetes-cluster-based evaluation infrastructure. 
+            Please containerize your solution and develop a Kubernetes job workload for solution deployment. 
+            Please upload the job YAML file to Challenger so that your solutions can be deployed on the cluster. 
+            Only one deployment is allowed at a time.
+            Challenger utilizes <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/" target="_blank">namespaces</a> to sandbox solutions. 
+            Furthermore, it uses <a href="https://kubernetes.io/docs/concepts/policy/resource-quotas/" target="_blank">ResourceQuotas</a> and <a href="https://kubernetes.io/docs/concepts/policy/limit-range/" target="_blank">LimitRanges</a> to provide uniform resources to each namespace to ensure a fair evaluation. 
+            Each namespace is assigned 4 CPU cores and 8 GBs of memory. 
+            You can distribute these resources among pods. 
+            By default, each container is given 1 CPU core and 2 GBs of memory.
+        </p>
+
+        <hr/>
+
+        <h4 class="alert-heading">Fault-tolerance evaluation</h4>
+
+        <p class="mb-0">
+            Faults are a common occurrence in any infrastructure, and faults may drastically reduce the performance of a solution [<a href="/static/p806-tahir.pdf" target="_blank">paper</a>]. 
+            A practical solution should not only be performant but also fault-tolerant. 
+            Challenger provides fault-tolerance evaluations to measure the solutions' performance under failure. 
+            Challenger can simulate processes (pods) and network failures. 
+            Pods failures make a process unavailable, and network failures can introduce network delays in the network of the solution. 
+            Please read Section 3.3 of the paper on the discussion to choose these failures. 
+            Please run your solutions against both faults with varying frequencies and report your results.
+        </p>
+
+
+        <h5 class="alert-heading">Fault-tolerance evaluation parameters</h4>
+
+        <p class="mb-0">
+            <ul>
+                <li>Failure: Enable or disable the failure simulation.</li>
+                <li>Failure type: Choose between pod and network failures.</li>
+                <li>Failure interval: Set the interval of the failure simulation frequency in minutes.</li>
+            </ul>
+        </p>
+
+
+
         Please upload a Kubernetes <a href="https://kubernetes.io/docs/concepts/workloads/controllers/job/" target="_blank">job</a> of your solution in YAML format.
         <br>
         Only one deployment is allowed at a time.
+
+        <hr/>
+
     </div>
     
 

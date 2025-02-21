@@ -1,0 +1,239 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Challenger 2.0 REST API",
+        "version": "1.0.0",
+        "description": "API for managing benchmarks"
+    },
+    "paths": {
+        "/create": {
+            "post": {
+                "summary": "Create a new benchmark",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "apitoken": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "test": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["apitoken", "name", "test"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Benchmark created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request"
+                    },
+                    "403": {
+                        "description": "Invalid token"
+                    },
+                    "412": {
+                        "description": "Active benchmark exists"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/start/{benchmark_id}": {
+            "post": {
+                "summary": "Start a benchmark",
+                "parameters": [
+                    {
+                        "name": "benchmark_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Benchmark started successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "benchmark_id": {
+                                            "type": "string"
+                                        },
+                                        "start_time": {
+                                            "type": "number"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Benchmark not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/next_batch/{benchmark_id}": {
+            "get": {
+                "summary": "Get the next batch of data",
+                "parameters": [
+                    {
+                        "name": "benchmark_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Next batch of data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Benchmark not found"
+                    },
+                    "412": {
+                        "description": "Benchmark is deactivated"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/result/{query}/{benchmark_id}/{batch_seq_id}": {
+            "post": {
+                "summary": "Submit result for a batch",
+                "parameters": [
+                    {
+                        "name": "benchmark_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "batch_seq_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/octet-stream": {
+                            "schema": {
+                                "type": "string",
+                                "format": "binary"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Result submitted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "benchmark_id": {
+                                            "type": "string"
+                                        },
+                                        "batch_seq_id": {
+                                            "type": "string"
+                                        },
+                                        "query": {
+                                            "type": "string"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Benchmark not found"
+                    },
+                    "412": {
+                        "description": "Benchmark is deactivated"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/end/{benchmark_id}": {
+            "post": {
+                "summary": "End a benchmark",
+                "parameters": [
+                    {
+                        "name": "benchmark_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Benchmark ended successfully"
+                    },
+                    "404": {
+                        "description": "Benchmark not found"
+                    },
+                    "412": {
+                        "description": "Benchmark is deactivated"
+                    }
+                }
+            }
+        }
+    }
+}
