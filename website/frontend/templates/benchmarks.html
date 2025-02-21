@@ -4,6 +4,18 @@
     <div class="alert alert-secondary">
         The REST API to benchmark solutions is available at http://challenge2025.debs.org:52923/api/
         <p>
+            The API contains the following endpoints:
+            <ol>
+                <li>/create <i>(Creates a new benchmark)</i></li>
+                <li>/start/{benchmark_id} <i>(Starts the benchmark)</i></li>
+                <li>/next_batch/{benchmark_id} <i>(Get the next batch of data)</i></li>
+                <li>/result/{query}/{benchmark_id}/{batch_seq_id} <i>(Submit results, go to Step 2, repeat until there is no more data)</i></li>
+                <li>/end/{benchmark_id} <i>(End the benchmark)</i></li>
+            </ol>
+
+            Please click <a href="/static/APIspec.json" target="_blank">here</a> to see the OpenAPI specification for these endpoints for more details.
+        </p>
+        <p>
         Please see Docs section for more details.
         </p>
     </div>

@@ -95,7 +95,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo-deployment
+  name: challenger-deployment
   namespace: challenger
 spec:
   replicas: 1
