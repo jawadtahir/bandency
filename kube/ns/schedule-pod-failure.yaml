@@ -1,0 +1,18 @@
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: schedule-pod-failure-example
+  namespace: group-0
+spec:
+  schedule: '*/1 * * * *'
+  historyLimit: 5
+  concurrencyPolicy: 'Forbid'
+  type: 'PodChaos'
+  podChaos:
+    action: pod-kill
+    mode: all
+    selector:
+      namespaces:
+        - group-0
+    duration: '10s'

@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="alert alert-secondary">
+        Criteria: benchmark test="false"
+    </div>
+    <h4>Baseline</h4>
+    Throughput: Coming soon
+    <br>
+    Latency: Coming soon
+    <br>
+    <br>
+
+    <h4>Latency Ranking - (Sorted by lowest P90 latency)</h4>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Team</th>
+                    <th>Latency</th>
+                    <th>Throughput</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in latencies %}
+            <tr>
+                <td>{{ a["rank"] }}</td>
+                <td>{{ a["name"] }}</td>
+                <td>{{ a["latency"] }}</td>
+                <td>{{ a["throughput"] }}</td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <h4>Runtime/Throughput Ranking (Sorted by highest throughput)</h4>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Team</th>
+                <th>Latency</th>
+                <th>Throughput</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for a in throughput %}
+                <tr>
+                    <td>{{ a["rank"] }}</td>
+                    <td>{{ a["name"] }}</td>
+                    <td>{{ a["latency"] }}</td>
+                    <td>{{ a["throughput"] }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

@@ -1,3 +1,7 @@
+.settings/org.eclipse.buildship.core.prefs
+gradle/
+.vscode/
+
 ### Java ###
 # Compiled class file
 *.class

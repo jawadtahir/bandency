@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  someService:
+    image: redis:alpine
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1G
+      labels:
+        nodetype: "worker"
+  someOtherService:
+    image: redis:alpine
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+      labels:
+        nodetype: "coordinator"
+  redis:
+    image: redis:alpine
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+      labels:
+        nodetype: "worker"
+  myService:
+    image: redis:alpine

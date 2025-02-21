@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    
+    </td>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th scope="col">Property</th>
+                <th scope="col">Value</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ID</td>
+                    <td>{{ benchmark._id }}</td>
+                </tr>
+                <tr>
+                    <td>Creation Timestamp</td>
+                    <td>{{ benchmark.creation_timestamp }}</td>
+                </tr>
+                <tr>
+                    <td>Activation Timestamp</td>
+                    <td>{{ benchmark.activation_timestamp }}</td>
+                </tr>
+                <tr>
+                    <td>Finished Timestamp</td>
+                    <td>{{ benchmark.finished_timestamp }}</td>
+                </tr>
+                <tr>
+                    <td>Type</td>
+                    <td>{{ benchmark.type }}</td>
+                </tr>
+                <tr>
+                    <td>Active</td>
+                    <td>{{ benchmark.is_active }}</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>{{ benchmark.name }}</td>
+                </tr>
+                {% if not benchmark.results %}
+                    <tr>
+                        <td>No results</td>
+                        <td>No result invocation in the benchmark duration.</td>
+                    </tr>
+                {% endif %}
+
+                {% if benchmark.results %}
+                    <tr>
+                        <td>Duration (seconds)</td>
+                        <td align="right">{{ benchmark.results.runtime_sec }}</td>
+                    </tr>
+                    <tr>
+                        <td>Throughput (batches/second)</td>
+                        <td align="right">{{ benchmark.results.q0.throughput }}</td>
+                    </tr>
+                    <tr>
+                        <td>Latency min (minimum)</td>
+                        <td align="right">{{ benchmark.results.q0.min }}</td>
+                    </tr>
+                    <tr>
+                        <td>Latency p25 (25th percentile)</td>
+                        <td align="right">{{ benchmark.results.q0.p25 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Latency p50 (50th percentile)</td>
+                        <td align="right">{{ benchmark.results.q0.p50 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Latency p75 (75th percentile)</td>
+                        <td align="right">{{ benchmark.results.q0.p75 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Latency p90 (90th percentile)</td>
+                        <td align="right">{{ benchmark.results.q0.p90 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Latency max (maximum)</td>
+                        <td align="right">{{ benchmark.results.q0.max }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

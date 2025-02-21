@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="alert alert-secondary">
+        Please upload a Kubernetes <a href="https://kubernetes.io/docs/concepts/workloads/controllers/job/" target="_blank">job</a> of your solution in YAML format.
+        <br>
+        Only one deployment is allowed at a time.
+    </div>
+    
+
+    <form action="{{ url_for('deployment') }}" method="post" class="form" enctype="multipart/form-data">
+        <div class="form-group row">
+            <label for="inputFile" class="col-sm-3 col-form-label">File</label>
+            <div class="col-sm-5">
+                <input type="file" name="file" class="form-control" id="inputFile" accept=".yaml, .yml" value="">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="inputFile" class="col-sm-3 col-form-label">Failure</label>
+            <div class="col-sm-5">
+                <input type="checkbox" name="failure" class="form-check-input col-form-input" id="failure" value="">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="failure_type" class="col-sm-3 col-form-label">Failure type</label>
+            <div class="col-sm-5">
+                <select name="failure_type" id="failure_type" class="select">
+                    <option value="pod">Pod</option>
+                    <option value="network" selected>Network</option>
+                </select>
+                
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="timer" class="col-sm-3 col-form-label">Failure interval (min)</label>
+            <div class="col-sm-5">
+                <input type="text" name="timer" class="form-control-sm col-form-input" id="timer" value="1">
+            </div>
+        </div>
+
+        
+        <div class="form-group row">
+            <div class="col-sm-3"></div>
+            <div clas#s="col-sm-2">
+                <input type="submit" name="deploy" class="btn btn-primary mb-2" value="Deploy"  {{ 'disabled' if not deployment_allowed }}  />
+            </div>
+        </div>
+    </form>
+
+    <h6>Previous deployments</h6>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                
+                <th>Failure</th>
+                
+                <th align="right">Delete</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for deployment in deployments %}
+                <tr>
+                    <td>{{ deployment._id }}</td>
+                    <td class="humantimestamp" title="{{ deployment.timestamp }}"></td>
+                    <td align="right"><input type="checkbox" name="failure-indicator-{{deployment._id}}" class="form-check-input" id="failure" value="" disabled></td>
+                    <td>
+                        <form action="{{ url_for('deployment_delete', deployment_id=deployment._id) }}" method="post" class="form" enctype="application/x-www-form-urlencoded">
+                            <input type="submit" name="deployDelete" id="deployDelete" class="btn btn-danger mb-2 deploy-delete" value="Delete" {{ 'disabled' if not deployment.is_active }}/>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- <script src="/static/js/deployment.js" -->
+
+{% endblock %}
