@@ -326,7 +326,8 @@ async def benchmarks():
         
         # For buttons on UI
         benchmark["deactivate"] = True if benchmark["is_active"] else False
-        benchmark["details"] = True if benchmark.get("results", None) else False
+        benchmark["details"] = isinstance(benchmark.get("results"), dict) and "q0" in benchmark["results"]
+
         
         benchmark_list.append(benchmark)
 
