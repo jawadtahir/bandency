@@ -2,12 +2,13 @@ import os
 import subprocess
 import shlex
 import shutil
+import logging
 from os import path
 from bson import ObjectId
 from werkzeug.datastructures import FileStorage
 from yaml import safe_load_all, safe_dump_all, YAMLError
 
-
+logger = logging.getLogger("deployment")
 DEPLOY_DIR = os.environ.get("DEPLOYMENT_DEPLOY_DIR", os.path.abspath("website/deploy"))
 CHAOS_TEMPLATE_DIR = os.environ.get("CHAOS_TEMPLATE_DIR", os.path.abspath("website/kubernetes"))
 
@@ -53,14 +54,15 @@ class Deployment():
             try:
                 workloads = list(safe_load_all(upload_file.read()))
             except YAMLError as err:
-                return str(err)
+                logger.error(str(err))
+                return (False, str(err))
         
         for workload in workloads:
             metadata = workload["metadata"]
             if "namespace" not in metadata.keys():
-                return "namespce not defined"
+                return (False, "namespace not found")
             elif metadata["namespace"].strip() != self.namespace:
-                return "invalid namespace"
+                return (False, "Invalid namespace")
             
         if self.is_failure:
             chaos_yaml = generate_chaos(self.chaos_type, self.namespace, self._id, self.timer_sec)
@@ -75,7 +77,7 @@ class Deployment():
 
             safe_dump_all(workloads, deploy_file)
 
-            return ""
+            return (True, "")
 
 
     def deploy(self):
@@ -87,13 +89,12 @@ class Deployment():
                                 cwd=os.path.dirname(deploy_file_path), 
                                 shell=True)
         
-        print(result.stdout.decode("utf8"))
-        print()
-        if result.returncode != 0:
 
+        if result.returncode != 0:
+            logger.error(result.stderr.decode("utf8"))
             return (False, result.stderr.decode("utf8"))
         else:
-            return (True, "")
+            return (True, result.stdout.decode("utf8"))
         
 
     def delete(self):
@@ -105,13 +106,30 @@ class Deployment():
                                 cwd=os.path.dirname(deploy_file_path), 
                                 shell=True)
         
-        print(result.stdout.decode("utf8"))
-        print()
+        
         if result.returncode != 0:
-
+            logger.error(result.stderr.decode("utf8"))
             return (False, result.stderr.decode("utf8"))
         else:
-            return (True, "")
+            return (True, result.stdout.decode("utf8"))
+        
+
+    def get_status(self):
+
+        deploy_file_path = os.path.join(DEPLOY_DIR, self.namespace, "{}.yaml".format(self._id))
+
+        result = subprocess.run("kubectl get -f {} -o json".format(os.path.basename(deploy_file_path)), 
+                                capture_output=True, 
+                                cwd=os.path.dirname(deploy_file_path), 
+                                shell=True)
+        
+        
+        if result.returncode != 0:
+            
+            logger.error(result.stderr.decode("utf8"))
+            return (False, result.stderr.decode("utf8"))
+        else:
+            return (True, result.stdout.decode("utf8"))
 
 
 

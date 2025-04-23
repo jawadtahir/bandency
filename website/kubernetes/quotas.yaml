@@ -13,11 +13,11 @@ metadata:
 spec:
   limits:
     - default:
-        cpu: 1000m
-        memory: 2Gi
-      max:
         cpu: 4000m
         memory: 8Gi
+      max:
+        cpu: 16000m
+        memory: 16Gi
       type: Container
 
 ---
@@ -29,5 +29,5 @@ metadata:
   namespace: {namespace}
 spec:
   hard: 
-    limits.cpu: 4000m
-    limits.memory: 8Gi
+    limits.cpu: 16000m
+    limits.memory: 16Gi

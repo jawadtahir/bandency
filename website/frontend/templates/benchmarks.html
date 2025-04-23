@@ -19,21 +19,31 @@
         Please see Docs section for more details.
         </p>
     </div>
+    <h3 class="alert-heading">Benchmark history</h3>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
         <table class="table table-bordered table-hover">
             <thead>
             <tr>
-                <th>Details</th>
                 <th>Creation time</th>
-                <th>Type</th>
+                <th>ID</th>
                 <th>Name</th>
-                <th align="right">Is active</th>
-                <th>Deactivate</th>
+                <th>Type</th>
+                <th>Details</th>
             </tr>
             </thead>
             <tbody>
             {% for benchmark in benchmarks %}
                 <tr>
+                    <td class="humantimestamp" title="{{ benchmark.creation_timestamp }}"></td>
+                    <td>{{ benchmark._id }} <br/>
+                        {% if benchmark.deactivate %}
+                        <form action="{{ url_for('deactivatebenchmark', benchmarkid=benchmark._id) }}" method="post" class="form" enctype="application/x-www-form-urlencoded">
+                            <input type="submit" name="benchmarkDeactivate" id="benchmarkDeactivate" class="btn btn-danger mb-2" value="Deactivate" />
+                        </form>
+                        {% endif%}
+                    </td>
+                    <td>{{ benchmark.name }}</td>
+                    <td>{{ benchmark.type }}</td>
                     <td>
                         {% if benchmark.details %}
                         <form action="{{ url_for('benchmarkdetails', benchmarkid=benchmark._id) }}" method="get" class="form" enctype="application/x-www-form-urlencoded">
@@ -41,17 +51,7 @@
                         </form>
                         {% endif%}
                     </td>
-                    <td class="humantimestamp" title="{{ benchmark.creation_timestamp }}"></td>
-                    <td>{{ benchmark.type }}</td>
-                    <td>{{ benchmark.name }}</td>
-                    <td align="right">{{ benchmark.is_active }}</td>
-                    <td>
-                        {% if benchmark.deactivate %}
-                        <form action="{{ url_for('deactivatebenchmark', benchmarkid=benchmark._id) }}" method="post" class="form" enctype="application/x-www-form-urlencoded">
-                            <input type="submit" name="benchmarkDeactivate" id="benchmarkDeactivate" class="btn btn-danger mb-2" value="Deactivate" />
-                        </form>
-                        {% endif%}
-                    </td>
+                
                 </tr>
             {% endfor %}
             </tbody>

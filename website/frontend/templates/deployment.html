@@ -10,9 +10,9 @@
             Only one deployment is allowed at a time.
             Challenger utilizes <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/" target="_blank">namespaces</a> to sandbox solutions. 
             Furthermore, it uses <a href="https://kubernetes.io/docs/concepts/policy/resource-quotas/" target="_blank">ResourceQuotas</a> and <a href="https://kubernetes.io/docs/concepts/policy/limit-range/" target="_blank">LimitRanges</a> to provide uniform resources to each namespace to ensure a fair evaluation. 
-            Each namespace is assigned 4 CPU cores and 8 GBs of memory. 
+            Each namespace is assigned 16 CPU cores and 16 GBs of memory. 
             You can distribute these resources among pods. 
-            By default, each container is given 1 CPU core and 2 GBs of memory.
+            By default, each container is given 4 CPU core and 8 GBs of memory.
         </p>
 
         <hr/>
@@ -20,7 +20,7 @@
         <h4 class="alert-heading">Fault-tolerance evaluation</h4>
 
         <p class="mb-0">
-            Faults are a common occurrence in any infrastructure, and faults may drastically reduce the performance of a solution [<a href="/static/p806-tahir.pdf" target="_blank">paper</a>]. 
+            Faults are a common occurrence in any infrastructure, and faults may drastically reduce the performance of a solution [<a href="https://www.vldb.org/pvldb/vol18/p585-tahir.pdf" target="_blank">paper</a>]. 
             A practical solution should not only be performant but also fault-tolerant. 
             Challenger provides fault-tolerance evaluations to measure the solutions' performance under failure. 
             Challenger can simulate processes (pods) and network failures. 
@@ -95,30 +95,46 @@
         </div>
     </form>
 
-    <h6>Previous deployments</h6>
+    <h6>Deployment history</h6>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 table-responsive">
         <table class="table table-bordered table-hover">
             <thead>
             <tr>
+                <th>When</th>
                 <th>ID</th>
-                <th>Timestamp</th>
+                
                 
                 <th>Failure</th>
                 
-                <th align="right">Delete</th>
+                <!-- <th align="right">Delete</th>
+                <th>Status</th> -->
             </tr>
             </thead>
             <tbody>
             {% for deployment in deployments %}
                 <tr>
-                    <td>{{ deployment._id }}</td>
                     <td class="humantimestamp" title="{{ deployment.timestamp }}"></td>
+                    <td>{{ deployment._id }} <br/>
+                    {% if deployment.is_active %}
+                        <form action="{{ url_for('deployment_delete', deployment_id=deployment._id) }}" method="post" class="form" enctype="application/x-www-form-urlencoded">
+                            <input type="submit" name="deployDelete" id="deployDelete" class="btn btn-danger mb-2" value="Delete" />
+                        </form>
+                        <form action="{{ url_for('deployment_logs', deployment_id=deployment._id) }}" method="get" class="form" enctype="application/x-www-form-urlencoded">
+                            <input type="submit" name="deployLogs" id="deployLogs" class="btn btn-info mb-2" value="Logs" />
+                        </form>
+                    {% endif %}
+                    </td>
+                    
                     <td align="right"><input type="checkbox" name="failure-indicator-{{deployment._id}}" class="form-check-input" id="failure" value="" disabled></td>
-                    <td>
+                    <!-- <td>
                         <form action="{{ url_for('deployment_delete', deployment_id=deployment._id) }}" method="post" class="form" enctype="application/x-www-form-urlencoded">
                             <input type="submit" name="deployDelete" id="deployDelete" class="btn btn-danger mb-2 deploy-delete" value="Delete" {{ 'disabled' if not deployment.is_active }}/>
                         </form>
                     </td>
+                    <td>
+                        {{ deployment.status }}
+                        
+                    </td> -->
                 </tr>
             {% endfor %}
             </tbody>

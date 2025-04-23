@@ -7,6 +7,7 @@ import random
 import hashlib
 import helper
 import subprocess
+import json
 
 
 from typing import Any
@@ -22,6 +23,9 @@ from yaml import safe_load_all, safe_dump_all, YAMLError
 
 
 from deployment import Deployment
+
+
+logger = logging.getLogger("webserver")
 
 shutdown_event = asyncio.Event()
 app = Quart(__name__)
@@ -260,20 +264,23 @@ async def deployment():
             "is_failure": is_failure,
             "is_active": False})
         
-        err_msg = deployment.process_constraints()
+        response = deployment.process_constraints()
 
-        if err_msg == "":
+        if response[0] == True:
             deployed = deployment.deploy()
 
             if deployed[0]:
                 result = await db.deployments.update_one({"_id": ObjectId(deployment._id)}, {"$set": {
                 "is_active": True}})
 
+            if deployed[0]:
+
+                await flash(deployed[1], "success")
             else:
 
                 await flash(deployed[1], "danger")
         else:
-            await flash(err_msg, "danger")
+            await flash(response[1], "danger")
             
 
         return redirect(url_for("deployment"))
@@ -285,12 +292,33 @@ async def deployment():
         deployment_allowed = True
         deployment_list = []
         async for deployment in deployments:
+            deployment["status"] = "Not Deployed"
             deployment_list.append(deployment)
             if deployment["is_active"] == True:
                 deployment_allowed = False
 
+                deployment_obj = Deployment(current_user.namespace, id = deployment["_id"])
+                status = deployment_obj.get_status()
+                deployment["status"] = status[1]
+            
 
         return await render_template("deployment.html", name="Deployment", deployments=deployment_list, deployment_allowed=deployment_allowed,  menu=helper.menu(deployment=True))
+
+
+@app.route("/deployment/logs/<deployment_id>", methods=["GET"])
+@login_required
+async def deployment_logs(deployment_id):
+
+    deploy_id = ObjectId(deployment_id)
+    namespace = current_user.namespace
+
+    deployment = Deployment(namespace, id = deploy_id)
+
+    logs = deployment.get_status()[1]
+    logs = json.loads(logs)
+    
+
+    return await render_template("deploymentlogs.html", name="Deployment Logs", logs=logs, menu=helper.menu(deployment=True))
 
 @app.route("/deployment/delete/<deployment_id>", methods=["POST"])
 @login_required
@@ -302,12 +330,14 @@ async def deployment_delete(deployment_id):
     deployment = Deployment(namespace, id = deploy_id)
 
     deleted = deployment.delete()
+    await db.deployments.update_one({"_id": ObjectId(deployment._id)}, {"$set": {
+                "is_active": False}})
 
     if not deleted[0]:
         await flash(deleted[1], "danger")
     else:
-        await db.deployments.update_one({"_id": ObjectId(deployment._id)}, {"$set": {
-                "is_active": False}})
+        await flash(deleted[1], "success")
+        
 
     return redirect(url_for("deployment"))
 
@@ -378,8 +408,8 @@ async def docs():
 async def recentchanges():
 
     #TODO: Get recent changes
-    changes = {}
-    return await render_template("recentchanges.html", name="Recent changes", changes=changes, menu=helper.menu(recentchanges=True))
+    updates = db.changes.find({}).sort({"timestamp": -1})
+    return await render_template("recentchanges.html", name="Recent changes", updates=updates, menu=helper.menu(recentchanges=True))
 
 @app.route('/leaderboard/')
 @login_required
@@ -388,7 +418,7 @@ async def leaderboard():
     #TODO: Get leaderboard results
     latency_pipeline = [
         { "$match": { 
-            "type": 'Test' 
+            "type": 'Evaluation' 
             } 
         },
         {"$group": {
@@ -416,7 +446,7 @@ async def leaderboard():
     ]
     throughput_pipeline = [
         { "$match": { 
-            "type": 'Test' 
+            "type": 'Evaluation' 
             } 
         },
         {"$group": {
@@ -497,5 +527,7 @@ def run_event_loop():
 
 
 if __name__ == "__main__":
+    #create_quotas_in_Kubernetes("group-1")
     run_event_loop()
+    
 

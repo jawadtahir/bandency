@@ -1,0 +1,14 @@
+[project]
+name = "gc25-ref"
+version = "0.1.0"
+description = "Reference implementation for the DEBS Grand Challenge 2025"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.2.0",
+    "pillow>=11.0.0",
+    "requests>=2.32.3",
+    "scikit-learn>=1.5.2",
+    "tifffile>=2024.9.20",
+    "umsgpack>=0.1.0",
+]

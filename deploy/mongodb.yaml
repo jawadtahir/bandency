@@ -62,6 +62,30 @@ spec:
 
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: challenger-eval-pv
+spec:
+  capacity: 
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: local-storage
+  local:
+    path: /dataDirEval
+  nodeAffinity:
+    required:
+      nodeSelectorTerms: 
+      - matchExpressions:
+        - key: org.debs/type
+          operator: In
+          values:
+          - server
+
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongodb-pvc
@@ -84,6 +108,22 @@ metadata:
   namespace: challenger
 spec:
   volumeName: challenger-pv
+  storageClassName: local-storage
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: challenger-eval-pvc
+  namespace: challenger
+spec:
+  volumeName: challenger-eval-pv
   storageClassName: local-storage
   accessModes:
   - ReadWriteOnce
@@ -114,6 +154,9 @@ spec:
       - name: challenger-data
         persistentVolumeClaim:
           claimName: challenger-pvc
+      - name: challenger-eval-data
+        persistentVolumeClaim:
+          claimName: challenger-eval-pvc
       containers:
       - image: docker.io/mongo:8.0.4
         name: mongo
@@ -129,6 +172,8 @@ spec:
         volumeMounts: 
         - name: challenger-data
           mountPath: /data
+        - name: challenger-eval-data
+          mountPath: /dataEval
         ports: 
         - name: challenger-port
           containerPort: 52923
@@ -139,6 +184,8 @@ spec:
           value:  "52923"
         - name: DATA_DIR
           value: "/data"
+        - name: DATA_DIR_EVAL
+          value: "/dataEval"
       
 
 ---
