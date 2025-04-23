@@ -10,12 +10,16 @@
         </tr>
         </thead>
         <tbody>
-        {% for change in changes %}
-        <tr {% if change.level == 1 %} class="alert alert-danger" {% endif %} {% if change.level == 2 %} class="alert alert-success" {% endif %} role="alert">
-            <td class="humantimestamp" title="{{ change.timestamp }}">
+        {% for update in updates %}
+        <tr role="alert">
+            <td class="humantimestamp" title="{{ update.timestamp }}">
             </td>
             <td>
-                {{ change.description }}
+                {% for change in update.changes %}
+                    <p>
+                        {{ change }}
+                    </p>                    
+                {% endfor %}
             </td>
         </tr>
         {% endfor %}

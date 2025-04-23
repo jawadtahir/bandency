@@ -1,0 +1,22 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: debs25naive-job
+  namespace: group-1
+spec:
+  template:
+    spec:
+      containers:
+      - name: debs25naive-container
+        image: jawadtahir/debs25naive:latest
+        command: ["uv", "run", "test.py", "http://mongo-svc.challenger:52923", "vynyonxizjnizuphrurbuylnlxryufjc"]
+        resources:
+          limits:
+            memory: "16Gi"
+            cpu: "16000m"
+          requests:
+            memory: "4Gi"
+            cpu: "4000m"
+      restartPolicy: Never
+  backoffLimit: 4

@@ -2,7 +2,7 @@ package org.debs.challenger2.benchmark;
 
 import org.HdrHistogram.Histogram;
 import org.bson.types.ObjectId;
-import org.debs.challenger2.dataset.IDataSelector;
+import org.debs.challenger2.dataset.IDataStore;
 import org.debs.challenger2.pending.BenchmarkDuration;
 import org.debs.challenger2.pending.IPendingTask;
 import org.debs.challenger2.pending.LatencyMeasurement;
@@ -25,10 +25,11 @@ public class BenchmarkState {
     private ConcurrentHashMap<Integer, Histogram> histograms;
 
     private long startNanoTime;
-    private IDataSelector dataSelector;
+
+    private IDataStore dataStore;
+    private long pointer;
 
     private long endNanoTime;
-    private BenchmarkType benchmarkType;
     private String benchmarkName;
 
     public BenchmarkState(ArrayBlockingQueue<IPendingTask> pending) {
@@ -39,36 +40,26 @@ public class BenchmarkState {
 
         startNanoTime = -1;
         endNanoTime = -1;
-        dataSelector = null;
+        dataStore = null;
+        pointer = 0L;
 
         this.histograms = new ConcurrentHashMap<>();
 
 
-//        this.q1Histogram = new Histogram( 3);
-//        this.q2Histogram = new Histogram( 3);
-
         this.benchmarkId = null;
 
-        this.benchmarkType = BenchmarkType.Test;
     }
 
     public Batch getNextBatch(String benchmarkId){
 
-        if(this.dataSelector == null) { //when participants ignore the last flag
-            Batch batchJSON = new Batch();
-            batchJSON.setLast(true);
-            return batchJSON;
-        }
-        if(this.dataSelector.hasMoreElements()) {
-            // Logger.info("Has more elements: " + benchmarkId);
-            Batch batch = this.dataSelector.nextElement();
+        if(++pointer <= dataStore.batchCount()) {
+            Batch batch = dataStore.getBatch(pointer);
             ObjectId benchmarkOid = new ObjectId(benchmarkId);
             LatencyMeasurement lm = new LatencyMeasurement(groupId, benchmarkOid, batch.getSeqId(), System.nanoTime());
             this.latencyCorrelation.put(batch.getSeqId(), lm);
             return batch;
         } else {
-            //Logger.info("No more elements" + benchmarkId);
-            this.dataSelector = null;
+
             Batch batchJSON = new Batch();
             batchJSON.setLast(true);
             return batchJSON;
@@ -103,6 +94,13 @@ public class BenchmarkState {
         return pending;
     }
 
+    public IDataStore getDataStore() {
+        return dataStore;
+    }
+
+    public void setDataStore(IDataStore dataStore) {
+        this.dataStore = dataStore;
+    }
     public String getToken() {
         return token;
     }
@@ -159,28 +157,12 @@ public class BenchmarkState {
         this.startNanoTime = startNanoTime;
     }
 
-    public IDataSelector getDataSelector() {
-        return dataSelector;
-    }
-
-    public void setDataSelector(IDataSelector dataSelector) {
-        this.dataSelector = dataSelector;
-    }
-
     public long getEndNanoTime() {
         return endNanoTime;
     }
 
     public void setEndNanoTime(long endNanoTime) {
         this.endNanoTime = endNanoTime;
-    }
-
-    public BenchmarkType getBenchmarkType() {
-        return benchmarkType;
-    }
-
-    public void setBenchmarkType(BenchmarkType benchmarkType) {
-        this.benchmarkType = benchmarkType;
     }
 
     public String getBenchmarkName() {

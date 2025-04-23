@@ -31,31 +31,20 @@ public class Main {
     public static final String DATABASE = "challenger";
     public static void main(String[] args) throws IOException {
         String dataDir = System.getenv().getOrDefault("DATA_DIR", "/data");
-        Path dirPath = Paths.get(dataDir);
-        System.out.printf("The data directory is %s%n", dirPath.toAbsolutePath());
-        System.out.printf("Database connection string is %s%n", DB_CONNECTION);
-        System.out.printf("The REST server will listen to port %s%n", REST_PORT);
-//        Files.list(dirPath).forEach(path -> System.out.println(path.toAbsolutePath()));
-        if (Files.notExists(dirPath)){
-            System.out.println("No such directory");
-            return;
-        }
-        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dirPath)){
-            if (!dirStream.iterator().hasNext()){
-                System.out.println("Found no files");
-                return;
-            }
-        }
+        String dataDirEval = System.getenv().getOrDefault("DATA_DIR_EVAL", null);
 
-        IDataStore store = new InMemoryDataStore();
-        logger.info("Reading data files");
-        DataLoader dataLoader = new DataLoader(store, dataDir);
-        dataLoader.load();
-        ArrayBlockingQueue<IPendingTask> dbInserter = new ArrayBlockingQueue<>(1_000_000, false);
+        logger.info("The data directory is {}",dataDir);
+        logger.info("The evaluation data directory is {}",dataDirEval);
+        logger.info("Database connection string is {}", DB_CONNECTION);
+        logger.info("The REST server will listen to port {}", REST_PORT);
+
+        IDataStore testStore = loadData(dataDir);
+        IDataStore evalStore = loadData(dataDirEval);
+
+        ArrayBlockingQueue<IPendingTask> pendingTasks = new ArrayBlockingQueue<>(1_000_000, false);
         IQueries q = new MongoQueries(DB_CONNECTION, DATABASE);
-        int evalDuration = 10;
 
-        restServer = new RestServer(store, dbInserter, q, evalDuration);
+        restServer = new RestServer(testStore, evalStore, pendingTasks, q);
 
         String restAddress = String.format("http://0.0.0.0:%s/", REST_PORT);
 
@@ -68,13 +57,38 @@ public class Main {
 
         logger.info("Started REST Server");
 
-        PendingTaskRunner taskRunner = new PendingTaskRunner(dbInserter, q);
+        PendingTaskRunner taskRunner = new PendingTaskRunner(pendingTasks, q);
         taskRunner.run();
 
         logger.info("Started pending task executor");
 
         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(serverFactoryBean.getServer(), q, taskRunner)));
         logger.info("Added shutdown hook");
+
+    }
+
+    public static IDataStore loadData(String dataDir){
+        IDataStore store = new InMemoryDataStore();
+
+        Path dirPath = Paths.get(dataDir);
+        if (Files.notExists(dirPath)){
+            logger.warn("No such directory. %s%n", dataDir);
+            return null;
+        }
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dirPath)){
+            if (!dirStream.iterator().hasNext()){
+                System.out.println("Found no files");
+                return null;
+            }
+            logger.info("Reading data files");
+            DataLoader dataLoader = new DataLoader(store, dataDir);
+            dataLoader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return store;
 
     }
 }

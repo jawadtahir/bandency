@@ -13,16 +13,14 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.debs.challenger2.benchmark.BenchmarkState;
 import org.debs.challenger2.benchmark.BenchmarkType;
-import org.debs.challenger2.dataset.IDataSelector;
 import org.debs.challenger2.dataset.IDataStore;
-import org.debs.challenger2.dataset.TestDataSelector;
 import org.debs.challenger2.db.IQueries;
 import org.debs.challenger2.pending.IPendingTask;
 import org.debs.challenger2.rest.dao.*;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,8 +33,9 @@ public class RestServer {
 
     private final ArrayBlockingQueue<IPendingTask> pending;
     private final IQueries q;
-    private final int durationEvaluationMinutes;
-    private IDataStore store;
+    private final IDataStore testStore;
+
+    private final IDataStore evalStore;
     final private ConcurrentHashMap<String, BenchmarkState> benchmarks;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -55,13 +54,13 @@ public class RestServer {
     }
 
     public RestServer(){
-        this(null, null, null, 10);
+        this(null, null, null, null);
     }
-    public RestServer(IDataStore store, ArrayBlockingQueue<IPendingTask> pending, IQueries q, int durationEvaluationMinute){
-        this.store = store;
+    public RestServer(IDataStore testStore, IDataStore evalStore, ArrayBlockingQueue<IPendingTask> pending, IQueries q){
+        this.testStore = Objects.requireNonNull(testStore);
+        this.evalStore = evalStore;
         this.pending = pending;
         this.q = q;
-        this.durationEvaluationMinutes = durationEvaluationMinute;
         this.benchmarks = new ConcurrentHashMap<>();
 
     }
@@ -99,12 +98,9 @@ public class RestServer {
         }
 
         // Configure benchmark
-        BenchmarkType bt = null;
-        if (request1.isTest()){
-            bt = BenchmarkType.Test;
-        } else {
-            bt = BenchmarkType.Evaluation;
-        }
+        IDataStore dataStore = (!request1.isTest() && evalStore != null) ? evalStore : testStore;
+        BenchmarkType bt = (request1.isTest()) ? BenchmarkType.Test : BenchmarkType.Evaluation;
+
         ObjectId benchmarkId = q.createBenchmark(groupId , request1.getBenchmarkName(), bt.toString());
 
         if (benchmarkId == null){
@@ -115,20 +111,9 @@ public class RestServer {
         bms.setToken(request1.getToken());
         bms.setGroupId(groupId);
         bms.setBenchmarkId(benchmarkId);
-        bms.setBenchmarkType(bt);
         bms.setBenchmarkName(request1.getBenchmarkName());
+        bms.setDataStore(dataStore);
 
-        Instant stopTime = Instant.now().plus(durationEvaluationMinutes, ChronoUnit.MINUTES);
-
-        if (bt == BenchmarkType.Evaluation) {
-            // TODO: Change it to eval data selector
-            IDataSelector dataSelector = new TestDataSelector(store, 1);
-            bms.setDataSelector(dataSelector);
-        } else {
-            // for the time being, there is no difference in the dataset
-            IDataSelector dataSelector = new TestDataSelector(store, 1);
-            bms.setDataSelector(dataSelector);
-        }
 
         this.benchmarks.put(benchmarkId.toString(), bms);
         createNewBenchmarkCounter.inc();
@@ -253,19 +238,4 @@ public class RestServer {
         return Response.status(Response.Status.OK).build();
     }
 
-    private static BenchmarkType getBenchmarkType(String benchmarkType) {
-        BenchmarkType bt = BenchmarkType.Test;
-        int batchSize = 1_000;
-
-        if(benchmarkType.equalsIgnoreCase("test")) {
-            bt = BenchmarkType.Test;
-            batchSize = 1_000;
-        } else if (benchmarkType.equalsIgnoreCase("verification")) {
-            bt = BenchmarkType.Verification;
-        } else if (benchmarkType.equalsIgnoreCase("evaluation")){
-            bt = BenchmarkType.Evaluation;
-            batchSize = 1_000;
-        }
-        return bt;
-    }
 }
