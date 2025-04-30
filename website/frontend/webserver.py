@@ -297,9 +297,9 @@ async def deployment():
             if deployment["is_active"] == True:
                 deployment_allowed = False
 
-                deployment_obj = Deployment(current_user.namespace, id = deployment["_id"])
-                status = deployment_obj.get_status()
-                deployment["status"] = status[1]
+                # deployment_obj = Deployment(current_user.namespace, id = deployment["_id"])
+                # status = deployment_obj.get_status()
+                # deployment["status"] = status[1]
             
 
         return await render_template("deployment.html", name="Deployment", deployments=deployment_list, deployment_allowed=deployment_allowed,  menu=helper.menu(deployment=True))
