@@ -118,7 +118,7 @@ class Deployment():
 
         deploy_file_path = os.path.join(DEPLOY_DIR, self.namespace, "{}.yaml".format(self._id))
 
-        result = subprocess.run("kubectl describe -f {} -o json".format(os.path.basename(deploy_file_path)), 
+        result = subprocess.run("kubectl describe -f {}".format(os.path.basename(deploy_file_path)), 
                                 capture_output=True, 
                                 cwd=os.path.dirname(deploy_file_path), 
                                 shell=True)
