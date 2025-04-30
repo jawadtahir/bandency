@@ -315,7 +315,7 @@ async def deployment_logs(deployment_id):
     deployment = Deployment(namespace, id = deploy_id)
 
     logs = deployment.get_status()[1]
-    logs = json.loads(logs)
+    # logs = json.loads(logs)
     
 
     return await render_template("deploymentlogs.html", name="Deployment Logs", logs=logs, menu=helper.menu(deployment=True))
